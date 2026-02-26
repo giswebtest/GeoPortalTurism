@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Карта туристических мест{% endblock %}
+
+{% block content %}
+<div class="map-layout">
+    
+    <!-- Боковая панель -->
+    <aside class="sidebar">
+        <h2>📍 Места</h2>
+
+        <div class="sidebar__list">
+            {% for loc in locations %}
+            <div class="location-card" 
+                 data-lat="{{ loc.geom.y }}" 
+                 data-lng="{{ loc.geom.x }}"
+                 data-name="{{ loc.name }}">
+                {% if loc.image %}
+                    <img src="{{ loc.image.url }}" alt="{{ loc.name }}">
+                {% endif %}
+                <div class="location-card__body">
+                    <h3>{{ loc.name }}</h3>
+                    {% if loc.category %}
+                        <span class="badge">{{ loc.category.icon }} {{ loc.category.name }}</span>
+                    {% endif %}
+                    {% if loc.region %}
+                        <span class="badge badge--region">📍 {{ loc.region.name }}</span>
+                    {% endif %}
+                    <p>{{ loc.description|truncatewords:15 }}</p>
+                </div>
+            </div>
+            {% empty %}
+                <p class="empty">Нет опубликованных мест</p>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <!-- Карта -->
+    <div id="map"></div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Инициализация карты
+    const map = L.map('map').setView([48.3794, 31.1656], 6); // Украина
+
+    // Слой OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Добавляем маркеры
+    const locations = [
+        {% for loc in locations %}
+        {
+            lat: {{ loc.geom.y }},
+            lng: {{ loc.geom.x }},
+            name: "{{ loc.name }}",
+            category: "{% if loc.category %}{{ loc.category.icon }} {{ loc.category.name }}{% endif %}",
+            description: "{{ loc.description|truncatewords:20 }}",
+            {% if loc.image %}image: "{{ loc.image.url }}",{% endif %}
+        },
+        {% endfor %}
+    ];
+
+    locations.forEach(loc => {
+        const marker = L.marker([loc.lat, loc.lng]).addTo(map);
+        marker.bindPopup(`
+            <div class="popup">
+                ${loc.image ? `<img src="${loc.image}" style="width:100%;border-radius:8px;margin-bottom:8px">` : ''}
+                <strong>${loc.name}</strong><br>
+                <small>${loc.category}</small><br>
+                <p style="margin-top:6px">${loc.description}</p>
+            </div>
+        `);
+    });
+
+    // Клик по карточке — центрирование карты
+    document.querySelectorAll('.location-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const lat = parseFloat(card.dataset.lat);
+            const lng = parseFloat(card.dataset.lng);
+            map.setView([lat, lng], 14);
+        });
+    });
+</script>
+{% endblock %}
