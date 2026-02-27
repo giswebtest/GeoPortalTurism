@@ -26,6 +26,11 @@ body {
     height: calc(100vh - 54px);
 }
 
+#map {
+    flex: 1;
+    height: calc(100vh - 54px);
+    min-height: 500px;
+}
 /* Sidebar */
 .sidebar {
     width: 340px;
