@@ -75,3 +75,114 @@ class Location(models.Model):
     def __str__(self):
         return self.name
 
+
+class Route(models.Model):
+    """Туристичний маршрут"""
+
+    DIFFICULTY_CHOICES = [
+        ('easy',   '🟢 Легкий'),
+        ('medium', '🟡 Середній'),
+        ('hard',   '🔴 Складний'),
+    ]
+
+    name        = models.CharField(max_length=200, verbose_name='Назва')
+    description = models.TextField(blank=True, verbose_name='Опис')
+
+    # Геометрія маршруту — лінія через точки
+    path = models.LineStringField(
+        srid=4326, geography=True,
+        verbose_name='Маршрут на карті'
+    )
+
+    # Зв'язки
+    region = models.ForeignKey(
+        Region, on_delete=models.SET_NULL,
+        null=True, blank=True,
+        verbose_name='Регіон'
+    )
+    locations = models.ManyToManyField(
+        Location, blank=True,
+        verbose_name='Точки маршруту'
+    )
+    author = models.ForeignKey(
+        User, on_delete=models.SET_NULL,
+        null=True, blank=True,
+        verbose_name='Автор'
+    )
+
+    # Характеристики
+    difficulty   = models.CharField(
+        max_length=10, choices=DIFFICULTY_CHOICES,
+        default='easy', verbose_name='Складність'
+    )
+    distance_km  = models.DecimalField(
+        max_digits=6, decimal_places=2,
+        null=True, blank=True,
+        verbose_name='Відстань (км)'
+    )
+    duration_min = models.PositiveIntegerField(
+        null=True, blank=True,
+        verbose_name='Тривалість (хв)'
+    )
+
+    # Статус
+    is_published = models.BooleanField(default=False, verbose_name='Опубліковано')
+
+    # Дати
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name        = 'Маршрут'
+        verbose_name_plural = 'Маршрути'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        # Спочатку зберігаємо об'єкт (щоб він з'явився в базі)
+        super().save(*args, **kwargs)
+
+        if self.path:
+            # Використовуємо PostGIS для точного розрахунку відстані по сфері
+            from django.contrib.gis.db.models.functions import Length
+            # Отримуємо цей самий маршрут з бази, але з анотованою довжиною
+            # Length для geography автоматично повертає значення в метрах
+            db_route = Route.objects.annotate(calc_length=Length('path')).get(pk=self.pk)
+            
+            # Якщо calc_length повернуло значення
+            if db_route.calc_length:
+                # Отримуємо метри (.m) і переводимо в кілометри
+                length_in_meters = db_route.calc_length.m
+                calculated_distance = round(length_in_meters / 1000, 2)
+
+                # Розрахунок тривалості
+                speed_multiplier = {
+                    'easy': 12,    # 12 хв на 1 км
+                    'medium': 15,  # 15 хв на 1 км
+                    'hard': 20     # 20 хв на 1 км
+                }
+                minutes_per_km = speed_multiplier.get(self.difficulty, 12)
+                calculated_duration = int(float(calculated_distance) * minutes_per_km)
+
+                # Оновлюємо поля напряму в базі (щоб не викликати save() ще раз і уникнути зациклення)
+                Route.objects.filter(pk=self.pk).update(
+                    distance_km=calculated_distance,
+                    duration_min=calculated_duration
+                )
+
+
+class Guide(models.Model):
+    name = models.CharField(max_length=100, verbose_name='Ім\'я')
+    phone = models.CharField(max_length=20, verbose_name='Телефон')
+    image = models.ImageField(
+        upload_to='guides/',
+        blank=True, null=True,
+        verbose_name='Фото'
+    )
+    class Meta:
+        verbose_name = 'Гід'
+        verbose_name_plural = 'Гіди'
+
+    def __str__(self):
+        return self.name

@@ -1,49 +1,85 @@
 {% extends 'base.html' %}
 
-{% block title %}Карта туристических мест{% endblock %}
+{% block title %}Карта туристичних місць{% endblock %}
+
+{% block extra_css %}
+<!-- Leaflet Routing Machine CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+<!-- Leaflet Control Geocoder CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+{% endblock %}
 
 {% block content %}
 <div class="map-layout">
-    
-    <!-- Боковая панель -->
+
+    <!-- Бокова панель -->
     <aside class="sidebar">
-        <h2>📍 Места</h2>
+        <h2>📍 Місця</h2>
+
+        <!-- Панель маршрутизатора -->
+        <div class="routing-panel"
+            style="margin-bottom: 20px; background: #e8f4fd; padding: 14px; border-radius: 10px; border: 1px solid #c9e1f5;">
+            <h3 style="margin-bottom: 10px; font-size: 1rem; color: #1a6fa8;">🚗 Створи свій маршрут</h3>
+            <div id="routing-waypoints" style="margin-bottom: 12px; font-size: 0.9rem; line-height: 1.5;">
+                <em style="color: #666;">Натискайте "➕ До маршруту" біля цікавих місць, щоб побудувати шлях.</em>
+            </div>
+            <button id="clear-route-btn"
+                style="width: 100%; padding: 10px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; display: none; font-weight: 500; transition: 0.2s;">Очистити
+                маршрут</button>
+        </div>
 
         <div class="sidebar__list">
-            fetch('/api/locations/')
-    .then(res => res.json())
-    .then(data => {
-        L.geoJSON(data, {
-            onEachFeature: function(feature, layer) {
-                const p = feature.properties;
-                layer.bindPopup(`
-                    <strong>${p.name}</strong><br>
-                    <p>${p.description}</p>
-                `);
-            }
-        }).addTo(map);
-    });
-            <div class="location-card" 
-                 data-lat="{{ loc.geom.y|stringformat:'.6f' }}"
-                 data-lng="{{ loc.geom.x|stringformat:'.6f' }}"
-                 data-name="{{ loc.name }}">
+            {% for loc in locations %}
+            <div class="location-card" data-lat="{{ loc.geom.y|stringformat:'.6f' }}"
+                data-lng="{{ loc.geom.x|stringformat:'.6f' }}" data-name="{{ loc.name }}">
                 {% if loc.image %}
-                    <img src="{{ loc.image.url }}" alt="{{ loc.name }}">
+                <img src="{{ loc.image.url }}" alt="{{ loc.name }}">
                 {% endif %}
                 <div class="location-card__body">
                     <h3>{{ loc.name }}</h3>
                     {% if loc.category %}
-                        <span class="badge">{{ loc.category.icon }} {{ loc.category.name }}</span>
+                    <span class="badge">{{ loc.category.icon }} {{ loc.category.name }}</span>
                     {% endif %}
                     {% if loc.region %}
-                        <span class="badge badge--region">📍 {{ loc.region.name }}</span>
+                    <span class="badge badge--region">📍 {{ loc.region.name }}</span>
                     {% endif %}
                     <p>{{ loc.description|truncatewords:15 }}</p>
+
+                    <!-- Кнопка додавання до маршруту -->
+                    <button class="add-to-route-btn" data-lat="{{ loc.geom.y }}" data-lng="{{ loc.geom.x }}"
+                        data-name="{{ loc.name }}"
+                        style="margin-top: 12px; padding: 6px 12px; background: #1a6fa8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: background 0.2s;">➕
+                        До маршруту</button>
                 </div>
             </div>
             {% empty %}
-                <p class="empty">Нет опубликованных мест</p>
+            <p class="empty">Немає опублікованих місць</p>
             {% endfor %}
+        </div>
+
+        <div class="sidebar__guides" style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 16px;">
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px;">👤 Наші Гіди</h2>
+            <ul style="list-style: none; padding: 0;">
+                {% for guide in guides %}
+                <li
+                    style="margin-bottom: 10px; padding: 10px; background: #f9f9f9; border-radius: 8px; border: 1px solid #eee; display: flex; align-items: center; gap: 10px;">
+                    {% if guide.image %}
+                    <img src="{{ guide.image.url }}" alt="{{ guide.name }}"
+                        style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    {% else %}
+                    <div
+                        style="width: 45px; height: 45px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        👤</div>
+                    {% endif %}
+                    <div>
+                        <strong style="font-size: 0.95rem;">{{ guide.name }}</strong><br>
+                        <small style="color: #666;">📞 {{ guide.phone }}</small>
+                    </div>
+                </li>
+                {% empty %}
+                <p class="empty">Немає гідів</p>
+                {% endfor %}
+            </ul>
         </div>
     </aside>
 
@@ -54,52 +90,206 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Leaflet Routing Machine JS -->
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+<!-- Leaflet Control Geocoder JS -->
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
 <script>
-const map = L.map('map').setView([48.3794, 31.1656], 6);
+    // 1. Створюємо різні "шари" (base layers)
+    const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    });
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-}).addTo(map);
+    const osmTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenTopoMap'
+    });
 
-const markers = [];
+    const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '© Esri'
+    });
 
-// Загружаем данные из GeoDjango API
-fetch('/api/locations/')
-    .then(res => res.json())
-    .then(data => {
-        const geoLayer = L.geoJSON(data, {
-            onEachFeature: function(feature, layer) {
-                const p = feature.properties;
-                layer.bindPopup(`
-                    <div style="min-width:180px">
-                        <strong>${p.name}</strong><br>
-                        ${p.description ? `<p style="margin-top:6px;color:#555">${p.description}</p>` : ''}
-                    </div>
-                `);
-                markers.push({
-                    id: feature.id,
-                    layer: layer
-                });
+    // 2. Ініціалізуємо карту і додаємо стандартний шар
+    const map = L.map('map', {
+        center: [48.3794, 31.1656],
+        zoom: 6,
+        layers: [osmStandard] // Шар за замовчуванням
+    });
+
+    // 3. Створюємо об'єкт з нашими картами для меню
+    const baseMaps = {
+        "Стандартна (OSM)": osmStandard,
+        "Топографічна": osmTopo,
+        "Супутник (Esri)": satellite
+    };
+
+    // 4. Додаємо перемикач у верхній правий кут
+    L.control.layers(baseMaps).addTo(map);
+
+    // Добавляем маркеры
+    const locations = [
+        {% for loc in locations %}
+    {
+        lat: parseFloat("{{ loc.geom.y }}".replace(',', '.')),
+            lng: parseFloat("{{ loc.geom.x }}".replace(',', '.')),
+                name: "{{ loc.name|escapejs }}",
+                    category: "{% if loc.category %}{{ loc.category.icon }} {{ loc.category.name|escapejs }}{% endif %}",
+                        description: "{{ loc.description|truncatewords:20|escapejs }}",
+                            {% if loc.image %} image: "{{ loc.image.url }}", {% endif %}
+        },
+    {% endfor %}
+    ];
+    const markers = [];
+
+    locations.forEach((loc, index) => {
+        const marker = L.marker([loc.lat, loc.lng]).addTo(map);
+        marker.bindPopup(`
+            <div class="popup">
+                ${loc.image ? `<img src="${loc.image}" style="width:100%;border-radius:8px;margin-bottom:8px">` : ''}
+                <strong>${loc.name}</strong><br>
+                <small>${loc.category}</small><br>
+                <p style="margin-top:6px">${loc.description}</p>
+            </div>
+        `);
+        markers.push({ index, marker });
+    });
+
+    // Клик по карточке — зум на маркер и открытие попапа
+    document.querySelectorAll('.location-card').forEach((card, index) => {
+        card.addEventListener('click', () => {
+            const found = markers[index];
+            if (found) {
+                found.marker.openPopup();
+                map.setView(found.marker.getLatLng(), 12, { animate: true });
             }
-        }).addTo(map);
-    });
-
-// Клик по карточке — зум на маркер
-document.querySelectorAll('.location-card').forEach(card => {
-    card.addEventListener('click', () => {
-        const lat = parseFloat(card.dataset.lat);
-        const lng = parseFloat(card.dataset.lng);
-        const found = markers.find(m => {
-            const ll = m.layer.getLatLng();
-            return Math.abs(ll.lat - lat) < 0.001 && Math.abs(ll.lng - lng) < 0.001;
         });
-        if (found) {
-            map.setView(found.layer.getLatLng(), 15, { animate: true });
-            found.layer.openPopup();
-        }
     });
-});
-</script>
 
+    // ==========================================
+    // СИСТЕМА ПОШУКУ МІСЦЬ (Geocoder)
+    // ==========================================
+    const geocoder = L.Control.geocoder({
+        defaultMarkGeocode: false,
+        placeholder: "Пошук міст, вулиць...",
+        errorMessage: "Нічого не знайдено."
+    })
+        .on('markgeocode', function (e) {
+            const latLng = e.geocode.center;
+            const name = e.geocode.name.split(',')[0]; // Беремо лише першу частину назви
+
+            map.fitBounds(e.geocode.bbox);
+
+            // Створюємо тимчасовий маркер
+            const searchMarker = L.marker(latLng).addTo(map);
+
+            // Створюємо HTML для попапа з кнопкою
+            const popupContent = document.createElement('div');
+            popupContent.innerHTML = `
+            <div style="text-align: center;">
+                <strong>${name}</strong><br>
+                <button class="search-add-btn" style="margin-top: 8px; padding: 6px 12px; background: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer;">➕ До маршруту</button>
+            </div>
+        `;
+
+            // Логіка кнопки "До маршруту"
+            popupContent.querySelector('.search-add-btn').addEventListener('click', () => {
+                waypoints.push({ latLng: latLng, name: name });
+                updateRoutingUI();
+                buildRoute();
+                searchMarker.closePopup();
+            });
+
+            searchMarker.bindPopup(popupContent).openPopup();
+        })
+        .addTo(map);
+
+    // ==========================================
+    // СИСТЕМА ПРОКЛАДАННЯ МАРШРУТІВ (LRM)
+    // ==========================================
+    let routingControl = null;
+    let waypoints = [];
+    const waypointsContainer = document.getElementById('routing-waypoints');
+    const clearBtn = document.getElementById('clear-route-btn');
+
+    // Оновлення інтерфейсу списку точок маршруту
+    function updateRoutingUI() {
+        if (waypoints.length === 0) {
+            waypointsContainer.innerHTML = '<em style="color: #666;">Натискайте "➕ До маршруту" біля цікавих місць, щоб побудувати шлях.</em>';
+            clearBtn.style.display = 'none';
+        } else {
+            let html = waypoints.map((wp, i) => `
+                <div style="padding: 4px 0; border-bottom: 1px dashed #ccc;">
+                    <strong>${i + 1}.</strong> ${wp.name}
+                </div>
+            `).join('');
+            waypointsContainer.innerHTML = html;
+            clearBtn.style.display = 'block';
+        }
+    }
+
+    // Функція побудови самого маршруту (перевикористовується)
+    function buildRoute() {
+        if (waypoints.length >= 2) {
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            routingControl = L.Routing.control({
+                waypoints: waypoints.map(wp => wp.latLng),
+                routeWhileDragging: false,
+                draggableWaypoints: false,
+                lineOptions: {
+                    styles: [{ color: '#e74c3c', opacity: 0.9, weight: 5 }]
+                },
+                show: false, // Приховати стандартну текстову панель
+                addWaypoints: false,
+                createMarker: function () { return null; }, // Не дублювати маркери
+                fitSelectedRoutes: true
+            }).addTo(map);
+
+            routingControl.on('routesfound', function (e) {
+                const routes = e.routes;
+                const summary = routes[0].summary;
+                const distanceKm = (summary.totalDistance / 1000).toFixed(1);
+                const timeMin = Math.round(summary.totalTime / 60);
+
+                const statsHtml = `
+                    <div style="margin-top: 12px; padding: 10px; background: #fff; border-radius: 6px; text-align: center;">
+                        <strong style="font-size: 1.1rem; color: #e74c3c;">${distanceKm} км</strong><br>
+                        <small style="color: #666;">Час в дорозі: ~${timeMin} хв</small>
+                    </div>
+                `;
+                updateRoutingUI();
+                waypointsContainer.innerHTML += statsHtml;
+            });
+        }
+    }
+
+    // Обробка кліку на кнопку "До маршруту" (з бокової панелі)
+    document.querySelectorAll('.add-to-route-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Запобігаємо кліку по самій картці
+
+            const lat = parseFloat(btn.dataset.lat.replace(',', '.'));
+            const lng = parseFloat(btn.dataset.lng.replace(',', '.'));
+            const name = btn.dataset.name;
+
+            waypoints.push({ latLng: L.latLng(lat, lng), name: name });
+            updateRoutingUI();
+            buildRoute();
+        });
+    });
+
+    // Очищення маршруту
+    clearBtn.addEventListener('click', () => {
+        waypoints = [];
+        updateRoutingUI();
+        if (routingControl) {
+            map.removeControl(routingControl);
+            routingControl = null;
+        }
+        map.setView([48.3794, 31.1656], 6); // Повертаємо початковий зум
+    });
+
+</script>
 {% endblock %}
