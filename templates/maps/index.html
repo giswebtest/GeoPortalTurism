@@ -21,11 +21,18 @@
             style="margin-bottom: 20px; background: #e8f4fd; padding: 14px; border-radius: 10px; border: 1px solid #c9e1f5;">
             <h3 style="margin-bottom: 10px; font-size: 1rem; color: #1a6fa8;">🚗 Створи свій маршрут</h3>
             <div id="routing-waypoints" style="margin-bottom: 12px; font-size: 0.9rem; line-height: 1.5;">
-                <em style="color: #666;">Натискайте "➕ До маршруту" біля цікавих місць, щоб побудувати шлях.</em>
+                <em style="color: #666;">Натискайте "➕ До маршруту" біля цікавих місць, щоб вибрати точки.</em>
             </div>
-            <button id="clear-route-btn"
-                style="width: 100%; padding: 10px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; display: none; font-weight: 500; transition: 0.2s;">Очистити
-                маршрут</button>
+            
+            <div id="routing-stats" style="display: none; margin-bottom: 12px;"></div>
+
+            <div style="display: flex; gap: 10px; flex-direction: column;">
+                <button id="build-route-btn"
+                    style="width: 100%; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; display: none; font-weight: 500; transition: 0.2s;">🗺️ Побудувати маршрут</button>
+                    
+                <button id="clear-route-btn"
+                    style="width: 100%; padding: 10px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; display: none; font-weight: 500; transition: 0.2s;">Очистити точки</button>
+            </div>
         </div>
 
         <div class="sidebar__list">
@@ -257,7 +264,6 @@
             popupContent.querySelector('.search-add-btn').addEventListener('click', () => {
                 waypoints.push({ latLng: latLng, name: name });
                 updateRoutingUI();
-                buildRoute();
                 searchMarker.closePopup();
             });
 
@@ -271,25 +277,72 @@
     let routingControl = null;
     let waypoints = [];
     const waypointsContainer = document.getElementById('routing-waypoints');
+    const statsContainer = document.getElementById('routing-stats');
     const clearBtn = document.getElementById('clear-route-btn');
+    const buildRouteBtn = document.getElementById('build-route-btn');
+
+    window.removeWaypoint = function(index) {
+        waypoints.splice(index, 1);
+        updateRoutingUI();
+        if (routingControl) {
+            map.removeControl(routingControl);
+            routingControl = null;
+        }
+    };
+
+    window.moveWaypoint = function(index, direction) {
+        const newIndex = index + direction;
+        if (newIndex >= 0 && newIndex < waypoints.length) {
+            const temp = waypoints[index];
+            waypoints[index] = waypoints[newIndex];
+            waypoints[newIndex] = temp;
+            updateRoutingUI();
+            if (routingControl) {
+                map.removeControl(routingControl);
+                routingControl = null;
+            }
+        }
+    };
 
     // Оновлення інтерфейсу списку точок маршруту
     function updateRoutingUI() {
+        statsContainer.style.display = 'none';
+        statsContainer.innerHTML = '';
+
         if (waypoints.length === 0) {
-            waypointsContainer.innerHTML = '<em style="color: #666;">Натискайте "➕ До маршруту" біля цікавих місць, щоб побудувати шлях.</em>';
+            waypointsContainer.innerHTML = '<em style="color: #666;">Натискайте "➕ До маршруту" біля цікавих місць, щоб вибрати точки.</em>';
             clearBtn.style.display = 'none';
+            buildRouteBtn.style.display = 'none';
         } else {
-            let html = waypoints.map((wp, i) => `
-                <div style="padding: 4px 0; border-bottom: 1px dashed #ccc;">
-                    <strong>${i + 1}.</strong> ${wp.name}
-                </div>
-            `).join('');
+            let html = '<ul style="list-style: none; padding: 0; margin: 0;">';
+            waypoints.forEach((wp, i) => {
+                html += `
+                    <li style="padding: 6px; border-bottom: 1px dashed #ccc; display: flex; justify-content: space-between; align-items: center; background: #fff; margin-bottom: 4px; border-radius: 4px;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <strong>${i + 1}.</strong>
+                            <span style="font-size: 0.85rem;">${wp.name}</span>
+                        </div>
+                        <div style="display: flex; gap: 4px;">
+                            <button onclick="moveWaypoint(${i}, -1)" ${i === 0 ? 'disabled' : ''} style="padding: 2px 6px; cursor: pointer; border: 1px solid #ccc; background: #eee; border-radius: 3px;" title="Вгору">⬆️</button>
+                            <button onclick="moveWaypoint(${i}, 1)" ${i === waypoints.length - 1 ? 'disabled' : ''} style="padding: 2px 6px; cursor: pointer; border: 1px solid #ccc; background: #eee; border-radius: 3px;" title="Вниз">⬇️</button>
+                            <button onclick="removeWaypoint(${i})" style="padding: 2px 6px; cursor: pointer; border: 1px solid #e74c3c; background: #fdf2f0; color: #e74c3c; border-radius: 3px;" title="Видалити">❌</button>
+                        </div>
+                    </li>
+                `;
+            });
+            html += '</ul>';
             waypointsContainer.innerHTML = html;
             clearBtn.style.display = 'block';
+
+            if (waypoints.length >= 2) {
+                buildRouteBtn.style.display = 'block';
+            } else {
+                buildRouteBtn.style.display = 'none';
+            }
         }
     }
 
-    // Функція побудови самого маршруту (перевикористовується)
+    // Функція побудови самого маршруту
     function buildRoute() {
         if (waypoints.length >= 2) {
             if (routingControl) {
@@ -315,17 +368,21 @@
                 const distanceKm = (summary.totalDistance / 1000).toFixed(1);
                 const timeMin = Math.round(summary.totalTime / 60);
 
-                const statsHtml = `
-                    <div style="margin-top: 12px; padding: 10px; background: #fff; border-radius: 6px; text-align: center;">
-                        <strong style="font-size: 1.1rem; color: #e74c3c;">${distanceKm} км</strong><br>
-                        <small style="color: #666;">Час в дорозі: ~${timeMin} хв</small>
+                statsContainer.innerHTML = `
+                    <div style="padding: 10px; background: #fff; border-radius: 6px; text-align: center; border: 1px solid #c9e1f5;">
+                        <strong style="font-size: 1.1rem; color: #e74c3c;">🛣️ ${distanceKm} км</strong><br>
+                        <small style="color: #666;">⏱️ Час в дорозі: ~${timeMin} хв</small>
                     </div>
                 `;
-                updateRoutingUI();
-                waypointsContainer.innerHTML += statsHtml;
+                statsContainer.style.display = 'block';
             });
         }
     }
+
+    // Обробка кліку "Побудувати маршрут"
+    buildRouteBtn.addEventListener('click', () => {
+        buildRoute();
+    });
 
     // Обробка кліку на кнопку "До маршруту" (з бокової панелі)
     document.querySelectorAll('.add-to-route-btn').forEach(btn => {
@@ -338,7 +395,6 @@
 
             waypoints.push({ latLng: L.latLng(lat, lng), name: name });
             updateRoutingUI();
-            buildRoute();
         });
     });
 
