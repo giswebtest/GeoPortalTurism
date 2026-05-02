@@ -176,6 +176,7 @@
                 <strong>${loc.name}</strong><br>
                 <small>${loc.category}</small><br>
                 <p style="margin-top:6px">${loc.description}</p>
+                <button onclick="addWaypointFromPopup(${index})" style="margin-top: 8px; padding: 6px 12px; background: #1a6fa8; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">➕ До маршруту</button>
             </div>
         `);
         markers.push({ index, marker });
@@ -284,6 +285,36 @@
     const clearBtn = document.getElementById('clear-route-btn');
     const buildRouteBtn = document.getElementById('build-route-btn');
     const googleMapsBtn = document.getElementById('google-maps-btn');
+
+    window.addWaypointFromPopup = function(index) {
+        const loc = locations[index];
+        waypoints.push({ latLng: L.latLng(loc.lat, loc.lng), name: loc.name });
+        updateRoutingUI();
+        map.closePopup();
+    };
+
+    window.addCustomWaypoint = function(lat, lng) {
+        const name = `📍 Власна точка (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+        waypoints.push({ latLng: L.latLng(lat, lng), name: name });
+        updateRoutingUI();
+        map.closePopup();
+    };
+
+    map.on('contextmenu', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        
+        L.popup()
+            .setLatLng(e.latlng)
+            .setContent(`
+                <div style="text-align: center;">
+                    <strong>📍 Власна точка</strong><br>
+                    <small>${lat.toFixed(5)}, ${lng.toFixed(5)}</small><br>
+                    <button onclick="addCustomWaypoint(${lat}, ${lng})" style="margin-top: 8px; padding: 6px 12px; background: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">➕ Додати до маршруту</button>
+                </div>
+            `)
+            .openOn(map);
+    });
 
     window.removeWaypoint = function(index) {
         waypoints.splice(index, 1);
