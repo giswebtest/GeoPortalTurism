@@ -33,6 +33,9 @@
                 <button id="google-maps-btn"
                     style="width: 100%; padding: 10px; background: #4285F4; color: white; border: none; border-radius: 6px; cursor: pointer; display: none; font-weight: 500; transition: 0.2s;">📍 Відкрити в Google Maps</button>
                     
+                <button id="waze-btn"
+                    style="width: 100%; padding: 10px; background: #33ccff; color: white; border: none; border-radius: 6px; cursor: pointer; display: none; font-weight: 500; text-shadow: 0 1px 1px rgba(0,0,0,0.2); transition: 0.2s;">🚙 Відкрити в Waze</button>
+                    
                 <button id="clear-route-btn"
                     style="width: 100%; padding: 10px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; display: none; font-weight: 500; transition: 0.2s;">Очистити точки</button>
             </div>
@@ -266,9 +269,18 @@
 
             // Логіка кнопки "До маршруту"
             popupContent.querySelector('.search-add-btn').addEventListener('click', () => {
-                waypoints.push({ latLng: latLng, name: name });
+                waypoints.push({ latLng: latLng, name: name, marker: searchMarker });
                 updateRoutingUI();
                 searchMarker.closePopup();
+            });
+
+            // Якщо попап закрили без додавання до маршруту - видалити маркер
+            searchMarker.on('popupclose', function() {
+                // Перевіряємо чи маркер є в списку waypoints
+                const exists = waypoints.some(wp => wp.marker === searchMarker);
+                if (!exists) {
+                    map.removeLayer(searchMarker);
+                }
             });
 
             searchMarker.bindPopup(popupContent).openPopup();
@@ -285,6 +297,7 @@
     const clearBtn = document.getElementById('clear-route-btn');
     const buildRouteBtn = document.getElementById('build-route-btn');
     const googleMapsBtn = document.getElementById('google-maps-btn');
+    const wazeBtn = document.getElementById('waze-btn');
 
     window.addWaypointFromPopup = function(index) {
         const loc = locations[index];
@@ -295,7 +308,9 @@
 
     window.addCustomWaypoint = function(lat, lng) {
         const name = `📍 Власна точка (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
-        waypoints.push({ latLng: L.latLng(lat, lng), name: name });
+        const marker = L.marker([lat, lng]).addTo(map);
+        marker.bindPopup(`<strong>${name}</strong>`);
+        waypoints.push({ latLng: L.latLng(lat, lng), name: name, marker: marker });
         updateRoutingUI();
         map.closePopup();
     };
@@ -317,6 +332,10 @@
     });
 
     window.removeWaypoint = function(index) {
+        const wp = waypoints[index];
+        if (wp.marker) {
+            map.removeLayer(wp.marker);
+        }
         waypoints.splice(index, 1);
         updateRoutingUI();
         if (routingControl) {
@@ -349,6 +368,7 @@
             clearBtn.style.display = 'none';
             buildRouteBtn.style.display = 'none';
             googleMapsBtn.style.display = 'none';
+            wazeBtn.style.display = 'none';
         } else {
             let html = '<ul style="list-style: none; padding: 0; margin: 0;">';
             waypoints.forEach((wp, i) => {
@@ -372,10 +392,21 @@
 
             if (waypoints.length >= 2) {
                 buildRouteBtn.style.display = 'block';
-                googleMapsBtn.style.display = 'block';
             } else {
                 buildRouteBtn.style.display = 'none';
+            }
+
+            if (waypoints.length >= 1) {
+                googleMapsBtn.style.display = 'block';
+                wazeBtn.style.display = 'block';
+                
+                // Змінюємо текст кнопки Waze, щоб було зрозуміло куди вона веде
+                const lastPointName = waypoints[waypoints.length - 1].name;
+                const shortName = lastPointName.length > 22 ? lastPointName.substring(0, 22) + '...' : lastPointName;
+                wazeBtn.innerHTML = `🚙 Waze до: <span style="font-weight: 700;">${shortName}</span>`;
+            } else {
                 googleMapsBtn.style.display = 'none';
+                wazeBtn.style.display = 'none';
             }
         }
     }
@@ -424,17 +455,35 @@
 
     // Обробка кліку "Відкрити в Google Maps"
     googleMapsBtn.addEventListener('click', () => {
-        if (waypoints.length < 2) return;
+        if (waypoints.length < 1) return;
         
-        const origin = `${waypoints[0].latLng.lat},${waypoints[0].latLng.lng}`;
-        const destination = `${waypoints[waypoints.length - 1].latLng.lat},${waypoints[waypoints.length - 1].latLng.lng}`;
+        const destWp = waypoints[waypoints.length - 1];
+        const destination = `${destWp.latLng.lat},${destWp.latLng.lng}`;
         
-        let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
+        let url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
         
-        if (waypoints.length > 2) {
-            const intermediate = waypoints.slice(1, -1).map(wp => `${wp.latLng.lat},${wp.latLng.lng}`).join('|');
-            url += `&waypoints=${intermediate}`;
+        if (waypoints.length >= 2) {
+            const originWp = waypoints[0];
+            const origin = `${originWp.latLng.lat},${originWp.latLng.lng}`;
+            url += `&origin=${origin}`;
+            
+            if (waypoints.length > 2) {
+                const intermediate = waypoints.slice(1, -1).map(wp => `${wp.latLng.lat},${wp.latLng.lng}`).join('|');
+                url += `&waypoints=${intermediate}`;
+            }
         }
+        
+        window.open(url, '_blank');
+    });
+
+    // Обробка кліку "Відкрити в Waze"
+    wazeBtn.addEventListener('click', () => {
+        if (waypoints.length < 1) return;
+        
+        // Waze URL scheme officially supports routing only to a final destination (no complex waypoints).
+        // So we route to the final point in the list.
+        const dest = waypoints[waypoints.length - 1].latLng;
+        const url = `https://www.waze.com/ul?ll=${dest.lat},${dest.lng}&navigate=yes`;
         
         window.open(url, '_blank');
     });
@@ -455,6 +504,11 @@
 
     // Очищення маршруту
     clearBtn.addEventListener('click', () => {
+        waypoints.forEach(wp => {
+            if (wp.marker) {
+                map.removeLayer(wp.marker);
+            }
+        });
         waypoints = [];
         updateRoutingUI();
         if (routingControl) {
