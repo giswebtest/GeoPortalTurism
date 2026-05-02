@@ -57,6 +57,23 @@
             {% endfor %}
         </div>
 
+        <div class="sidebar__routes" style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 16px;">
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px;">🗺️ Готові маршрути</h2>
+            <ul style="list-style: none; padding: 0;">
+                {% for route in routes %}
+                <li style="margin-bottom: 10px; padding: 10px; background: #f0f9eb; border-radius: 8px; border: 1px solid #c2e0b4; cursor: pointer; transition: 0.2s;"
+                    onmouseover="this.style.background='#e2f0d9'" onmouseout="this.style.background='#f0f9eb'"
+                    onclick="focusRoute('{{ route.id }}')">
+                    <strong style="font-size: 0.95rem; color: #27ae60;">{{ route.name }}</strong><br>
+                    <small style="color: #666;">🛣️ {{ route.distance_km|default:'?' }} км | ⏱️ ~{{ route.duration_min|default:'?' }} хв</small><br>
+                    <small style="color: #999;">Складність: {{ route.get_difficulty_display }}</small>
+                </li>
+                {% empty %}
+                <p class="empty">Немає готових маршрутів</p>
+                {% endfor %}
+            </ul>
+        </div>
+
         <div class="sidebar__guides" style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 16px;">
             <h2 style="font-size: 1.1rem; margin-bottom: 12px;">👤 Наші Гіди</h2>
             <ul style="list-style: none; padding: 0;">
@@ -164,6 +181,51 @@
             }
         });
     });
+
+    // ==========================================
+    // ВІДОБРАЖЕННЯ ГОТОВИХ МАРШРУТІВ З БАЗИ
+    // ==========================================
+    const savedRoutes = [
+        {% for route in routes %}
+        {% if route.path %}
+        {
+            id: "{{ route.id }}",
+            name: "{{ route.name|escapejs }}",
+            difficulty: "{{ route.get_difficulty_display|escapejs }}",
+            distance: "{{ route.distance_km|default:'0' }}",
+            duration: "{{ route.duration_min|default:'0' }}",
+            geojson: {{ route.path.geojson|safe }}
+        },
+        {% endif %}
+        {% endfor %}
+    ];
+
+    const routeLayers = {};
+
+    savedRoutes.forEach(route => {
+        const routeLayer = L.geoJSON(route.geojson, {
+            style: {
+                color: '#27ae60',
+                weight: 5,
+                opacity: 0.8
+            }
+        }).bindPopup(`
+            <div style="text-align: center;">
+                <strong>${route.name}</strong><br>
+                <small>${route.difficulty}</small><br>
+                <span style="font-size: 0.85rem; color: #555;">🛣️ ${route.distance} км | ⏱️ ~${route.duration} хв</span>
+            </div>
+        `).addTo(map);
+        routeLayers[route.id] = routeLayer;
+    });
+
+    window.focusRoute = function(id) {
+        const layer = routeLayers[id];
+        if (layer) {
+            map.fitBounds(layer.getBounds(), { padding: [20, 20] });
+            layer.openPopup();
+        }
+    };
 
     // ==========================================
     // СИСТЕМА ПОШУКУ МІСЦЬ (Geocoder)

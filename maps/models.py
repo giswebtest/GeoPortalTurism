@@ -91,6 +91,7 @@ class Route(models.Model):
     # Геометрія маршруту — лінія через точки
     path = models.LineStringField(
         srid=4326, geography=True,
+        null=True, blank=True,
         verbose_name='Маршрут на карті'
     )
 
@@ -102,6 +103,7 @@ class Route(models.Model):
     )
     locations = models.ManyToManyField(
         Location, blank=True,
+        through='RouteLocation',
         verbose_name='Точки маршруту'
     )
     author = models.ForeignKey(
@@ -170,6 +172,33 @@ class Route(models.Model):
                     distance_km=calculated_distance,
                     duration_min=calculated_duration
                 )
+
+
+
+class RouteLocation(models.Model):
+    """Впорядкована точка маршруту (через-модель для Route.locations)"""
+    route = models.ForeignKey(
+        Route, on_delete=models.CASCADE,
+        related_name='route_locations',
+        verbose_name='Маршрут'
+    )
+    location = models.ForeignKey(
+        Location, on_delete=models.CASCADE,
+        verbose_name='Локація'
+    )
+    order = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Порядок'
+    )
+
+    class Meta:
+        ordering = ['order', 'id']
+        verbose_name = 'Точка маршруту'
+        verbose_name_plural = 'Точки маршруту'
+        unique_together = [('route', 'location')]
+
+    def __str__(self):
+        return f"{self.order}. {self.location.name}"
 
 
 class Guide(models.Model):
