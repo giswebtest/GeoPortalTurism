@@ -30,6 +30,9 @@
                 <button id="build-route-btn"
                     style="width: 100%; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; display: none; font-weight: 500; transition: 0.2s;">🗺️ Побудувати маршрут</button>
                     
+                <button id="google-maps-btn"
+                    style="width: 100%; padding: 10px; background: #4285F4; color: white; border: none; border-radius: 6px; cursor: pointer; display: none; font-weight: 500; transition: 0.2s;">📍 Відкрити в Google Maps</button>
+                    
                 <button id="clear-route-btn"
                     style="width: 100%; padding: 10px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; display: none; font-weight: 500; transition: 0.2s;">Очистити точки</button>
             </div>
@@ -280,6 +283,7 @@
     const statsContainer = document.getElementById('routing-stats');
     const clearBtn = document.getElementById('clear-route-btn');
     const buildRouteBtn = document.getElementById('build-route-btn');
+    const googleMapsBtn = document.getElementById('google-maps-btn');
 
     window.removeWaypoint = function(index) {
         waypoints.splice(index, 1);
@@ -313,6 +317,7 @@
             waypointsContainer.innerHTML = '<em style="color: #666;">Натискайте "➕ До маршруту" біля цікавих місць, щоб вибрати точки.</em>';
             clearBtn.style.display = 'none';
             buildRouteBtn.style.display = 'none';
+            googleMapsBtn.style.display = 'none';
         } else {
             let html = '<ul style="list-style: none; padding: 0; margin: 0;">';
             waypoints.forEach((wp, i) => {
@@ -336,8 +341,10 @@
 
             if (waypoints.length >= 2) {
                 buildRouteBtn.style.display = 'block';
+                googleMapsBtn.style.display = 'block';
             } else {
                 buildRouteBtn.style.display = 'none';
+                googleMapsBtn.style.display = 'none';
             }
         }
     }
@@ -382,6 +389,23 @@
     // Обробка кліку "Побудувати маршрут"
     buildRouteBtn.addEventListener('click', () => {
         buildRoute();
+    });
+
+    // Обробка кліку "Відкрити в Google Maps"
+    googleMapsBtn.addEventListener('click', () => {
+        if (waypoints.length < 2) return;
+        
+        const origin = `${waypoints[0].latLng.lat},${waypoints[0].latLng.lng}`;
+        const destination = `${waypoints[waypoints.length - 1].latLng.lat},${waypoints[waypoints.length - 1].latLng.lng}`;
+        
+        let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
+        
+        if (waypoints.length > 2) {
+            const intermediate = waypoints.slice(1, -1).map(wp => `${wp.latLng.lat},${wp.latLng.lng}`).join('|');
+            url += `&waypoints=${intermediate}`;
+        }
+        
+        window.open(url, '_blank');
     });
 
     // Обробка кліку на кнопку "До маршруту" (з бокової панелі)
