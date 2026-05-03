@@ -304,6 +304,68 @@
     // 4. Перемикач базових шарів
     L.control.layers(baseMaps).addTo(map);
 
+    // ==========================================
+    // ГЕОЛОКАЦІЯ
+    // ==========================================
+    let locationMarker = null;
+    let locationCircle = null;
+
+    const locateControl = L.control({ position: 'topleft' });
+    locateControl.onAdd = function () {
+        const btn = L.DomUtil.create('button', '');
+        btn.title = 'Моє місцезнаходження';
+        btn.innerHTML = '📍';
+        btn.style.cssText = 'width:34px;height:34px;font-size:18px;background:white;border:2px solid rgba(0,0,0,0.2);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;';
+
+        L.DomEvent.disableClickPropagation(btn);
+        L.DomEvent.on(btn, 'click', () => {
+            btn.innerHTML = '⏳';
+            map.locate({ setView: true, maxZoom: 16 });
+        });
+
+        map.on('locationfound', function(e) {
+            btn.innerHTML = '📍';
+            if (locationMarker) map.removeLayer(locationMarker);
+            if (locationCircle) map.removeLayer(locationCircle);
+
+            locationMarker = L.marker(e.latlng, {
+                icon: L.divIcon({
+                    html: '<span style="font-size:22px;">🔵</span>',
+                    className: '',
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                })
+            });
+
+            const locPopupEl = document.createElement('div');
+            locPopupEl.innerHTML = `
+                <strong>Ви тут</strong><br>
+                <small>Точність: ±${Math.round(e.accuracy)} м</small>
+            `;
+            const locAddBtn = document.createElement('button');
+            locAddBtn.textContent = '➕ До маршруту';
+            locAddBtn.style.cssText = 'margin-top:8px;padding:6px 12px;background:#1a6fa8;color:white;border:none;border-radius:4px;cursor:pointer;width:100%;';
+            locAddBtn.addEventListener('click', () => {
+                waypoints.push({ latLng: e.latlng, name: 'Моє місцезнаходження' });
+                updateRoutingUI();
+                locationMarker.closePopup();
+            });
+            locPopupEl.appendChild(locAddBtn);
+
+            locationMarker.addTo(map).bindPopup(locPopupEl).openPopup();
+
+
+        });
+
+        map.on('locationerror', function() {
+            btn.innerHTML = '📍';
+            alert('Геолокація недоступна. Дозвольте доступ до місцезнаходження в браузері.');
+        });
+
+        return btn;
+    };
+    locateControl.addTo(map);
+
     // Чекбокси сайдбару — перемикання накладних шарів
     document.getElementById('toggle-hystory').addEventListener('change', function() {
         this.checked ? hystoryLayer.addTo(map) : map.removeLayer(hystoryLayer);
