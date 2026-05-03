@@ -7,6 +7,28 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
 <!-- Leaflet Control Geocoder CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<style>
+.poi-legend {
+    background: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    font-size: 0.85rem;
+    min-width: 160px;
+}
+.poi-legend h4 { margin: 0 0 8px; font-size: 0.9rem; color: #333; }
+.poi-legend label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    cursor: pointer;
+}
+.poi-legend input[type="checkbox"] {
+    width: 14px; height: 14px; cursor: pointer;
+}
+.poi-legend span { line-height: 1; }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -173,6 +195,8 @@
 <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 <!-- Leaflet Control Geocoder JS -->
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<!-- osmtogeojson: конвертація Overpass JSON → GeoJSON -->
+<script src="https://cdn.jsdelivr.net/npm/osmtogeojson@3.0.0-beta.5/osmtogeojson.min.js"></script>
 
 <script>
     // 1. Створюємо різні "шари" (base layers)
@@ -291,6 +315,125 @@
             ivFrankDistLayer.addTo(map);
         })
         .catch(err => console.error('IvFrankDist:', err));
+
+    // ==========================================
+    // POI З OVERPASS API
+    // ==========================================
+    const poiCategories = [
+        {
+            name: "Пам'ятки",
+            query: `node["tourism"="attraction"](48.91,24.69,48.94,24.74);`,
+            emoji: '🏛️',
+            color: '#8e44ad'
+        },
+        {
+            name: "Кафе",
+            query: `node["amenity"="cafe"](48.91,24.69,48.94,24.74);`,
+            emoji: '☕',
+            color: '#6f4e37'
+        },
+        {
+            name: "Лікарні",
+            query: `node["amenity"="hospital"](48.91,24.69,48.94,24.74);`,
+            emoji: '🏥',
+            color: '#e74c3c'
+        },
+        {
+            name: "Парки",
+            query: `way["leisure"="park"](48.91,24.69,48.94,24.74);`,
+            emoji: '🌳',
+            color: '#27ae60'
+        },
+        {
+            name: "Об'єкти з фото",
+            query: `node["image"](48.91,24.69,48.94,24.74);`,
+            emoji: '📷',
+            color: '#2980b9'
+        }
+    ];
+
+    const poiLayers = {};
+
+    poiCategories.forEach(cat => {
+        const fullQuery = `[out:json];${cat.query}out body;>;out skel qt;`;
+        fetch("{% url 'maps:overpass_proxy' %}?data=" + encodeURIComponent(fullQuery))
+            .then(res => {
+                if (!res.ok) throw new Error(`Помилка запиту для ${cat.name}`);
+                return res.json();
+            })
+            .then(data => {
+                const geojson = osmtogeojson(data);
+
+                poiLayers[cat.name] = L.geoJSON(geojson, {
+                    pointToLayer: (feature, latlng) => {
+                        return L.marker(latlng, {
+                            icon: L.divIcon({
+                                html: `<span style="font-size:22px;line-height:1;">${cat.emoji}</span>`,
+                                className: '',
+                                iconSize: [28, 28],
+                                iconAnchor: [14, 14]
+                            })
+                        });
+                    },
+                    style: (feature) => {
+                        if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
+                            return { color: '#3388ff', weight: 2, fillOpacity: 0.3 };
+                        }
+                        return {};
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const tags = feature.properties || {};
+                        const name = tags.name || cat.name;
+                        const latlng = layer.getLatLng
+                            ? layer.getLatLng()
+                            : layer.getBounds().getCenter();
+
+                        const el = document.createElement('div');
+                        el.className = 'popup';
+                        el.innerHTML = `
+                            ${tags.image ? `<img src="${tags.image}" style="width:100%;border-radius:8px;margin-bottom:8px;max-height:130px;object-fit:cover">` : ''}
+                            <strong>${name}</strong>
+                            <button class="poi-add-btn" style="margin-top:8px;padding:6px 12px;background:#1a6fa8;color:white;border:none;border-radius:4px;cursor:pointer;width:100%;">➕ До маршруту</button>
+                        `;
+                        el.querySelector('.poi-add-btn').addEventListener('click', () => {
+                            waypoints.push({ latLng: latlng, name: name });
+                            updateRoutingUI();
+                            layer.closePopup();
+                        });
+                        layer.bindPopup(el);
+                    }
+                }).addTo(map);
+            })
+            .catch(err => console.error(`Overpass [${cat.name}]:`, err));
+    });
+
+    // Легенда POI
+    const poiLegend = L.control({ position: 'bottomright' });
+    poiLegend.onAdd = function () {
+        const div = L.DomUtil.create('div', 'poi-legend');
+        div.innerHTML = '<h4>📍 POI категорії</h4>';
+        poiCategories.forEach(cat => {
+            const label = document.createElement('label');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = true;
+            checkbox.addEventListener('change', function() {
+                if (!poiLayers[cat.name]) return;
+                this.checked ? poiLayers[cat.name].addTo(map) : map.removeLayer(poiLayers[cat.name]);
+            });
+            const emoji = document.createElement('span');
+            emoji.style.fontSize = '16px';
+            emoji.textContent = ' ' + cat.emoji + ' ';
+            const text = document.createTextNode(cat.name);
+            label.appendChild(checkbox);
+            label.appendChild(emoji);
+            label.appendChild(text);
+            div.appendChild(label);
+        });
+        L.DomEvent.disableClickPropagation(div);
+        return div;
+    };
+    poiLegend.addTo(map);
 
     // Добавляем маркеры
     const locations = [

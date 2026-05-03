@@ -43,6 +43,27 @@ def hystory_ob_geojson(request):
     return JsonResponse(data, safe=False)
 
 
+def overpass_proxy(request):
+    query = request.GET.get('data', '')
+    if not query:
+        return JsonResponse({'error': 'No query'}, status=400)
+    import requests as http_requests
+    try:
+        resp = http_requests.post(
+            'https://overpass-api.de/api/interpreter',
+            data={'data': query},
+            headers={
+                'User-Agent': 'GeoPortalTurism/1.0 (educational project)',
+                'Accept': 'application/json',
+            },
+            timeout=30
+        )
+        resp.raise_for_status()
+        return JsonResponse(resp.json(), safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=502)
+
+
 def ivfrankdist_geojson(request):
     # PostGIS зберігає назви таблиць у нижньому регістрі якщо не в лапках
     try:
