@@ -701,7 +701,7 @@
             waypoints.forEach((wp, i) => {
                 // Точка
                 html += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 6px 8px; border-radius: 6px; border: 1px solid #e0e0e0;">
+                    <div data-wp-index="${i}" style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 6px 8px; border-radius: 6px; border: 1px solid #e0e0e0; cursor: default; transition: background 0.15s;">
                         <div style="display: flex; align-items: center; gap: 6px;">
                             <strong style="font-size:0.85rem;">${i + 1}.</strong>
                             <span style="font-size: 0.85rem;">${wp.name}</span>
@@ -727,6 +727,35 @@
             });
             html += '</div>';
             waypointsContainer.innerHTML = html;
+
+            // Підсвічування точки на карті при наведенні
+            waypointsContainer.querySelectorAll('[data-wp-index]').forEach(el => {
+                const i = parseInt(el.dataset.wpIndex);
+                el.addEventListener('mouseenter', () => {
+                    el.style.background = '#eef4fb';
+                    if (highlightCircle) map.removeLayer(highlightCircle);
+                    const color = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
+                    highlightCircle = L.circleMarker(waypoints[i].latLng, {
+                        radius: 16,
+                        color: color,
+                        weight: 3,
+                        fillColor: color,
+                        fillOpacity: 0.25
+                    })
+                    .bindTooltip(`<strong>${i + 1}.</strong> ${waypoints[i].name}`, {
+                        permanent: true,
+                        direction: 'top',
+                        offset: [0, -18]
+                    })
+                    .addTo(map)
+                    .openTooltip();
+                });
+                el.addEventListener('mouseleave', () => {
+                    el.style.background = '#fff';
+                    if (highlightCircle) { map.removeLayer(highlightCircle); highlightCircle = null; }
+                });
+            });
+
             clearBtn.style.display = 'block';
 
             if (waypoints.length >= 2) {
@@ -753,6 +782,7 @@
     // Палітра кольорів для відрізків маршруту
     const SEGMENT_COLORS = ['#e74c3c', '#e67e22', '#27ae60', '#2980b9', '#8e44ad', '#16a085', '#d35400', '#c0392b'];
     let segmentLayers = [];
+    let highlightCircle = null;
 
     function clearSegments() {
         segmentLayers.forEach(l => map.removeLayer(l));
