@@ -63,6 +63,14 @@
             </div>
         </div>
 
+        <div style="margin-bottom: 20px;">
+            <button id="booking-btn"
+                style="width:100%; padding:10px; background:#003580; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:500; font-size:0.95rem; transition:opacity 0.2s;"
+                onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                🏨 Відкрити в Booking
+            </button>
+        </div>
+
         <div class="sidebar__list">
             {% for loc in locations %}
             <div class="location-card" data-lat="{{ loc.geom.y|stringformat:'.6f' }}"
@@ -853,6 +861,19 @@
     // Обробка кліку "Побудувати маршрут"
     buildRouteBtn.addEventListener('click', () => {
         buildRoute();
+    });
+
+    // Обробка кліку "Відкрити в Booking"
+    document.getElementById('booking-btn').addEventListener('click', () => {
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        const url = `https://www.booking.com/searchresults.uk.html`
+            + `?latitude=${center.lat.toFixed(6)}`
+            + `&longitude=${center.lng.toFixed(6)}`
+            + `&zoom=${zoom}`
+            + `&group_adults=2&no_rooms=1&group_children=0`
+            + `#map_opened`;
+        window.open(url, '_blank');
     });
 
     // Обробка кліку "Відкрити в Google Maps"
