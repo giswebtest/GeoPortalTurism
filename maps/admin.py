@@ -5,7 +5,7 @@ from django.urls import path, reverse
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 
-from .models import Location, Category, Region, Route, RouteLocation, Guide
+from .models import Location, Category, Region, Route, RouteLocation, Guide, HystoryOb
 
 
 @admin.register(Region)
@@ -210,6 +210,28 @@ class RouteAdmin(GISModelAdmin):
             )
 
         return redirect(f'../../{route_id}/change/')
+
+
+@admin.register(HystoryOb)
+class HystoryObAdmin(GISModelAdmin):
+    list_display = ('name', 'description_short', 'is_published')
+    list_filter = ('is_published',)
+    search_fields = ('name', 'description')
+    list_editable = ('is_published',)
+
+    gis_widget_kwargs = {
+        'attrs': {
+            'default_lat': 48.9226,
+            'default_lon': 24.7111,
+            'default_zoom': 9,
+        }
+    }
+
+    def description_short(self, obj):
+        if obj.description:
+            return obj.description[:60] + ('…' if len(obj.description) > 60 else '')
+        return '—'
+    description_short.short_description = 'Опис'
 
 
 @admin.register(Guide)

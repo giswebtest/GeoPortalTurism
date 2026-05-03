@@ -201,6 +201,23 @@ class RouteLocation(models.Model):
         return f"{self.order}. {self.location.name}"
 
 
+class HystoryOb(models.Model):
+    """Пам'ятки культури — існуюча PostGIS таблиця hystory_ob (managed=False)."""
+    geom = models.PointField(srid=4326, dim=3, null=True, blank=True, verbose_name='Координати')
+    name = models.CharField(max_length=500, db_column='Name', blank=True, null=True, verbose_name='Назва')
+    description = models.CharField(max_length=2000, blank=True, null=True, verbose_name='Опис')
+    is_published = models.BooleanField(default=False, verbose_name='Опубліковано')
+
+    class Meta:
+        managed = False
+        db_table = 'hystory_ob'
+        verbose_name = "Пам'ятка культури"
+        verbose_name_plural = "Пам'ятки культури"
+
+    def __str__(self):
+        return self.name or f'Об\'єкт #{self.id}'
+
+
 class Guide(models.Model):
     name = models.CharField(max_length=100, verbose_name='Ім\'я')
     phone = models.CharField(max_length=20, verbose_name='Телефон')
