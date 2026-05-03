@@ -63,11 +63,16 @@
             </div>
         </div>
 
-        <div style="margin-bottom: 20px;">
+        <div style="margin-bottom: 20px; display:flex; gap:8px;">
             <button id="booking-btn"
-                style="width:100%; padding:10px; background:#003580; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:500; font-size:0.95rem; transition:opacity 0.2s;"
+                style="flex:1; padding:10px; background:#003580; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:500; font-size:0.85rem; transition:opacity 0.2s;"
                 onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
-                🏨 Відкрити в Booking
+                🏨 Booking
+            </button>
+            <button id="airbnb-btn"
+                style="flex:1; padding:10px; background:#FF5A5F; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:500; font-size:0.85rem; transition:opacity 0.2s;"
+                onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                🏠 Airbnb
             </button>
         </div>
 
@@ -873,6 +878,27 @@
             + `&zoom=${zoom}`
             + `&group_adults=2&no_rooms=1&group_children=0`
             + `#map_opened`;
+        window.open(url, '_blank');
+    });
+
+    // Обробка кліку "Airbnb"
+    document.getElementById('airbnb-btn').addEventListener('click', () => {
+        const bounds = map.getBounds();
+        const ne = bounds.getNorthEast();
+        const sw = bounds.getSouthWest();
+        const zoom = map.getZoom();
+        const url = `https://www.airbnb.com/s/homes`
+            + `?refinement_paths%5B%5D=%2Fhomes`
+            + `&location_search=NEARBY`
+            + `&search_type=user_map_move`
+            + `&search_mode=regular_search`
+            + `&search_by_map=true`
+            + `&ne_lat=${ne.lat.toFixed(10)}`
+            + `&ne_lng=${ne.lng.toFixed(10)}`
+            + `&sw_lat=${sw.lat.toFixed(10)}`
+            + `&sw_lng=${sw.lng.toFixed(10)}`
+            + `&zoom=${zoom}`
+            + `&zoom_level=${zoom}`;
         window.open(url, '_blank');
     });
 
