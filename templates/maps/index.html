@@ -717,7 +717,7 @@
                     <div data-wp-index="${i}" style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 6px 8px; border-radius: 6px; border: 1px solid #e0e0e0; cursor: default; transition: background 0.15s;">
                         <div style="display: flex; align-items: center; gap: 6px;">
                             <strong style="font-size:0.85rem;">${i + 1}.</strong>
-                            <span style="font-size: 0.85rem;">${wp.name}</span>
+                            <span onclick="map.panTo(waypoints[${i}].latLng, {animate:true})" style="font-size:0.85rem; cursor:pointer; text-decoration:underline dotted; text-underline-offset:3px;">${wp.name}</span>
                         </div>
                         <div style="display: flex; gap: 4px;">
                             <button onclick="moveWaypoint(${i}, -1)" ${i === 0 ? 'disabled' : ''} style="padding: 2px 6px; cursor: pointer; border: 1px solid #ccc; background: #eee; border-radius: 3px;" title="Вгору">⬆️</button>
