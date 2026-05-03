@@ -131,6 +131,41 @@
     <div id="map"></div>
 
 </div>
+
+<!-- Модальне вікно: додати подію в Google Calendar -->
+<div id="gcal-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; padding:24px; width:320px; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+        <h3 style="margin:0 0 16px; font-size:1.05rem; color:#1a6fa8;">📅 Додати до Google Calendar</h3>
+
+        <label style="font-size:0.85rem; color:#555; display:block; margin-bottom:4px;">Назва події</label>
+        <input id="gcal-title" type="text"
+            style="width:100%; padding:7px 10px; border:1px solid #ccc; border-radius:6px; font-size:0.9rem; margin-bottom:12px; box-sizing:border-box;">
+
+        <label style="font-size:0.85rem; color:#555; display:block; margin-bottom:4px;">Дата та час початку</label>
+        <input id="gcal-datetime" type="datetime-local"
+            style="width:100%; padding:7px 10px; border:1px solid #ccc; border-radius:6px; font-size:0.9rem; margin-bottom:12px; box-sizing:border-box;">
+
+        <label style="font-size:0.85rem; color:#555; display:block; margin-bottom:4px;">Тривалість</label>
+        <select id="gcal-duration"
+            style="width:100%; padding:7px 10px; border:1px solid #ccc; border-radius:6px; font-size:0.9rem; margin-bottom:20px; box-sizing:border-box;">
+            <option value="30">30 хвилин</option>
+            <option value="60" selected>1 година</option>
+            <option value="120">2 години</option>
+            <option value="180">3 години</option>
+        </select>
+
+        <div style="display:flex; gap:8px;">
+            <button id="gcal-confirm"
+                style="flex:1; padding:9px; background:#4285F4; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:500; font-size:0.9rem;">
+                Відкрити в Calendar
+            </button>
+            <button id="gcal-cancel"
+                style="padding:9px 14px; background:#eee; color:#555; border:none; border-radius:6px; cursor:pointer; font-size:0.9rem;">
+                Скасувати
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -438,11 +473,9 @@
             map.removeLayer(wp.marker);
         }
         waypoints.splice(index, 1);
+        if (routingControl) { map.removeControl(routingControl); routingControl = null; }
+        clearSegments();
         updateRoutingUI();
-        if (routingControl) {
-            map.removeControl(routingControl);
-            routingControl = null;
-        }
     };
 
     window.moveWaypoint = function(index, direction) {
@@ -451,13 +484,63 @@
             const temp = waypoints[index];
             waypoints[index] = waypoints[newIndex];
             waypoints[newIndex] = temp;
+            if (routingControl) { map.removeControl(routingControl); routingControl = null; }
+            clearSegments();
             updateRoutingUI();
-            if (routingControl) {
-                map.removeControl(routingControl);
-                routingControl = null;
-            }
         }
     };
+
+    // ==========================================
+    // GOOGLE CALENDAR
+    // ==========================================
+    const gcalModal    = document.getElementById('gcal-modal');
+    const gcalTitle    = document.getElementById('gcal-title');
+    const gcalDatetime = document.getElementById('gcal-datetime');
+
+    const gcalDuration = document.getElementById('gcal-duration');
+    const gcalConfirm  = document.getElementById('gcal-confirm');
+    const gcalCancel   = document.getElementById('gcal-cancel');
+    let gcalLatLng = null;
+
+    window.openCalendarModal = function(index) {
+        const wp = waypoints[index];
+        gcalTitle.value = wp.name;
+        gcalLatLng = wp.latLng;
+
+        // Підставляємо поточний час + 1 год як дефолт
+        const now = new Date();
+        now.setMinutes(0, 0, 0);
+        now.setHours(now.getHours() + 1);
+        gcalDatetime.value = now.toISOString().slice(0, 16);
+
+        gcalModal.style.display = 'flex';
+    };
+
+    gcalCancel.addEventListener('click', () => { gcalModal.style.display = 'none'; });
+    gcalModal.addEventListener('click', (e) => { if (e.target === gcalModal) gcalModal.style.display = 'none'; });
+
+    gcalConfirm.addEventListener('click', () => {
+        const title = gcalTitle.value.trim() || 'Туристична точка';
+        const dt  = gcalDatetime.value;
+        const dur = parseInt(gcalDuration.value);
+
+        if (!dt) { alert('Оберіть дату та час'); return; }
+
+        const start = new Date(dt);
+        const end   = new Date(start.getTime() + dur * 60000);
+
+        const fmt = d => d.toISOString().replace(/[-:]/g, '').slice(0, 15);
+        const dates = `${fmt(start)}/${fmt(end)}`;
+
+        const location = gcalLatLng ? `${gcalLatLng.lat},${gcalLatLng.lng}` : '';
+        const url = `https://calendar.google.com/calendar/render?action=TEMPLATE`
+            + `&text=${encodeURIComponent(title)}`
+            + `&dates=${dates}`
+            + (location ? `&location=${encodeURIComponent(location)}` : '');
+
+        window.open(url, '_blank');
+        gcalModal.style.display = 'none';
+    });
 
     // Оновлення інтерфейсу списку точок маршруту
     function updateRoutingUI() {
@@ -471,23 +554,35 @@
             googleMapsBtn.style.display = 'none';
             wazeBtn.style.display = 'none';
         } else {
-            let html = '<ul style="list-style: none; padding: 0; margin: 0;">';
+            let html = '<div>';
             waypoints.forEach((wp, i) => {
+                // Точка
                 html += `
-                    <li style="padding: 6px; border-bottom: 1px dashed #ccc; display: flex; justify-content: space-between; align-items: center; background: #fff; margin-bottom: 4px; border-radius: 4px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 6px 8px; border-radius: 6px; border: 1px solid #e0e0e0;">
                         <div style="display: flex; align-items: center; gap: 6px;">
-                            <strong>${i + 1}.</strong>
+                            <strong style="font-size:0.85rem;">${i + 1}.</strong>
                             <span style="font-size: 0.85rem;">${wp.name}</span>
                         </div>
                         <div style="display: flex; gap: 4px;">
                             <button onclick="moveWaypoint(${i}, -1)" ${i === 0 ? 'disabled' : ''} style="padding: 2px 6px; cursor: pointer; border: 1px solid #ccc; background: #eee; border-radius: 3px;" title="Вгору">⬆️</button>
                             <button onclick="moveWaypoint(${i}, 1)" ${i === waypoints.length - 1 ? 'disabled' : ''} style="padding: 2px 6px; cursor: pointer; border: 1px solid #ccc; background: #eee; border-radius: 3px;" title="Вниз">⬇️</button>
+                            <button onclick="openCalendarModal(${i})" style="padding: 2px 6px; cursor: pointer; border: 1px solid #4285F4; background: #e8f0fe; color: #4285F4; border-radius: 3px;" title="Додати в Google Calendar">📅</button>
                             <button onclick="removeWaypoint(${i})" style="padding: 2px 6px; cursor: pointer; border: 1px solid #e74c3c; background: #fdf2f0; color: #e74c3c; border-radius: 3px;" title="Видалити">❌</button>
                         </div>
-                    </li>
+                    </div>
                 `;
+                // Кольоровий з'єднувач між точками
+                if (i < waypoints.length - 1) {
+                    const color = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
+                    html += `
+                        <div style="display: flex; align-items: center; gap: 6px; padding: 2px 12px;">
+                            <div style="width: 3px; height: 22px; background: ${color}; border-radius: 2px; margin-left: 6px; flex-shrink: 0;"></div>
+                            <span style="font-size: 0.75rem; color: ${color}; font-weight: 600;">${wp.name.length > 18 ? wp.name.slice(0,18)+'…' : wp.name} → ${waypoints[i+1].name.length > 18 ? waypoints[i+1].name.slice(0,18)+'…' : waypoints[i+1].name}</span>
+                        </div>
+                    `;
+                }
             });
-            html += '</ul>';
+            html += '</div>';
             waypointsContainer.innerHTML = html;
             clearBtn.style.display = 'block';
 
@@ -512,35 +607,68 @@
         }
     }
 
+    // Палітра кольорів для відрізків маршруту
+    const SEGMENT_COLORS = ['#e74c3c', '#e67e22', '#27ae60', '#2980b9', '#8e44ad', '#16a085', '#d35400', '#c0392b'];
+    let segmentLayers = [];
+
+    function clearSegments() {
+        segmentLayers.forEach(l => map.removeLayer(l));
+        segmentLayers = [];
+    }
+
     // Функція побудови самого маршруту
     function buildRoute() {
         if (waypoints.length >= 2) {
             if (routingControl) {
                 map.removeControl(routingControl);
             }
+            clearSegments();
 
             routingControl = L.Routing.control({
                 waypoints: waypoints.map(wp => wp.latLng),
                 routeWhileDragging: false,
                 draggableWaypoints: false,
                 lineOptions: {
-                    styles: [{ color: '#e74c3c', opacity: 0.9, weight: 5 }]
+                    styles: [{ opacity: 0 }]  // стандартна лінія прихована
                 },
-                show: false, // Приховати стандартну текстову панель
+                show: false,
                 addWaypoints: false,
-                createMarker: function () { return null; }, // Не дублювати маркери
+                createMarker: function () { return null; },
                 fitSelectedRoutes: true
             }).addTo(map);
 
             routingControl.on('routesfound', function (e) {
-                const routes = e.routes;
-                const summary = routes[0].summary;
-                const distanceKm = (summary.totalDistance / 1000).toFixed(1);
-                const timeMin = Math.round(summary.totalTime / 60);
+                const route = e.routes[0];
+                const allCoords = route.coordinates; // масив L.LatLng повного маршруту
+                const distanceKm = (route.summary.totalDistance / 1000).toFixed(1);
+                const timeMin = Math.round(route.summary.totalTime / 60);
+
+                // Знаходимо індекси розбивки за проміжними точками
+                const splits = [0];
+                for (let w = 1; w < waypoints.length - 1; w++) {
+                    const wpLL = route.waypoints[w].latLng;
+                    let minDist = Infinity, minIdx = 0;
+                    allCoords.forEach((c, idx) => {
+                        const d = Math.hypot(c.lat - wpLL.lat, c.lng - wpLL.lng);
+                        if (d < minDist) { minDist = d; minIdx = idx; }
+                    });
+                    splits.push(minIdx);
+                }
+                splits.push(allCoords.length - 1);
+
+                // Малюємо кожен відрізок своїм кольором
+                for (let i = 0; i < splits.length - 1; i++) {
+                    const segCoords = allCoords.slice(splits[i], splits[i + 1] + 1);
+                    const color = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
+                    const poly = L.polyline(segCoords, { color, weight: 5, opacity: 0.9 }).addTo(map);
+                    segmentLayers.push(poly);
+                }
+
+                updateRoutingUI();
 
                 statsContainer.innerHTML = `
                     <div style="padding: 10px; background: #fff; border-radius: 6px; text-align: center; border: 1px solid #c9e1f5;">
-                        <strong style="font-size: 1.1rem; color: #e74c3c;">🛣️ ${distanceKm} км</strong><br>
+                        <strong style="font-size: 1.1rem; color: #333;">🛣️ ${distanceKm} км</strong><br>
                         <small style="color: #666;">⏱️ Час в дорозі: ~${timeMin} хв</small>
                     </div>
                 `;
@@ -605,18 +733,12 @@
 
     // Очищення маршруту
     clearBtn.addEventListener('click', () => {
-        waypoints.forEach(wp => {
-            if (wp.marker) {
-                map.removeLayer(wp.marker);
-            }
-        });
+        waypoints.forEach(wp => { if (wp.marker) map.removeLayer(wp.marker); });
         waypoints = [];
+        if (routingControl) { map.removeControl(routingControl); routingControl = null; }
+        clearSegments();
         updateRoutingUI();
-        if (routingControl) {
-            map.removeControl(routingControl);
-            routingControl = null;
-        }
-        map.setView([48.3794, 31.1656], 6); // Повертаємо початковий зум
+        map.setView([48.3794, 31.1656], 6);
     });
 
 </script>
