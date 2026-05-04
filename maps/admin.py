@@ -5,7 +5,7 @@ from django.urls import path, reverse
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 
-from .models import Location, Category, Region, Route, RouteLocation, Guide, HystoryOb
+from .models import Location, Category, Region, Route, RouteLocation, Guide, HystoryOb, POICategory
 
 
 @admin.register(Region)
@@ -232,6 +232,14 @@ class HystoryObAdmin(GISModelAdmin):
             return obj.description[:60] + ('…' if len(obj.description) > 60 else '')
         return '—'
     description_short.short_description = 'Опис'
+
+
+@admin.register(POICategory)
+class POICategoryAdmin(admin.ModelAdmin):
+    list_display = ('emoji', 'name', 'is_published')
+    list_editable = ('is_published',)
+    search_fields = ('name',)
+    fields = ('name', 'emoji', 'query', 'is_published')
 
 
 @admin.register(Guide)

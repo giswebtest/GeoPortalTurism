@@ -201,6 +201,21 @@ class RouteLocation(models.Model):
         return f"{self.order}. {self.location.name}"
 
 
+class POICategory(models.Model):
+    name = models.CharField(max_length=100, verbose_name='Назва')
+    emoji = models.CharField(max_length=10, default='📍', verbose_name='Emoji')
+    query = models.TextField(verbose_name='Запит Overpass API')
+    is_published = models.BooleanField(default=False, verbose_name='Опубліковано')
+
+    class Meta:
+        verbose_name = 'POI Категорія'
+        verbose_name_plural = 'POI Категорії'
+        ordering = ['name']
+
+    def __str__(self):
+        return f'{self.emoji} {self.name}'
+
+
 class HystoryOb(models.Model):
     """Пам'ятки культури — існуюча PostGIS таблиця hystory_ob (managed=False)."""
     geom = models.PointField(srid=4326, dim=3, null=True, blank=True, verbose_name='Координати')

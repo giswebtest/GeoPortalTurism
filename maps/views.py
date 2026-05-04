@@ -1,18 +1,22 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.db import connection
-from .models import Location, Route, Guide
+from .models import Location, Route, Guide, Category, POICategory
 
 
 def index(request):
-    locations = Location.objects.filter(is_published=True)
+    locations = Location.objects.filter(is_published=True).select_related('category', 'region')
     routes = Route.objects.filter(is_published=True)
     guides = Guide.objects.all()
+    categories = Category.objects.filter(location__is_published=True).distinct()
+    poi_categories = POICategory.objects.filter(is_published=True)
 
     return render(request, 'maps/index.html', {
         'locations': locations,
         'routes': routes,
         'guides': guides,
+        'categories': categories,
+        'poi_categories': poi_categories,
     })
 
 
