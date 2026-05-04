@@ -1,0 +1,113 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Імпорт GeoJSON — Локації{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Головна</a> ›
+    <a href="{% url 'admin:maps_location_changelist' %}">Локації</a> ›
+    Імпорт GeoJSON
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>📂 Пакетний імпорт локацій з GeoJSON</h1>
+
+{% if results %}
+<div style="background:{% if results.errors %}#fff3cd{% else %}#d4edda{% endif %};
+            border:1px solid {% if results.errors %}#ffc107{% else %}#c3e6cb{% endif %};
+            border-radius:8px; padding:16px 20px; margin-bottom:24px;">
+    <h2 style="margin:0 0 10px; font-size:1.1rem;">Результат імпорту</h2>
+    <p>✅ Імпортовано: <strong>{{ results.imported }}</strong></p>
+    <p>⏭️ Пропущено (не Point або без назви): <strong>{{ results.skipped }}</strong></p>
+    {% if results.errors %}
+    <p>❌ Помилок: <strong>{{ results.errors|length }}</strong></p>
+    <ul style="margin-top:6px;">
+        {% for err in results.errors %}
+        <li style="font-size:0.85rem; color:#856404;">{{ err }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+{% endif %}
+
+<div style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:24px; max-width:600px;">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-weight:600; margin-bottom:6px;">
+                GeoJSON файл <span style="color:#e74c3c;">*</span>
+            </label>
+            <input type="file" name="geojson_file" accept=".geojson,.json" required
+                style="display:block; padding:8px; border:1px solid #ccc; border-radius:6px; width:100%; box-sizing:border-box;">
+            <small style="color:#666; margin-top:4px; display:block;">
+                Підтримується FeatureCollection з Point геометрією.<br>
+                Властивість <code>name</code> — обов'язкова. Опційно: <code>description</code>, <code>category</code> (slug).
+            </small>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-weight:600; margin-bottom:6px;">Категорія за замовчуванням</label>
+            <select name="default_category" style="padding:8px; border:1px solid #ccc; border-radius:6px; width:100%; box-sizing:border-box;">
+                <option value="">— без категорії —</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.icon }} {{ cat.name }}</option>
+                {% endfor %}
+            </select>
+            <small style="color:#666;">Якщо у файлі немає поля <code>category</code>, буде використана ця категорія.</small>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-weight:600; margin-bottom:6px;">Регіон за замовчуванням</label>
+            <select name="default_region" style="padding:8px; border:1px solid #ccc; border-radius:6px; width:100%; box-sizing:border-box;">
+                <option value="">— без регіону —</option>
+                {% for reg in regions %}
+                <option value="{{ reg.id }}">{{ reg.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="margin-bottom:20px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" name="is_published" style="width:16px; height:16px;">
+                <span style="font-weight:600;">Опублікувати одразу</span>
+            </label>
+            <small style="color:#666; margin-top:4px; display:block;">За замовчуванням локації імпортуються як чернетки.</small>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <button type="submit"
+                style="padding:10px 24px; background:#1a6fa8; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.95rem;">
+                📥 Імпортувати
+            </button>
+            <a href="{% url 'admin:maps_location_changelist' %}"
+                style="padding:10px 18px; background:#eee; color:#333; border:1px solid #ccc; border-radius:6px; text-decoration:none; font-size:0.95rem;">
+                Скасувати
+            </a>
+        </div>
+    </form>
+</div>
+
+<div style="margin-top:28px; background:#f8f9fa; border:1px solid #e0e0e0; border-radius:8px; padding:16px 20px; max-width:600px;">
+    <h3 style="font-size:0.95rem; margin:0 0 10px; color:#333;">📋 Приклад GeoJSON файлу</h3>
+    <pre style="font-size:0.8rem; background:#fff; padding:12px; border-radius:6px; border:1px solid #ddd; overflow-x:auto; white-space:pre-wrap;">{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [24.7111, 48.9226]
+      },
+      "properties": {
+        "name": "Ратуша Івано-Франківська",
+        "description": "Головна площа міста",
+        "category": "zamky"
+      }
+    }
+  ]
+}</pre>
+</div>
+{% endblock %}

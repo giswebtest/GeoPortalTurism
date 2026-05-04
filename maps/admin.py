@@ -1,8 +1,11 @@
+import json
+
 from django.contrib import admin
 from django.contrib.gis.admin import GISModelAdmin
+from django.contrib.gis.geos import Point
 from django.utils.html import mark_safe
 from django.urls import path, reverse
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib import messages
 
 from .models import Location, Category, Region, Route, RouteLocation, Guide, HystoryOb, POICategory
@@ -28,7 +31,6 @@ class LocationAdmin(GISModelAdmin):
     list_editable = ('is_published',)
     readonly_fields = ('created_at', 'updated_at')
 
-    # Центр карти — Житомирська область
     gis_widget_kwargs = {
         'attrs': {
             'default_lat': 50.2549,
@@ -36,6 +38,99 @@ class LocationAdmin(GISModelAdmin):
             'default_zoom': 9,
         }
     }
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                'import-geojson/',
+                self.admin_site.admin_view(self.import_geojson_view),
+                name='location-import-geojson',
+            ),
+        ]
+        return custom_urls + urls
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['import_geojson_url'] = reverse('admin:location-import-geojson')
+        return super().changelist_view(request, extra_context=extra_context)
+
+    def import_geojson_view(self, request):
+        results = None
+
+        if request.method == 'POST':
+            geojson_file = request.FILES.get('geojson_file')
+            default_category_id = request.POST.get('default_category') or None
+            default_region_id = request.POST.get('default_region') or None
+            is_published = 'is_published' in request.POST
+
+            default_category = Category.objects.filter(pk=default_category_id).first() if default_category_id else None
+            default_region = Region.objects.filter(pk=default_region_id).first() if default_region_id else None
+
+            results = {'imported': 0, 'skipped': 0, 'errors': []}
+
+            try:
+                raw = geojson_file.read().decode('utf-8')
+                data = json.loads(raw)
+            except Exception as e:
+                results['errors'].append(f'Помилка читання файлу: {e}')
+                data = {}
+
+            features = data.get('features', [])
+
+            # Кеш категорій за slug для швидкого пошуку
+            cat_cache = {c.slug: c for c in Category.objects.all()}
+
+            for i, feature in enumerate(features):
+                try:
+                    geom = feature.get('geometry', {})
+                    if geom.get('type') != 'Point':
+                        results['skipped'] += 1
+                        continue
+
+                    coords = geom.get('coordinates', [])
+                    if len(coords) < 2:
+                        results['skipped'] += 1
+                        continue
+
+                    lng, lat = float(coords[0]), float(coords[1])
+                    props = feature.get('properties') or {}
+                    name = props.get('name') or props.get('Name') or props.get('nazva') or ''
+                    if not name:
+                        results['skipped'] += 1
+                        continue
+
+                    description = props.get('description') or props.get('desc') or ''
+                    cat_slug = props.get('category') or props.get('category_slug') or ''
+                    category = cat_cache.get(cat_slug) or default_category
+                    region = default_region
+
+                    Location.objects.create(
+                        name=name[:200],
+                        description=description[:2000] if description else '',
+                        geom=Point(lng, lat, srid=4326),
+                        category=category,
+                        region=region,
+                        is_published=is_published,
+                    )
+                    results['imported'] += 1
+                except Exception as e:
+                    results['errors'].append(f'Об\'єкт #{i + 1}: {e}')
+
+            if results['imported']:
+                self.message_user(
+                    request,
+                    f'✅ Імпортовано {results["imported"]} локацій.',
+                    level=messages.SUCCESS,
+                )
+
+        return render(request, 'admin/maps/location/import_geojson.html', {
+            'results': results,
+            'categories': Category.objects.all(),
+            'regions': Region.objects.all(),
+            'title': 'Імпорт GeoJSON',
+            'opts': Location._meta,
+        })
 
 
 class RouteLocationInline(admin.TabularInline):
@@ -127,7 +222,7 @@ class RouteAdmin(GISModelAdmin):
     build_route_button.short_description = '🚗 Побудувати по дорогах (OSRM)'
 
     # ------------------------------------------------------------------ #
-    #  Custom URL + View для виклику OSRM
+    #  Custom URLs
     # ------------------------------------------------------------------ #
     def get_urls(self):
         urls = super().get_urls()
@@ -137,8 +232,129 @@ class RouteAdmin(GISModelAdmin):
                 self.admin_site.admin_view(self.build_osrm_view),
                 name='route-build-osrm',
             ),
+            path(
+                'import-gpx/',
+                self.admin_site.admin_view(self.import_gpx_view),
+                name='route-import-gpx',
+            ),
         ]
         return custom_urls + urls
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['import_gpx_url'] = reverse('admin:route-import-gpx')
+        return super().changelist_view(request, extra_context=extra_context)
+
+    # ------------------------------------------------------------------ #
+    #  GPX імпорт
+    # ------------------------------------------------------------------ #
+    def import_gpx_view(self, request):
+        import xml.etree.ElementTree as ET
+        from django.contrib.gis.geos import LineString as GEOSLineString, Point as GEOSPoint
+
+        if request.method == 'POST':
+            gpx_file = request.FILES.get('gpx_file')
+            route_name = request.POST.get('route_name', '').strip()
+            difficulty = request.POST.get('difficulty', 'easy')
+            region_id = request.POST.get('region') or None
+            is_published = 'is_published' in request.POST
+            create_locs = 'create_locations' in request.POST
+            category_id = request.POST.get('waypoint_category') or None
+
+            region = Region.objects.filter(pk=region_id).first() if region_id else None
+            category = Category.objects.filter(pk=category_id).first() if category_id else None
+
+            try:
+                content = gpx_file.read()
+                root = ET.fromstring(content)
+
+                # Визначаємо namespace (GPX 1.0 або 1.1)
+                ns = ''
+                if root.tag.startswith('{'):
+                    ns = root.tag.split('}')[0] + '}'
+
+                def t(name):
+                    return f'{ns}{name}'
+
+                # Збираємо точки треку
+                track_pts = []
+                track_name = ''
+
+                for trk in root.findall(t('trk')):
+                    el = trk.find(t('name'))
+                    if el is not None and el.text:
+                        track_name = el.text.strip()
+                    for seg in trk.findall(t('trkseg')):
+                        for pt in seg.findall(t('trkpt')):
+                            track_pts.append((float(pt.get('lon')), float(pt.get('lat'))))
+
+                # Якщо немає треку — шукаємо <rte>
+                if not track_pts:
+                    for rte in root.findall(t('rte')):
+                        el = rte.find(t('name'))
+                        if el is not None and el.text:
+                            track_name = el.text.strip()
+                        for pt in rte.findall(t('rtept')):
+                            track_pts.append((float(pt.get('lon')), float(pt.get('lat'))))
+
+                if len(track_pts) < 2:
+                    raise ValueError('GPX не містить трек з мінімум 2 точками')
+
+                final_name = route_name or track_name or gpx_file.name.rsplit('.', 1)[0]
+                line = GEOSLineString(track_pts, srid=4326)
+
+                route = Route.objects.create(
+                    name=final_name[:200],
+                    path=line,
+                    difficulty=difficulty,
+                    region=region,
+                    is_published=is_published,
+                    author=request.user,
+                )
+
+                # Вейпоїнти → Локації
+                wpts_created = 0
+                if create_locs:
+                    for i, wpt in enumerate(root.findall(t('wpt'))):
+                        lon = float(wpt.get('lon'))
+                        lat = float(wpt.get('lat'))
+                        name_el = wpt.find(t('name'))
+                        wpt_name = (name_el.text.strip() if name_el is not None and name_el.text
+                                    else f'Точка {i + 1}')
+                        desc_el = wpt.find(t('desc'))
+                        desc = desc_el.text.strip() if desc_el is not None and desc_el.text else ''
+
+                        loc = Location.objects.create(
+                            name=wpt_name[:200],
+                            description=desc,
+                            geom=GEOSPoint(lon, lat, srid=4326),
+                            category=category,
+                            region=region,
+                            is_published=is_published,
+                        )
+                        RouteLocation.objects.create(route=route, location=loc, order=i)
+                        wpts_created += 1
+
+                route.refresh_from_db()
+                self.message_user(
+                    request,
+                    f'✅ Маршрут "{route.name}" імпортовано! '
+                    f'{len(track_pts)} точок треку · {route.distance_km} км · '
+                    f'{wpts_created} вейпоїнтів створено.',
+                    level=messages.SUCCESS,
+                )
+                return redirect(reverse('admin:maps_route_change', args=[route.pk]))
+
+            except Exception as exc:
+                self.message_user(request, f'❌ Помилка: {exc}', level=messages.ERROR)
+
+        return render(request, 'admin/maps/route/import_gpx.html', {
+            'regions': Region.objects.all(),
+            'categories': Category.objects.all(),
+            'difficulty_choices': Route.DIFFICULTY_CHOICES,
+            'title': 'Імпорт GPX маршруту',
+            'opts': Route._meta,
+        })
 
     def build_osrm_view(self, request, route_id):
         import requests as http_requests

@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(docker exec geoportalturism-web-1 *)"
+      "Bash(docker exec geoportalturism-web-1 *)",
+      "Read(//mnt/d/**)",
+      "Read(//mnt/d/GeoPortalTurism/**)"
     ]
   }
 }

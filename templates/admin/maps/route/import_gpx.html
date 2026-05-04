@@ -1,0 +1,105 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Імпорт GPX — Маршрути{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Головна</a> ›
+    <a href="{% url 'admin:maps_route_changelist' %}">Маршрути</a> ›
+    Імпорт GPX
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>🗺️ Імпорт маршруту з GPX</h1>
+
+<div style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:24px; max-width:620px;">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-weight:600; margin-bottom:6px;">
+                GPX файл <span style="color:#e74c3c;">*</span>
+            </label>
+            <input type="file" name="gpx_file" accept=".gpx" required
+                style="display:block; padding:8px; border:1px solid #ccc; border-radius:6px; width:100%; box-sizing:border-box;">
+            <small style="color:#666; margin-top:4px; display:block;">
+                Підтримуються файли GPX 1.0 та 1.1 з треком (<code>&lt;trk&gt;</code>) або маршрутом (<code>&lt;rte&gt;</code>).
+            </small>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-weight:600; margin-bottom:6px;">Назва маршруту</label>
+            <input type="text" name="route_name" maxlength="200"
+                style="padding:8px; border:1px solid #ccc; border-radius:6px; width:100%; box-sizing:border-box;"
+                placeholder="Залиште порожнім — буде взята з GPX файлу">
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-weight:600; margin-bottom:6px;">Складність</label>
+            <select name="difficulty" style="padding:8px; border:1px solid #ccc; border-radius:6px; width:100%; box-sizing:border-box;">
+                {% for value, label in difficulty_choices %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-weight:600; margin-bottom:6px;">Регіон</label>
+            <select name="region" style="padding:8px; border:1px solid #ccc; border-radius:6px; width:100%; box-sizing:border-box;">
+                <option value="">— без регіону —</option>
+                {% for reg in regions %}
+                <option value="{{ reg.id }}">{{ reg.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" name="is_published" style="width:16px; height:16px;">
+                <span style="font-weight:600;">Опублікувати одразу</span>
+            </label>
+        </div>
+
+        <hr style="border:none; border-top:1px solid #eee; margin:20px 0;">
+
+        <div style="margin-bottom:12px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" name="create_locations" id="create_locations" style="width:16px; height:16px;">
+                <span style="font-weight:600;">Створити локації з вейпоїнтів (<code>&lt;wpt&gt;</code>)</span>
+            </label>
+            <small style="color:#666; margin-top:4px; display:block;">
+                Якщо GPX містить вейпоїнти — вони будуть додані як точки маршруту.
+            </small>
+        </div>
+
+        <div id="waypoint-cat-block" style="margin-bottom:20px; display:none; padding-left:24px;">
+            <label style="display:block; font-weight:600; margin-bottom:6px;">Категорія вейпоїнтів</label>
+            <select name="waypoint_category" style="padding:8px; border:1px solid #ccc; border-radius:6px; width:100%; box-sizing:border-box;">
+                <option value="">— без категорії —</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.icon }} {{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <button type="submit"
+                style="padding:10px 24px; background:#e67e22; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.95rem;">
+                📥 Імпортувати
+            </button>
+            <a href="{% url 'admin:maps_route_changelist' %}"
+                style="padding:10px 18px; background:#eee; color:#333; border:1px solid #ccc; border-radius:6px; text-decoration:none; font-size:0.95rem;">
+                Скасувати
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.getElementById('create_locations').addEventListener('change', function() {
+    document.getElementById('waypoint-cat-block').style.display = this.checked ? 'block' : 'none';
+});
+</script>
+{% endblock %}

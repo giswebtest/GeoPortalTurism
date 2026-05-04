@@ -9,7 +9,15 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(
-            sql="ALTER TABLE hystory_ob ADD COLUMN IF NOT EXISTS is_published boolean NOT NULL DEFAULT false;",
+            sql="""
+                CREATE TABLE IF NOT EXISTS hystory_ob (
+                    id BIGSERIAL PRIMARY KEY,
+                    geom geometry(PointZ, 4326),
+                    "Name" VARCHAR(500),
+                    description VARCHAR(2000)
+                );
+                ALTER TABLE hystory_ob ADD COLUMN IF NOT EXISTS is_published boolean NOT NULL DEFAULT false;
+            """,
             reverse_sql="ALTER TABLE hystory_ob DROP COLUMN IF EXISTS is_published;",
         ),
     ]
