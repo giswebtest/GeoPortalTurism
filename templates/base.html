@@ -23,6 +23,7 @@
     <div class="navbar__brand" style="display:flex; align-items:center; gap:12px;">
         🗺️ GeoPortal Turism
         <button id="sidebar-toggle" title="Згорнути/розгорнути панель">☰</button>
+        <button id="route-toggle-btn" title="Маршрут">🚗 Маршрут</button>
     </div>
     <div class="navbar__links">
         <a href="{% url 'maps:index' %}">Карта</a>
@@ -44,6 +45,12 @@
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+document.getElementById('route-toggle-btn')?.addEventListener('click', function () {
+    var panel = document.getElementById('route-nav-panel');
+    if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+});
+</script>
 {% block extra_js %}{% endblock %}
 
 </body>

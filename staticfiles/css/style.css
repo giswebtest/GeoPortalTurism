@@ -34,7 +34,28 @@ body {
     overflow-y: auto;
     padding: 6px;
     box-shadow: 2px 0 8px rgba(0,0,0,0.08);
+    transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
+    flex-shrink: 0;
 }
+.sidebar--collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    overflow: hidden;
+}
+#sidebar-toggle {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: background 0.15s;
+}
+#sidebar-toggle:hover { background: rgba(255,255,255,0.28); }
 .sidebar h2 { margin-bottom: 16px; font-size: 1.1rem; }
 
 /* Location card */
