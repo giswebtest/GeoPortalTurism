@@ -30,6 +30,20 @@ class LocationAdmin(GISModelAdmin):
     search_fields = ('name', 'description')
     list_editable = ('is_published',)
     readonly_fields = ('created_at', 'updated_at')
+    fieldsets = (
+        ('Основна інформація', {
+            'fields': ('name', 'description', 'category', 'region', 'country', 'author'),
+        }),
+        ('Медіа', {
+            'fields': ('image', 'gx_media_links'),
+        }),
+        ('Геодані', {
+            'fields': ('geom',),
+        }),
+        ('Публікація', {
+            'fields': ('is_published', 'created_at', 'updated_at'),
+        }),
+    )
 
     gis_widget_kwargs = {
         'attrs': {
@@ -476,7 +490,7 @@ class HystoryObAdmin(GISModelAdmin):
         return '—'
     description_short.short_description = 'Опис'
 
-    @admin.action(description='📋 Копіювати в Локації (геометрія, назва, опис)')
+    @admin.action(description='📋 Копіювати в Локації (геометрія, назва, опис, фото)')
     def copy_to_locations(self, request, queryset):
         from django.contrib.gis.geos import Point
 
@@ -496,6 +510,7 @@ class HystoryObAdmin(GISModelAdmin):
                     'description': obj.description or '',
                     'geom': point_2d,
                     'is_published': obj.is_published,
+                    'gx_media_links': obj.gx_media_links or '',
                 },
             )
             if was_created:

@@ -67,6 +67,12 @@ class Location(models.Model):
         blank=True, null=True,
         verbose_name='Фото'
     )
+    gx_media_links = models.URLField(
+        max_length=500,
+        blank=True,
+        verbose_name='Фото (URL)',
+        help_text='Пряме посилання на фото (з Google My Maps / Wikipedia)',
+    )
 
     # Статус
     is_published = models.BooleanField(default=False, verbose_name='Опубликовано')

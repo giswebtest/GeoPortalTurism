@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load maps_extras %}
 
 {% block title %}Карта туристичних місць{% endblock %}
 
@@ -132,6 +133,8 @@
                 data-country="{{ loc.country.id|default:'' }}">
                 {% if loc.image %}
                 <img src="{{ loc.image.url }}" alt="{{ loc.name }}">
+                {% elif loc.gx_media_links %}
+                <img src="{{ loc.gx_media_links }}" alt="{{ loc.name }}">
                 {% endif %}
                 <div class="location-card__body">
                     <h3>{{ loc.name }}</h3>
@@ -141,7 +144,7 @@
                     {% if loc.region %}
                     <span class="badge badge--region">📍 {{ loc.region.name }}</span>
                     {% endif %}
-                    <p>{{ loc.description|truncatewords:15 }}</p>
+                    <div style="margin-top:5px;">{% description_link loc.description %}</div>
 
                     <!-- Кнопка додавання до маршруту -->
                     <button class="add-to-route-btn" data-lat="{{ loc.geom.y }}" data-lng="{{ loc.geom.x }}"
@@ -172,19 +175,22 @@
             </ul>
         </div>
 
+        <!-- Шари карти вимкнено
         <div class="sidebar__layers" style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 16px;">
             <h2 style="font-size: 1.1rem; margin-bottom: 12px;">🗂️ Шари карти</h2>
             <ul style="list-style: none; padding: 0; margin: 0;">
                 <li style="padding: 8px 10px; background: #f5f0fa; border-radius: 8px; border: 1px solid #d9c8f0; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
                     <input type="checkbox" id="toggle-hystory" checked style="width:16px;height:16px;accent-color:#8e44ad;cursor:pointer;">
-                    <label for="toggle-hystory" style="cursor:pointer;font-size:0.95rem;">👁‍🗨 Пам'ятки культури</label>
+                    <label for="toggle-hystory" style="cursor:pointer;font-size:0.95rem;">🏛️ Пам'ятки культури</label>
                 </li>
                 <li style="padding: 8px 10px; background: #f0f6fb; border-radius: 8px; border: 1px solid #c5ddf0; display: flex; align-items: center; gap: 10px;">
                     <input type="checkbox" id="toggle-ivfrankdist" checked style="width:16px;height:16px;accent-color:#1a6fa8;cursor:pointer;">
                     <label for="toggle-ivfrankdist" style="cursor:pointer;font-size:0.95rem;">🗺️ Райони ІФ обл.</label>
                 </li>
             </ul>
-        </div>
+        </div> -->
+        <input type="checkbox" id="toggle-hystory" style="display:none;">
+        <input type="checkbox" id="toggle-ivfrankdist" style="display:none;">
 
         {% comment %}
         <div class="sidebar__poi-extent" style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 16px;">
@@ -343,9 +349,9 @@
     };
 
     // ==========================================
-    // ШАР: ПАМ'ЯТКИ КУЛЬТУРИ (hystory_ob)
+    // ШАР: ПАМ'ЯТКИ КУЛЬТУРИ (hystory_ob) — вимкнено, дані перенесено в Локації
     // ==========================================
-    const hystoryLayer = L.geoJSON(null, {
+    /* const hystoryLayer = L.geoJSON(null, {
         style: {
             color: '#8e44ad',
             weight: 2,
@@ -385,12 +391,13 @@
 
             layer.bindPopup(popupEl);
         }
-    });
+    }); */
+    const hystoryLayer = L.geoJSON(null); // заглушка щоб toggle-чекбокс не падав
 
     // ==========================================
-    // ШАР: РАЙОНИ ІФ ОБЛАСТІ (IvFrankDist)
+    // ШАР: РАЙОНИ ІФ ОБЛАСТІ (IvFrankDist) — вимкнено
     // ==========================================
-    const ivFrankDistLayer = L.geoJSON(null, {
+    /* const ivFrankDistLayer = L.geoJSON(null, {
         style: {
             color: '#1a6fa8',
             weight: 2,
@@ -402,7 +409,8 @@
             const name = p.name || p.nazva || p.NAME || p.NAZVA || p.district || p.raion || '(без назви)';
             layer.bindPopup(`<strong>🗺️ ${name}</strong>`);
         }
-    });
+    }); */
+    const ivFrankDistLayer = L.geoJSON(null);
 
     // 4. Перемикач базових шарів
     L.control.layers(baseMaps).addTo(map);
@@ -478,21 +486,15 @@
     });
 
     // Завантаження геоданих через API
-    fetch("{% url 'maps:hystory_ob_geojson' %}")
-        .then(r => r.json())
-        .then(data => {
-            hystoryLayer.addData(data);
-            hystoryLayer.addTo(map);
-        })
-        .catch(err => console.error('hystory_ob:', err));
+    // fetch("{% url 'maps:hystory_ob_geojson' %}")  // вимкнено — дані перенесено в Локації
+    //     .then(r => r.json())
+    //     .then(data => { hystoryLayer.addData(data); hystoryLayer.addTo(map); })
+    //     .catch(err => console.error('hystory_ob:', err));
 
-    fetch("{% url 'maps:ivfrankdist_geojson' %}")
-        .then(r => r.json())
-        .then(data => {
-            ivFrankDistLayer.addData(data);
-            ivFrankDistLayer.addTo(map);
-        })
-        .catch(err => console.error('IvFrankDist:', err));
+    // fetch("{% url 'maps:ivfrankdist_geojson' %}")  // вимкнено
+    //     .then(r => r.json())
+    //     .then(data => { ivFrankDistLayer.addData(data); ivFrankDistLayer.addTo(map); })
+    //     .catch(err => console.error('IvFrankDist:', err));
 
     // ==========================================
     // POI З OVERPASS API (вимкнено)
@@ -686,18 +688,34 @@
         {% for loc in locations %}
     {
         lat: parseFloat("{{ loc.geom.y }}".replace(',', '.')),
-            lng: parseFloat("{{ loc.geom.x }}".replace(',', '.')),
-                name: "{{ loc.name|escapejs }}",
-                    category: "{% if loc.category %}{{ loc.category.icon }} {{ loc.category.name|escapejs }}{% endif %}",
-                    categorySlug: "{{ loc.category.slug|default:'' }}",
-                    categoryIcon: "{{ loc.category.icon|default:'📍' }}",
-                    countryId: {% if loc.country %}{{ loc.country.id }}{% else %}null{% endif %},
-                        description: "{{ loc.description|truncatewords:20|escapejs }}",
-                            {% if loc.image %} image: "{{ loc.image.url }}", {% endif %}
+        lng: parseFloat("{{ loc.geom.x }}".replace(',', '.')),
+        name: "{{ loc.name|escapejs }}",
+        category: "{% if loc.category %}{{ loc.category.icon }} {{ loc.category.name|escapejs }}{% endif %}",
+        categorySlug: "{{ loc.category.slug|default:'' }}",
+        categoryIcon: "{{ loc.category.icon|default:'📍' }}",
+        countryId: {% if loc.country %}{{ loc.country.id }}{% else %}null{% endif %},
+        description: "{{ loc.description|slice:':500'|escapejs }}",
+        photo: "{% if loc.image %}{{ loc.image.url }}{% elif loc.gx_media_links %}{{ loc.gx_media_links|escapejs }}{% endif %}",
         },
     {% endfor %}
     ];
     const markers = [];
+
+    function formatDescription(desc) {
+        if (!desc) return '';
+        // Витягуємо URL з опису (є в записах імпортованих з HystoryOb)
+        const urlMatch = desc.match(/https?:\/\/[^\s"<>\]]+/);
+        if (urlMatch) {
+            return `<a href="${urlMatch[0]}" target="_blank" rel="noopener"
+                       style="color:#1a6fa8;font-size:0.82rem;text-decoration:none;
+                              border-bottom:1px dotted #1a6fa8;">Див. ↗</a>`;
+        }
+        // Якщо URL немає — показуємо скорочений текст
+        const plain = desc.replace(/<[^>]+>/g, '').trim();
+        if (!plain) return '';
+        const words = plain.split(/\s+/).slice(0, 12).join(' ');
+        return `<span style="font-size:0.82rem;color:#555;">${words}${plain.split(/\s+/).length > 12 ? '…' : ''}</span>`;
+    }
 
     locations.forEach((loc, index) => {
         const marker = L.marker([loc.lat, loc.lng], {
@@ -709,12 +727,13 @@
                 popupAnchor: [0, -16]
             })
         }).addTo(map);
+        const descHtml = formatDescription(loc.description);
         marker.bindPopup(`
             <div class="popup">
-                ${loc.image ? `<img src="${loc.image}" style="width:100%;border-radius:8px;margin-bottom:8px">` : ''}
-                <strong>${loc.name}</strong><br>
-                <small>${loc.category}</small><br>
-                <p style="margin-top:6px">${loc.description}</p>
+                ${loc.photo ? `<img src="${loc.photo}" style="width:100%;border-radius:8px;margin-bottom:8px;max-height:150px;object-fit:cover">` : ''}
+                <strong>${loc.categoryIcon} ${loc.name}</strong><br>
+                <small>${loc.category}</small>
+                ${descHtml ? `<div style="margin-top:5px;">${descHtml}</div>` : ''}
                 <button onclick="addWaypointFromPopup(${index})" style="margin-top: 8px; padding: 6px 12px; background: #1a6fa8; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">➕ До маршруту</button>
             </div>
         `);
