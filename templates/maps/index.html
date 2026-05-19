@@ -28,6 +28,7 @@
     width: 14px; height: 14px; cursor: pointer;
 }
 .poi-legend span { line-height: 1; }
+.leaflet-interactive:focus { outline: none; }
 </style>
 {% endblock %}
 
@@ -37,6 +38,32 @@
     <!-- Бокова панель -->
     <aside class="sidebar">
         <h2>📍 Місця</h2>
+
+        <!-- Вибір країни -->
+        {% if countries %}
+        <div style="margin-bottom:16px; padding:14px; background:#f0f6fb; border-radius:10px; border:1px solid #c9e1f5;">
+            <h3 style="margin:0 0 10px; font-size:0.95rem; color:#1a6fa8;">🌍 Країни</h3>
+            <select id="country-select"
+                style="width:100%; padding:7px 10px; border:1px solid #ccc; border-radius:6px;
+                       font-size:0.88rem; margin-bottom:10px; box-sizing:border-box;">
+                <option value="">— Оберіть країну —</option>
+                {% for country in countries %}
+                <option value="{{ country.id }}" data-extent="{{ country.extent_code }}">
+                    {{ country.name }}
+                </option>
+                {% endfor %}
+            </select>
+            <div style="display:flex; gap:8px;">
+                <button id="country-polygons-btn" disabled
+                    style="flex:1; padding:8px 6px; background:#27ae60; color:white; border:none;
+                           border-radius:6px; cursor:pointer; font-size:0.8rem; font-weight:500;
+                           opacity:0.45; transition:opacity 0.2s;">
+                    🗺️ Показати полігони
+                </button>
+            </div>
+            <div id="country-poly-status" style="margin-top:7px; font-size:0.78rem; color:#666; min-height:16px;"></div>
+        </div>
+        {% endif %}
 
         <!-- Панель маршрутизатора -->
         <div class="routing-panel"
@@ -95,10 +122,14 @@
         {% endif %}
 
         <div class="sidebar__list">
+            <p id="sidebar-empty-state" style="display:none; color:#999; font-size:0.85rem; padding:8px 4px;">
+                Немає локацій для поточного фільтру
+            </p>
             {% for loc in locations %}
             <div class="location-card" data-lat="{{ loc.geom.y|stringformat:'.6f' }}"
                 data-lng="{{ loc.geom.x|stringformat:'.6f' }}" data-name="{{ loc.name }}"
-                data-category="{{ loc.category.slug|default:'' }}">
+                data-category="{{ loc.category.slug|default:'' }}"
+                data-country="{{ loc.country.id|default:'' }}">
                 {% if loc.image %}
                 <img src="{{ loc.image.url }}" alt="{{ loc.name }}">
                 {% endif %}
@@ -146,7 +177,7 @@
             <ul style="list-style: none; padding: 0; margin: 0;">
                 <li style="padding: 8px 10px; background: #f5f0fa; border-radius: 8px; border: 1px solid #d9c8f0; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
                     <input type="checkbox" id="toggle-hystory" checked style="width:16px;height:16px;accent-color:#8e44ad;cursor:pointer;">
-                    <label for="toggle-hystory" style="cursor:pointer;font-size:0.95rem;">🏛️ Пам'ятки культури</label>
+                    <label for="toggle-hystory" style="cursor:pointer;font-size:0.95rem;">👁‍🗨 Пам'ятки культури</label>
                 </li>
                 <li style="padding: 8px 10px; background: #f0f6fb; border-radius: 8px; border: 1px solid #c5ddf0; display: flex; align-items: center; gap: 10px;">
                     <input type="checkbox" id="toggle-ivfrankdist" checked style="width:16px;height:16px;accent-color:#1a6fa8;cursor:pointer;">
@@ -155,6 +186,7 @@
             </ul>
         </div>
 
+        {% comment %}
         <div class="sidebar__poi-extent" style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 16px;">
             <h2 style="font-size: 1.1rem; margin-bottom: 10px;">📋 POI на екрані</h2>
             <div id="poi-cat-tabs" style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px;"></div>
@@ -162,6 +194,7 @@
                 <em style="color:#999; font-size:0.85rem;">Завантажується...</em>
             </div>
         </div>
+        {% endcomment %}
 
         <div class="sidebar__guides" style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 16px;">
             <h2 style="font-size: 1.1rem; margin-bottom: 12px;">👤 Наші Гіди</h2>
@@ -190,7 +223,44 @@
     </aside>
 
     <!-- Карта -->
-    <div id="map"></div>
+    <div id="map">
+        <div id="poly-legend" style="
+            display:none; position:absolute; bottom:30px; right:10px; z-index:1000;
+            background:white; border-radius:10px;
+            box-shadow:0 2px 12px rgba(0,0,0,0.18);
+            width:210px; max-height:340px;
+            display:none; flex-direction:column;
+            font-size:0.82rem; overflow:hidden;">
+            <div style="padding:9px 12px 7px; border-bottom:1px solid #eee; flex-shrink:0;">
+                <strong style="font-size:0.86rem; color:#333;">🗺️ Полігони</strong>
+                <button id="poly-legend-close"
+                    style="float:right; background:none; border:none; cursor:pointer;
+                           font-size:14px; color:#999; line-height:1; padding:0;">✕</button>
+            </div>
+            <div id="poly-legend-list"
+                style="overflow-y:auto; padding:4px 6px 6px; flex:1;"></div>
+        </div>
+
+        <div id="cat-legend" style="
+            display:none; position:absolute; top:130px; left:10px; z-index:1000;
+            background:white; border-radius:10px;
+            box-shadow:0 2px 12px rgba(0,0,0,0.18);
+            padding:10px 14px 12px;
+            font-size:0.85rem; min-width:160px;">
+
+            <div style="font-weight:600; font-size:0.88rem; color:#333; margin-bottom:8px; border-bottom:1px solid #eee; padding-bottom:6px;">
+                Категорії
+            </div>
+
+            <label style="display:flex; align-items:center; gap:7px; margin-bottom:7px; cursor:pointer;">
+                <input type="checkbox" id="cat-cb-all" checked
+                    style="width:14px;height:14px;accent-color:#1a6fa8;cursor:pointer;">
+                <span>Усі</span>
+            </label>
+
+            <div id="cat-legend-items"></div>
+        </div>
+    </div>
 
 </div>
 
@@ -248,6 +318,11 @@
         attribution: '© OpenTopoMap'
     });
 
+    const osmTourist = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors, Tiles by HOT',
+        maxZoom: 19
+    });
+
     const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: '© Esri'
     });
@@ -256,11 +331,12 @@
     const map = L.map('map', {
         center: [48.6438, 24.5984],
         zoom: 9,
-        layers: [osmStandard] // Шар за замовчуванням
+        layers: [osmTourist] // Шар за замовчуванням
     });
 
     // 3. Створюємо об'єкт з нашими картами для меню
     const baseMaps = {
+        "Туристична (OSM)": osmTourist,
         "Стандартна (OSM)": osmStandard,
         "Топографічна": osmTopo,
         "Супутник (Esri)": satellite
@@ -419,8 +495,9 @@
         .catch(err => console.error('IvFrankDist:', err));
 
     // ==========================================
-    // POI З OVERPASS API
+    // POI З OVERPASS API (вимкнено)
     // ==========================================
+    /*
     const poiCategories = [
         {% for cat in poi_categories %}
         {
@@ -433,27 +510,38 @@
 
     const poiLayers = {};
 
+    const OVERPASS_SERVERS = [
+        'https://overpass-api.de/api/interpreter',
+        'https://overpass.kumi.systems/api/interpreter',
+    ];
+
+    function fetchOverpass(query) {
+        const tryServer = (i) => {
+            if (i >= OVERPASS_SERVERS.length) return Promise.reject(new Error('Всі Overpass-сервери недоступні'));
+            return fetch(OVERPASS_SERVERS[i] + '?data=' + encodeURIComponent(query))
+                .then(res => {
+                    if (!res.ok) return tryServer(i + 1);
+                    return res.json();
+                }).catch(() => tryServer(i + 1));
+        };
+        return tryServer(0);
+    }
+
     poiCategories.forEach(cat => {
         const fullQuery = `[out:json];${cat.query}out body;>;out skel qt;`;
-        fetch("{% url 'maps:overpass_proxy' %}?data=" + encodeURIComponent(fullQuery))
-            .then(res => {
-                if (!res.ok) throw new Error(`Помилка запиту для ${cat.name}`);
-                return res.json();
-            })
+        fetchOverpass(fullQuery)
             .then(data => {
                 const geojson = osmtogeojson(data);
 
                 poiLayers[cat.name] = L.geoJSON(geojson, {
-                    pointToLayer: (feature, latlng) => {
-                        return L.marker(latlng, {
-                            icon: L.divIcon({
-                                html: `<span style="font-size:22px;line-height:1;">${cat.emoji}</span>`,
-                                className: '',
-                                iconSize: [28, 28],
-                                iconAnchor: [14, 14]
-                            })
-                        });
-                    },
+                    pointToLayer: (feature, latlng) => L.marker(latlng, {
+                        icon: L.divIcon({
+                            html: `<span style="font-size:22px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));">${cat.emoji}</span>`,
+                            className: '',
+                            iconSize: [28, 28],
+                            iconAnchor: [14, 14]
+                        })
+                    }),
                     style: (feature) => {
                         if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
                             return { color: '#3388ff', weight: 2, fillOpacity: 0.3 };
@@ -475,7 +563,7 @@
                             <button class="poi-add-btn" style="margin-top:8px;padding:6px 12px;background:#1a6fa8;color:white;border:none;border-radius:4px;cursor:pointer;width:100%;">➕ До маршруту</button>
                         `;
                         el.querySelector('.poi-add-btn').addEventListener('click', () => {
-                            waypoints.push({ latLng: latlng, name: name });
+                            waypoints.push({ latLng: latlng, name });
                             updateRoutingUI();
                             layer.closePopup();
                         });
@@ -515,12 +603,8 @@
     };
     poiLegend.addTo(map);
 
-    // ==========================================
     // POI НА ЕКРАНІ — список в сайдбарі
-    // ==========================================
     let activePOICat = null;
-
-    // Таби категорій
     const poiTabsEl = document.getElementById('poi-cat-tabs');
     const poiListEl = document.getElementById('poi-extent-list');
 
@@ -548,12 +632,10 @@
     function updatePOIExtentList() {
         const bounds = map.getBounds();
         const items = [];
-
         poiCategories.forEach(cat => {
             if (activePOICat && activePOICat !== cat.name) return;
             const layer = poiLayers[cat.name];
             if (!layer) return;
-
             layer.eachLayer(fl => {
                 let latlng;
                 try { latlng = fl.getLatLng ? fl.getLatLng() : fl.getBounds().getCenter(); }
@@ -563,23 +645,18 @@
                 items.push({ name, emoji: cat.emoji, latlng, fl });
             });
         });
-
         poiListEl.innerHTML = '';
         if (!items.length) {
             poiListEl.innerHTML = '<em style="color:#999;font-size:0.82rem;">Немає POI в поточному екстенті</em>';
             return;
         }
-
         items.forEach(item => {
             const row = document.createElement('div');
             row.style.cssText = 'padding:5px 8px; margin-bottom:3px; background:#f9f9f9; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:7px; border:1px solid #eee; font-size:0.82rem;';
             row.innerHTML = `<span style="flex-shrink:0;">${item.emoji}</span><span>${item.name}</span>`;
             row.addEventListener('mouseover', () => row.style.background = '#eef4fb');
             row.addEventListener('mouseout',  () => row.style.background = '#f9f9f9');
-            row.addEventListener('click', () => {
-                map.panTo(item.latlng, { animate: true });
-                item.fl.openPopup();
-            });
+            row.addEventListener('click', () => { map.panTo(item.latlng, { animate: true }); item.fl.openPopup(); });
             poiListEl.appendChild(row);
         });
     }
@@ -587,14 +664,21 @@
     map.on('moveend', updatePOIExtentList);
     map.on('zoomend', updatePOIExtentList);
 
-    // Оновлення після завантаження шарів
-    const origFetch = window.fetch;
     let poiLoadCount = 0;
-    // Оновлюємо список коли всі шари завантажились
     const poiTotal = poiCategories.length;
     function onPOILayerLoaded() {
         poiLoadCount++;
         if (poiLoadCount >= poiTotal) updatePOIExtentList();
+    }
+    */
+
+    // Заглушки щоб не падав інший код
+    const poiCategories = [];
+    const poiLayers = {};
+    function onPOILayerLoaded() {}
+    function updatePOIExtentList() {
+        const poiListEl = document.getElementById('poi-extent-list');
+        if (poiListEl) poiListEl.innerHTML = '<em style="color:#999;font-size:0.82rem;">POI вимкнено</em>';
     }
 
     // Добавляем маркеры
@@ -607,6 +691,7 @@
                     category: "{% if loc.category %}{{ loc.category.icon }} {{ loc.category.name|escapejs }}{% endif %}",
                     categorySlug: "{{ loc.category.slug|default:'' }}",
                     categoryIcon: "{{ loc.category.icon|default:'📍' }}",
+                    countryId: {% if loc.country %}{{ loc.country.id }}{% else %}null{% endif %},
                         description: "{{ loc.description|truncatewords:20|escapejs }}",
                             {% if loc.image %} image: "{{ loc.image.url }}", {% endif %}
         },
@@ -637,13 +722,267 @@
     });
 
     // ==========================================
-    // ФІЛЬТР ПО КАТЕГОРІЯХ
+    // КРАЇНИ — екстент, полігони та легенда
     // ==========================================
+    const countrySelect      = document.getElementById('country-select');
+    const countryPolygonsBtn = document.getElementById('country-polygons-btn');
+    const countryPolyStatus  = document.getElementById('country-poly-status');
+    const polyLegend         = document.getElementById('poly-legend');
+    const polyLegendList     = document.getElementById('poly-legend-list');
+    const polyLegendClose    = document.getElementById('poly-legend-close');
+
+    let countryPolyLayer = null;
+    let activeCountryId  = null;   // id обраної країни (null = всі)
+    // Map: leaflet layer → legend row element (для двостороннього підсвічування)
+    const layerToRow = new Map();
+
+    const POLY_STYLE_DEFAULT  = { color: '#e67e22', weight: 2, fillOpacity: 0 };
+    const POLY_STYLE_HOVER    = { color: '#d35400', weight: 3, fillOpacity: 0 };
+
+    function highlightPolyLayer(layer) {
+        layer.setStyle(POLY_STYLE_HOVER);
+        layer.bringToFront();
+        const row = layerToRow.get(layer);
+        if (row) row.style.background = '#fde8d0';
+    }
+
+    function resetPolyLayer(layer) {
+        if (countryPolyLayer) countryPolyLayer.resetStyle(layer);
+        const row = layerToRow.get(layer);
+        if (row) row.style.background = '';
+    }
+
+    function clearPolyLegend() {
+        layerToRow.clear();
+        if (polyLegendList) polyLegendList.innerHTML = '';
+        if (polyLegend)     polyLegend.style.display = 'none';
+    }
+
+    function buildPolyLegend() {
+        if (!polyLegendList || !polyLegend) return;
+        polyLegendList.innerHTML = '';
+        layerToRow.clear();
+
+        countryPolyLayer.eachLayer(layer => {
+            const name = (layer.feature.properties || {}).name || '(без назви)';
+
+            const row = document.createElement('div');
+            row.style.cssText = 'padding:5px 8px; margin-bottom:2px; border-radius:6px; ' +
+                'cursor:pointer; border:1px solid transparent; transition:background 0.15s;';
+            row.innerHTML =
+                '<span style="display:inline-block;width:10px;height:10px;border-radius:2px;' +
+                'background:#f39c12;border:1.5px solid #e67e22;margin-right:6px;flex-shrink:0;"></span>' +
+                '<span style="font-size:0.8rem;">' + name + '</span>';
+
+            // Наведення: підсвічуємо полігон і рядок
+            row.addEventListener('mouseover', () => highlightPolyLayer(layer));
+            row.addEventListener('mouseout',  () => resetPolyLayer(layer));
+
+            // Клік: карта центрується на полігон
+            row.addEventListener('click', () => {
+                try {
+                    const bounds = layer.getBounds();
+                    map.fitBounds(bounds, { animate: true, padding: [30, 30], maxZoom: 14 });
+                } catch(e) { /* точковий шар */ }
+            });
+
+            layerToRow.set(layer, row);
+            polyLegendList.appendChild(row);
+        });
+
+        polyLegend.style.display = 'flex';
+    }
+
+    if (polyLegendClose) {
+        polyLegendClose.addEventListener('click', () => {
+            if (polyLegend) polyLegend.style.display = 'none';
+        });
+    }
+
+    function setCountryBtnsEnabled(enabled) {
+        if (!countryPolygonsBtn) return;
+        countryPolygonsBtn.disabled = !enabled;
+        countryPolygonsBtn.style.opacity = enabled ? '1' : '0.45';
+        countryPolygonsBtn.style.cursor  = enabled ? 'pointer' : 'default';
+    }
+
+    if (countrySelect) {
+        countrySelect.addEventListener('change', () => {
+            activeCountryId = countrySelect.value ? parseInt(countrySelect.value) : null;
+            setCountryBtnsEnabled(!!countrySelect.value);
+            if (countryPolyLayer) { map.removeLayer(countryPolyLayer); countryPolyLayer = null; }
+            clearPolyLegend();
+            if (countryPolyStatus) countryPolyStatus.textContent = '';
+            if (countryPolygonsBtn) countryPolygonsBtn.textContent = '🗺️ Показати полігони';
+            activeCategorySlug = '';
+            document.querySelectorAll('.cat-filter-btn').forEach(b => {
+                const isAll = b.dataset.slug === '';
+                b.style.background   = isAll ? '#1a6fa8' : '#fff';
+                b.style.color        = isAll ? 'white'   : '#333';
+                b.style.borderColor  = isAll ? '#1a6fa8' : '#ccc';
+            });
+            if (sidebarList) sidebarList.style.display = activeCountryId ? '' : 'none';
+            updateSidebarCatButtons();
+            applyMarkerFilters();
+            buildCatLegend();
+
+            // Автозум на екстент країни
+            const opt = countrySelect.selectedOptions[0];
+            const ext = opt && opt.dataset.extent;
+            if (ext) {
+                const parts = ext.split(',').map(Number);
+                if (parts.length === 4 && !parts.some(isNaN)) {
+                    const [minLng, minLat, maxLng, maxLat] = parts;
+                    map.fitBounds([[minLat, minLng], [maxLat, maxLng]], { animate: true, padding: [20, 20] });
+                }
+            }
+        });
+    }
+
+    if (countryPolygonsBtn) {
+        countryPolygonsBtn.addEventListener('click', () => {
+            const countryId = countrySelect && countrySelect.value;
+            if (!countryId) return;
+
+            if (countryPolyLayer) {
+                map.removeLayer(countryPolyLayer);
+                countryPolyLayer = null;
+                clearPolyLegend();
+                countryPolygonsBtn.textContent = '🗺️ Показати полігони';
+                if (countryPolyStatus) countryPolyStatus.textContent = '';
+                return;
+            }
+
+            countryPolygonsBtn.textContent = '⏳ Завантаження...';
+            countryPolygonsBtn.disabled = true;
+            countryPolygonsBtn.style.opacity = '0.6';
+            if (countryPolyStatus) countryPolyStatus.textContent = '';
+
+            fetch(`/api/countries/${countryId}/polygons/`)
+                .then(r => r.json())
+                .then(data => {
+                    const count = (data.features || []).length;
+                    if (!count) {
+                        if (countryPolyStatus) countryPolyStatus.textContent = '⚠️ Немає полігонів';
+                        countryPolygonsBtn.textContent = '🗺️ Показати полігони';
+                        countryPolygonsBtn.disabled = false;
+                        countryPolygonsBtn.style.opacity = '1';
+                        return;
+                    }
+
+                    countryPolyLayer = L.geoJSON(data, {
+                        style: POLY_STYLE_DEFAULT,
+                        onEachFeature: function(feature, layer) {
+                            const name = (feature.properties || {}).name || '';
+                            if (name) layer.bindTooltip(name, { sticky: true, direction: 'top' });
+                            layer.on({
+                                mouseover: () => highlightPolyLayer(layer),
+                                mouseout:  () => resetPolyLayer(layer),
+                            });
+                        },
+                    }).addTo(map);
+
+                    buildPolyLegend();
+                    if (countryPolyStatus) countryPolyStatus.textContent = `✅ ${count} полігонів`;
+                    countryPolygonsBtn.textContent = '🗑️ Приховати полігони';
+                    countryPolygonsBtn.disabled = false;
+                    countryPolygonsBtn.style.opacity = '1';
+                })
+                .catch(err => {
+                    if (countryPolyStatus) countryPolyStatus.textContent = '❌ Помилка завантаження';
+                    countryPolygonsBtn.textContent = '🗺️ Показати полігони';
+                    countryPolygonsBtn.disabled = false;
+                    countryPolygonsBtn.style.opacity = '1';
+                    console.error('country polygons:', err);
+                });
+        });
+    }
+
+    // ==========================================
+    // ЦЕНТРАЛІЗОВАНИЙ ФІЛЬТР МАРКЕРІВ
+    // враховує: країну + категорію + чекбокси легенди
+    // ==========================================
+    let activeCategorySlug = '';
+
+    // applyMarkerFilters — фільтрує маркери та картки, легенду НЕ перебудовує
+    function applyMarkerFilters() {
+        const checkedSlugs = new Set(
+            [...document.querySelectorAll('.cat-cb:checked')].map(cb => cb.dataset.slug)
+        );
+        const totalCbs   = document.querySelectorAll('.cat-cb').length;
+        const allChecked = checkedSlugs.size === totalCbs || totalCbs === 0;
+
+        // Обчислюємо які slug-и категорій зараз видимі у сайдбарі (кнопки не приховані)
+        const visibleCatSlugs = new Set(
+            [...document.querySelectorAll('.cat-filter-btn:not([data-slug=""])')].
+            filter(b => b.style.display !== 'none').
+            map(b => b.dataset.slug)
+        );
+
+        let visibleCards = 0;
+
+        markers.forEach(({ index, marker }) => {
+            const loc = locations[index];
+            const passCountry = !activeCountryId || loc.countryId === activeCountryId;
+            const passCb      = allChecked || checkedSlugs.has(loc.categorySlug) || !loc.categorySlug;
+            const show = passCountry && passCb;
+            show ? marker.addTo(map) : map.removeLayer(marker);
+        });
+
+        document.querySelectorAll('.location-card').forEach(card => {
+            const countryOk  = !activeCountryId || parseInt(card.dataset.country) === activeCountryId;
+            const catSlug    = card.dataset.category;
+            const catVisible = !catSlug || visibleCatSlugs.has(catSlug);
+            const cbOk       = allChecked || checkedSlugs.has(catSlug) || !catSlug;
+            const catBtnOk   = !activeCategorySlug || catSlug === activeCategorySlug;
+            const show       = countryOk && catVisible && cbOk && catBtnOk;
+            card.style.display = show ? '' : 'none';
+            if (show) visibleCards++;
+        });
+
+        const emptyState = document.getElementById('sidebar-empty-state');
+        if (emptyState) emptyState.style.display = visibleCards === 0 ? 'block' : 'none';
+    }
+
+    // ==========================================
+    // ФІЛЬТР ПО КАТЕГОРІЯХ (сайдбар)
+    // ==========================================
+
+    // Показує лише кнопки категорій, які є серед локацій поточної вибірки
+    function updateSidebarCatButtons() {
+        const activeSlugs = new Set();
+        locations.forEach(loc => {
+            if (activeCountryId && loc.countryId !== activeCountryId) return;
+            if (loc.categorySlug) activeSlugs.add(loc.categorySlug);
+        });
+
+        document.querySelectorAll('.cat-filter-btn').forEach(btn => {
+            const slug = btn.dataset.slug;
+            if (!slug) return; // кнопка "Усі" — завжди видима
+            btn.style.display = activeSlugs.has(slug) ? '' : 'none';
+        });
+
+        // Якщо активна категорія зникла — скидаємо на "Усі"
+        if (activeCategorySlug && !activeSlugs.has(activeCategorySlug)) {
+            activeCategorySlug = '';
+            document.querySelectorAll('.cat-filter-btn').forEach(b => {
+                b.style.background = '#fff';
+                b.style.color = '#333';
+                b.style.borderColor = '#ccc';
+            });
+            const allBtn = document.querySelector('.cat-filter-btn[data-slug=""]');
+            if (allBtn) {
+                allBtn.style.background = '#1a6fa8';
+                allBtn.style.color = 'white';
+                allBtn.style.borderColor = '#1a6fa8';
+            }
+        }
+    }
+
     document.querySelectorAll('.cat-filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const slug = btn.dataset.slug;
+            activeCategorySlug = btn.dataset.slug;
 
-            // Стиль активної кнопки
             document.querySelectorAll('.cat-filter-btn').forEach(b => {
                 b.style.background = '#fff';
                 b.style.color = '#333';
@@ -653,19 +992,90 @@
             btn.style.color = 'white';
             btn.style.borderColor = '#1a6fa8';
 
-            // Фільтр маркерів і карток
-            markers.forEach(({ index, marker }) => {
-                const loc = locations[index];
-                const show = !slug || loc.categorySlug === slug;
-                show ? marker.addTo(map) : map.removeLayer(marker);
-            });
-
-            document.querySelectorAll('.location-card').forEach(card => {
-                const show = !slug || card.dataset.category === slug;
-                card.style.display = show ? '' : 'none';
-            });
+            applyMarkerFilters();
         });
     });
+
+    // ==========================================
+    // ЛЕГЕНДА КАТЕГОРІЙ (чекбокси, зліва від карти — динамічна)
+    // ==========================================
+    const catLegend      = document.getElementById('cat-legend');
+    const catLegendItems = document.getElementById('cat-legend-items');
+    const catCbAll       = document.getElementById('cat-cb-all');
+
+    // buildCatLegend — перебудовує легенду при зміні країни.
+    // Чекбокси стартують всі увімкненими (нова вибірка = новий стан).
+    function buildCatLegend() {
+        if (!catLegendItems || !catLegend) return;
+
+        // Якщо країна не вибрана — ховаємо легенду
+        if (!activeCountryId) {
+            catLegend.style.display = 'none';
+            catLegendItems.innerHTML = '';
+            return;
+        }
+
+        // Унікальні категорії серед локацій обраної країни
+        const seen = new Map(); // slug → { icon, name }
+        locations.forEach(loc => {
+            if (loc.countryId !== activeCountryId) return;
+            if (loc.categorySlug && !seen.has(loc.categorySlug)) {
+                seen.set(loc.categorySlug, { icon: loc.categoryIcon, name: loc.category });
+            }
+        });
+
+        catLegendItems.innerHTML = '';
+
+        if (!seen.size) {
+            catLegend.style.display = 'none';
+            return;
+        }
+
+        seen.forEach(({ icon, name }, slug) => {
+            const label = document.createElement('label');
+            label.style.cssText = 'display:flex; align-items:center; gap:7px; margin-bottom:6px; cursor:pointer;';
+
+            const cb = document.createElement('input');
+            cb.type      = 'checkbox';
+            cb.className = 'cat-cb';
+            cb.dataset.slug = slug;
+            cb.checked   = true;
+            cb.style.cssText = 'width:14px;height:14px;accent-color:#1a6fa8;cursor:pointer;';
+
+            cb.addEventListener('change', () => {
+                if (catCbAll) {
+                    catCbAll.checked = [...document.querySelectorAll('.cat-cb')].every(c => c.checked);
+                }
+                applyMarkerFilters();   // лише фільтрує — НЕ перебудовує легенду
+            });
+
+            const iconSpan = document.createElement('span');
+            iconSpan.style.cssText = 'font-size:15px; line-height:1;';
+            iconSpan.textContent = icon;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = name.replace(/^\S+\s*/, '').trim() || name;
+
+            label.append(cb, iconSpan, nameSpan);
+            catLegendItems.appendChild(label);
+        });
+
+        if (catCbAll) catCbAll.checked = true;
+        catLegend.style.display = 'block';
+    }
+
+    if (catCbAll) {
+        catCbAll.addEventListener('change', () => {
+            document.querySelectorAll('.cat-cb').forEach(cb => cb.checked = catCbAll.checked);
+            applyMarkerFilters();   // лише фільтрує
+        });
+    }
+
+    // Ініціалізація на старті: ховаємо всі маркери до вибору країни
+    markers.forEach(({ marker }) => map.removeLayer(marker));
+    const sidebarList = document.querySelector('.sidebar__list');
+    if (sidebarList) sidebarList.style.display = 'none';
+    updateSidebarCatButtons();
 
     // Клик по карточке — зум на маркер и открытие попапа
     document.querySelectorAll('.location-card').forEach((card, index) => {

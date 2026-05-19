@@ -24,6 +24,7 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -38,6 +39,12 @@ class Location(models.Model):
     geom = models.PointField(srid=4326, geography=True, verbose_name='Координаты')
 
     # Связи
+    country = models.ForeignKey(
+        'Country', on_delete=models.SET_NULL,
+        null=True, blank=True,
+        verbose_name='Країна',
+        related_name='locations',
+    )
     region = models.ForeignKey(
         Region, on_delete=models.SET_NULL,
         null=True, blank=True,
@@ -231,6 +238,45 @@ class HystoryOb(models.Model):
 
     def __str__(self):
         return self.name or f'Об\'єкт #{self.id}'
+
+
+class Country(models.Model):
+    """Країна — назва та екстент карти."""
+    name = models.CharField(max_length=200, verbose_name='Назва')
+    extent_code = models.CharField(
+        max_length=200,
+        verbose_name='Код екстенту',
+        help_text='Формат: minLng,minLat,maxLng,maxLat  (напр. 22.15,47.73,26.16,48.75)',
+        blank=True,
+    )
+    is_published = models.BooleanField(default=False, verbose_name='Опубліковано')
+
+    class Meta:
+        verbose_name = 'Країна'
+        verbose_name_plural = 'Країни'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class CountryPolygon(models.Model):
+    """Полігон, прив'язаний до країни."""
+    country = models.ForeignKey(
+        Country, on_delete=models.CASCADE,
+        related_name='polygons',
+        verbose_name='Країна',
+    )
+    name = models.CharField(max_length=200, verbose_name='Назва полігону')
+    geom = models.MultiPolygonField(srid=4326, verbose_name='Геометрія')
+
+    class Meta:
+        verbose_name = 'Полігон країни'
+        verbose_name_plural = 'Полігони країн'
+        ordering = ['country', 'name']
+
+    def __str__(self):
+        return f'{self.country.name} — {self.name}'
 
 
 class Guide(models.Model):

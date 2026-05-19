@@ -1,0 +1,14 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools-items %}
+{% if original %}
+<li>
+    <a href="{{ import_polygons_url }}"
+       style="padding:6px 14px; background:#27ae60; color:white; border-radius:6px;
+              text-decoration:none; font-weight:500; font-size:0.85rem; white-space:nowrap;">
+        ⬆️ Імпорт полігонів GeoJSON
+    </a>
+</li>
+{% endif %}
+{{ block.super }}
+{% endblock %}

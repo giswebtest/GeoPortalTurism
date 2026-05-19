@@ -1,15 +1,16 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.db import connection
-from .models import Location, Route, Guide, Category, POICategory
+from .models import Location, Route, Guide, Category, POICategory, Country, CountryPolygon
 
 
 def index(request):
-    locations = Location.objects.filter(is_published=True).select_related('category', 'region')
+    locations = Location.objects.filter(is_published=True).select_related('category', 'region', 'country')
     routes = Route.objects.filter(is_published=True)
     guides = Guide.objects.all()
     categories = Category.objects.filter(location__is_published=True).distinct()
     poi_categories = POICategory.objects.filter(is_published=True)
+    countries = Country.objects.filter(is_published=True)
 
     return render(request, 'maps/index.html', {
         'locations': locations,
@@ -17,7 +18,16 @@ def index(request):
         'guides': guides,
         'categories': categories,
         'poi_categories': poi_categories,
+        'countries': countries,
     })
+
+
+def country_polygons_geojson(request, country_id):
+    from django.core.serializers import serialize
+    import json
+    polygons = CountryPolygon.objects.filter(country_id=country_id).only('name', 'geom')
+    data = json.loads(serialize('geojson', polygons, geometry_field='geom', fields=['name']))
+    return JsonResponse(data, safe=False)
 
 
 def _table_geojson(table_name):

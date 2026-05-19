@@ -1,0 +1,144 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Головна</a>
+    &rsaquo; <a href="{% url 'admin:maps_country_changelist' %}">Країни</a>
+    &rsaquo; Імпорт полігонів GeoJSON
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>📂 Імпорт полігонів країн — GeoJSON</h1>
+
+<div style="max-width:700px;">
+
+    {% if results %}
+    <div style="margin-bottom:24px; padding:16px; border-radius:8px;
+        {% if results.errors %}background:#fff3cd; border:1px solid #ffc107;
+        {% else %}background:#d4edda; border:1px solid #28a745;{% endif %}">
+        <strong>Результат імпорту{% if selected_country %} — {{ selected_country.name }}{% endif %}:</strong><br>
+        📁 Файлів оброблено: <b>{{ results.files }}</b><br>
+        ✅ Полігонів імпортовано: <b>{{ results.imported }}</b><br>
+        ⏭️ Пропущено (не полігони): <b>{{ results.skipped }}</b>
+        {% if results.errors %}
+        <hr style="margin:10px 0;">
+        <strong>Помилки:</strong>
+        <ul style="margin:6px 0 0; padding-left:20px;">
+            {% for err in results.errors %}
+            <li style="font-size:0.85em; color:#856404;">{{ err }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data"
+          style="background:#f9f9f9; padding:24px; border-radius:10px; border:1px solid #ddd;">
+        {% csrf_token %}
+
+        <!-- Вибір країни -->
+        <div style="margin-bottom:20px;">
+            <label style="display:block; font-weight:600; margin-bottom:6px;">
+                🌍 Країна <span style="color:#e74c3c;">*</span>
+            </label>
+            <select name="country" required
+                    style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:6px;
+                           font-size:0.92rem; box-sizing:border-box;">
+                <option value="">— Оберіть країну —</option>
+                {% for country in countries %}
+                <option value="{{ country.id }}"
+                    {% if selected_country and selected_country.id == country.id %}selected{% endif %}>
+                    {{ country.name }}{% if country.extent_code %} ({{ country.extent_code }}){% endif %}
+                </option>
+                {% endfor %}
+            </select>
+            <small style="color:#666; display:block; margin-top:4px;">
+                Немає потрібної країни?
+                <a href="{% url 'admin:maps_country_add' %}">➕ Додати країну</a>
+            </small>
+        </div>
+
+        <!-- Вибір файлів -->
+        <div style="margin-bottom:20px;">
+            <label style="display:block; font-weight:600; margin-bottom:6px;">
+                📂 GeoJSON файли <span style="color:#e74c3c;">*</span>
+            </label>
+            <input type="file" name="geojson_files" multiple accept=".geojson,.json"
+                   required id="geojson-input"
+                   style="display:block; padding:8px; border:1px solid #ccc; border-radius:6px;
+                          background:white; width:100%; box-sizing:border-box;">
+            <div id="file-list" style="margin-top:6px; font-size:0.8rem; color:#666;"></div>
+            <small style="color:#666; display:block; margin-top:4px;">
+                Можна обрати кілька файлів одночасно (Ctrl+Click / Shift+Click).<br>
+                Підтримується: <code>FeatureCollection</code>, <code>Feature</code>,
+                <code>Polygon</code>, <code>MultiPolygon</code>.
+            </small>
+        </div>
+
+        <!-- Замінити існуючі -->
+        <div style="margin-bottom:24px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" name="replace_existing"
+                       style="width:15px; height:15px; accent-color:#e74c3c;">
+                <span>
+                    <strong style="color:#e74c3c;">Замінити існуючі полігони</strong>
+                    — видалити всі поточні полігони обраної країни перед імпортом
+                </span>
+            </label>
+        </div>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button type="submit"
+                    style="padding:10px 28px; background:#1a6fa8; color:white; border:none;
+                           border-radius:6px; cursor:pointer; font-size:0.95rem; font-weight:500;">
+                ⬆️ Імпортувати
+            </button>
+            <a href="{% url 'admin:maps_country_changelist' %}"
+               style="padding:10px 18px; background:#eee; color:#333; border-radius:6px;
+                      text-decoration:none; font-size:0.9rem; display:inline-flex; align-items:center;">
+                ← Список країн
+            </a>
+            <a href="{% url 'admin:maps_countrypolygon_changelist' %}"
+               style="padding:10px 18px; background:#eee; color:#333; border-radius:6px;
+                      text-decoration:none; font-size:0.9rem; display:inline-flex; align-items:center;">
+                🗺️ Всі полігони
+            </a>
+        </div>
+    </form>
+
+    <!-- Підказка щодо формату -->
+    <div style="margin-top:24px; padding:14px 18px; background:#e8f4fd; border-radius:8px;
+                border:1px solid #c9e1f5; font-size:0.85rem; color:#555;">
+        <strong>💡 Очікуваний формат GeoJSON:</strong>
+        <pre style="margin:8px 0 0; background:white; padding:10px; border-radius:6px;
+                    border:1px solid #ddd; overflow-x:auto; font-size:0.8rem;">{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Назва полігону" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[ [lng, lat], [lng, lat], ... ]]
+      }
+    }
+  ]
+}</pre>
+        Якщо властивість <code>name</code> відсутня — назва береться з імені файлу + номер об'єкту.
+    </div>
+</div>
+
+<script>
+document.getElementById('geojson-input').addEventListener('change', function() {
+    const list = document.getElementById('file-list');
+    if (!this.files.length) { list.textContent = ''; return; }
+    const names = Array.from(this.files).map(f =>
+        `📄 ${f.name} (${(f.size / 1024).toFixed(1)} KB)`
+    );
+    list.innerHTML = names.join('<br>');
+});
+</script>
+{% endblock %}
