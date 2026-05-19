@@ -34,7 +34,28 @@ body {
     overflow-y: auto;
     padding: 16px;
     box-shadow: 2px 0 8px rgba(0,0,0,0.08);
+    transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
+    flex-shrink: 0;
 }
+.sidebar--collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    overflow: hidden;
+}
+#sidebar-toggle {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: background 0.15s;
+}
+#sidebar-toggle:hover { background: rgba(255,255,255,0.28); }
 .sidebar h2 { margin-bottom: 16px; font-size: 1.1rem; }
 
 /* Location card */
@@ -96,3 +117,39 @@ body {
 }
 
 .empty { color: #999; text-align: center; margin-top: 20px; }
+
+/* Collapsible sidebar sections */
+.sb-section { border-bottom: 1px solid #dde; margin-bottom: 4px; }
+.sb-section:last-child { border-bottom: none; }
+.sb-section__hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: white;
+    background: #1a6fa8;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+.sb-section__hdr:hover { background: #155d92; }
+.sb-section__hdr:active { background: #104a78; }
+.sb-chevron {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.85);
+    transition: transform 0.25s;
+    flex-shrink: 0;
+    margin-left: 6px;
+    display: inline-block;
+}
+.sb-section__hdr.open .sb-chevron { transform: rotate(0deg); }
+.sb-section__hdr.closed .sb-chevron { transform: rotate(-90deg); }
+.sb-section__body {
+    max-height: 2000px;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+}
+.sb-section__body.hidden { max-height: 0; }

@@ -20,8 +20,9 @@
 <body>
 
 <nav class="navbar">
-    <div class="navbar__brand">
+    <div class="navbar__brand" style="display:flex; align-items:center; gap:12px;">
         🗺️ GeoPortal Turism
+        <button id="sidebar-toggle" title="Згорнути/розгорнути панель">☰</button>
     </div>
     <div class="navbar__links">
         <a href="{% url 'maps:index' %}">Карта</a>
