@@ -9,4 +9,5 @@ urlpatterns = [
     path('api/ivfrankdist/', views.ivfrankdist_geojson, name='ivfrankdist_geojson'),
     path('api/overpass/', views.overpass_proxy, name='overpass_proxy'),
     path('api/countries/<int:country_id>/polygons/', views.country_polygons_geojson, name='country_polygons_geojson'),
+    path('api/routes/<int:route_id>/elevation/', views.route_elevation, name='route_elevation'),
 ]

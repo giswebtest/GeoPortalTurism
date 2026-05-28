@@ -19,6 +19,31 @@ body {
 .navbar__links { display: flex; gap: 20px; align-items: center; }
 .navbar__links a { color: #ccc; text-decoration: none; }
 .navbar__links a:hover { color: white; }
+#route-toggle-btn {
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.88rem;
+    transition: background 0.2s;
+}
+#route-toggle-btn:hover { background: #219a54; }
+#route-nav-panel {
+    display: none;
+    position: fixed;
+    top: 52px;
+    right: 0;
+    z-index: 2000;
+    background: #e8f4fd;
+    border: 1px solid #c9e1f5;
+    border-radius: 0 0 0 10px;
+    padding: 14px;
+    min-width: 300px;
+    box-shadow: 2px 4px 16px rgba(0,0,0,0.18);
+}
 
 /* Map layout */
 .map-layout {
@@ -153,3 +178,13 @@ body {
     transition: max-height 0.35s ease;
 }
 .sb-section__body.hidden { max-height: 0; }
+
+.sidebar__list {
+    max-height: calc(100vh - 260px);
+    overflow-y: auto;
+    padding-right: 2px;
+}
+.sidebar__list::-webkit-scrollbar { width: 5px; }
+.sidebar__list::-webkit-scrollbar-track { background: transparent; }
+.sidebar__list::-webkit-scrollbar-thumb { background: #c8d8e8; border-radius: 4px; }
+.sidebar__list::-webkit-scrollbar-thumb:hover { background: #1a6fa8; }

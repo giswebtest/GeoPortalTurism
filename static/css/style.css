@@ -178,3 +178,13 @@ body {
     transition: max-height 0.35s ease;
 }
 .sb-section__body.hidden { max-height: 0; }
+
+.sidebar__list {
+    max-height: calc(100vh - 260px);
+    overflow-y: auto;
+    padding-right: 2px;
+}
+.sidebar__list::-webkit-scrollbar { width: 5px; }
+.sidebar__list::-webkit-scrollbar-track { background: transparent; }
+.sidebar__list::-webkit-scrollbar-thumb { background: #c8d8e8; border-radius: 4px; }
+.sidebar__list::-webkit-scrollbar-thumb:hover { background: #1a6fa8; }

@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
 <!-- Leaflet Control Geocoder CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<!-- MapLibre GL CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.css" />
 <style>
 .poi-legend {
     background: white;
@@ -30,6 +32,17 @@
 }
 .poi-legend span { line-height: 1; }
 .leaflet-interactive:focus { outline: none; }
+.elev-tooltip {
+    background: #27ae60;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.elev-tooltip::before { border-top-color: #27ae60; }
 </style>
 {% endblock %}
 
@@ -183,12 +196,21 @@
             <div class="sb-section__body hidden sidebar__routes" id="sb-routes">
                 <ul style="list-style:none; padding:0; padding-bottom:12px;">
                     {% for route in routes %}
-                    <li style="margin-bottom:10px; padding:10px; background:#f0f9eb; border-radius:8px; border:1px solid #c2e0b4; cursor:pointer; transition:0.2s;"
-                        onmouseover="this.style.background='#e2f0d9'" onmouseout="this.style.background='#f0f9eb'"
-                        onclick="focusRoute('{{ route.id }}')">
-                        <strong style="font-size:0.95rem; color:#27ae60;">{{ route.name }}</strong><br>
-                        <small style="color:#666;">🛣️ {{ route.distance_km|default:'?' }} км | ⏱️ ~{{ route.duration_min|default:'?' }} хв</small><br>
-                        <small style="color:#999;">Складність: {{ route.get_difficulty_display }}</small>
+                    <li style="margin-bottom:10px; padding:10px; background:#f0f9eb; border-radius:8px; border:1px solid #c2e0b4; transition:0.2s;">
+                        <div style="cursor:pointer;"
+                            onmouseover="this.parentElement.style.background='#e2f0d9'" onmouseout="this.parentElement.style.background='#f0f9eb'"
+                            onclick="focusRoute('{{ route.id }}')">
+                            <strong style="font-size:0.95rem; color:#27ae60;">{{ route.name }}</strong><br>
+                            <small style="color:#666;">🛣️ {{ route.distance_km|default:'?' }} км | ⏱️ ~{{ route.duration_min|default:'?' }} хв</small><br>
+                            <small style="color:#999;">Складність: {{ route.get_difficulty_display }}</small>
+                        </div>
+                        {% if route.path %}
+                        <button onclick="showElevationChart({{ route.id }}, '{{ route.name|escapejs }}')"
+                            style="margin-top:8px; width:100%; padding:5px 8px; background:#fff; color:#1a6fa8; border:1px solid #1a6fa8; border-radius:5px; cursor:pointer; font-size:0.8rem; transition:0.15s;"
+                            onmouseover="this.style.background='#e8f4ff'" onmouseout="this.style.background='#fff'">
+                            📊 Графік висот
+                        </button>
+                        {% endif %}
                     </li>
                     {% empty %}
                     <p class="empty">Немає готових маршрутів</p>
@@ -257,24 +279,55 @@
             display:none; position:absolute; top:130px; left:10px; z-index:1000;
             background:white; border-radius:10px;
             box-shadow:0 2px 12px rgba(0,0,0,0.18);
-            padding:10px 14px 12px;
-            font-size:0.85rem; min-width:160px;">
+            padding:0;
+            font-size:0.85rem; min-width:160px; overflow:hidden;">
 
-            <div style="font-weight:600; font-size:0.88rem; color:#333; margin-bottom:8px; border-bottom:1px solid #eee; padding-bottom:6px;">
-                Категорії
+            <div id="cat-legend-header" style="
+                display:flex; justify-content:space-between; align-items:center;
+                padding:8px 12px; cursor:pointer; user-select:none;
+                border-bottom:1px solid #eee;">
+                <span style="font-weight:600; font-size:0.88rem; color:#333;">Категорії</span>
+                <span id="cat-legend-chevron" style="font-size:0.75rem; color:#999; transition:transform 0.2s;">▲</span>
             </div>
 
-            <label style="display:flex; align-items:center; gap:7px; margin-bottom:7px; cursor:pointer;">
-                <input type="checkbox" id="cat-cb-all" checked
-                    style="width:14px;height:14px;accent-color:#1a6fa8;cursor:pointer;">
-                <span>Усі</span>
-            </label>
+            <div id="cat-legend-body" style="padding:8px 14px 10px; overflow:hidden; transition:max-height 0.25s ease; max-height:400px;">
+                <label style="display:flex; align-items:center; gap:7px; margin-bottom:7px; cursor:pointer;">
+                    <input type="checkbox" id="cat-cb-all" checked
+                        style="width:14px;height:14px;accent-color:#1a6fa8;cursor:pointer;">
+                    <span>Усі</span>
+                </label>
+                <div id="cat-legend-items"></div>
+            </div>
+        </div>
 
-            <div id="cat-legend-items"></div>
+        <!-- Панель профілю висот (нижня частина карти) -->
+        <div id="elevation-panel" style="
+            display:none; position:absolute; bottom:0; left:0; right:0; z-index:1000;
+            background:rgba(255,255,255,0.97);
+            border-top:2px solid #27ae60;
+            padding:8px 16px 10px;
+            box-shadow:0 -4px 20px rgba(0,0,0,0.14);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                    <span id="elev-panel-title" style="font-weight:600; font-size:0.88rem; color:#27ae60;"></span>
+                    <div id="elev-panel-stats" style="display:flex; gap:14px; font-size:0.78rem; color:#666;"></div>
+                </div>
+                <button id="elev-panel-close"
+                    style="background:none;border:none;cursor:pointer;font-size:20px;color:#aaa;line-height:1;padding:0 4px;flex-shrink:0;">✕</button>
+            </div>
+            <div id="elevation-loading" style="text-align:center; padding:20px; color:#888; display:none;">⏳ Завантаження висот…</div>
+            <div id="elevation-error"  style="text-align:center; padding:16px; color:#e74c3c; display:none;"></div>
+            <div style="position:relative; height:130px;">
+                <canvas id="elevation-chart" style="display:none;"></canvas>
+            </div>
         </div>
     </div>
 
+    <!-- 3D карта MapLibre GL -->
+    <div id="map3d" style="display:none; flex:1; position:relative;"></div>
+
 </div>
+
 
 <!-- Модальне вікно: додати подію в Google Calendar -->
 <div id="gcal-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center;">
@@ -313,6 +366,10 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Chart.js для графіків висот -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<!-- MapLibre GL JS -->
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.js"></script>
 <!-- Leaflet Routing Machine JS -->
 <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 <!-- Leaflet Control Geocoder JS -->
@@ -1096,6 +1153,21 @@
         });
     }
 
+    // Згортання/розгортання легенди категорій
+    (function() {
+        const header  = document.getElementById('cat-legend-header');
+        const body    = document.getElementById('cat-legend-body');
+        const chevron = document.getElementById('cat-legend-chevron');
+        if (!header) return;
+        let collapsed = false;
+        header.addEventListener('click', () => {
+            collapsed = !collapsed;
+            body.style.maxHeight    = collapsed ? '0' : '400px';
+            body.style.padding      = collapsed ? '0 14px' : '8px 14px 10px';
+            chevron.style.transform = collapsed ? 'rotate(180deg)' : 'rotate(0deg)';
+        });
+    })();
+
     // Ініціалізація на старті: ховаємо всі маркери до вибору країни
     markers.forEach(({ marker }) => map.removeLayer(marker));
     const sidebarList = document.querySelector('.sidebar__list');
@@ -1323,10 +1395,22 @@
         gcalModal.style.display = 'none';
     });
 
+    // Скорочення назви до N символів
+    const trunc = (s, n = 16) => s.length > n ? s.slice(0, n) + '…' : s;
+
+    let _prevWpCount = 0;
+
     // Оновлення інтерфейсу списку точок маршруту
     function updateRoutingUI() {
         statsContainer.style.display = 'none';
         statsContainer.innerHTML = '';
+
+        // Авто-відкриття панелі при додаванні першої точки
+        const routePanel = document.getElementById('route-nav-panel');
+        if (waypoints.length === 1 && _prevWpCount === 0 && routePanel) {
+            routePanel.style.display = 'block';
+        }
+        _prevWpCount = waypoints.length;
 
         if (waypoints.length === 0) {
             waypointsContainer.innerHTML = '<em style="color: #666;">Натискайте "➕ До маршруту" біля цікавих місць, щоб вибрати точки.</em>';
@@ -1337,14 +1421,15 @@
         } else {
             let html = '<div>';
             waypoints.forEach((wp, i) => {
+                const label = trunc(wp.name);
                 // Точка
                 html += `
                     <div data-wp-index="${i}" style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 6px 8px; border-radius: 6px; border: 1px solid #e0e0e0; cursor: default; transition: background 0.15s;">
-                        <div style="display: flex; align-items: center; gap: 6px;">
-                            <strong style="font-size:0.85rem;">${i + 1}.</strong>
-                            <span onclick="map.panTo(waypoints[${i}].latLng, {animate:true})" style="font-size:0.85rem; cursor:pointer; text-decoration:underline dotted; text-underline-offset:3px;">${wp.name}</span>
+                        <div style="display: flex; align-items: center; gap: 6px; min-width:0; flex:1;">
+                            <strong style="font-size:0.85rem; flex-shrink:0;">${i + 1}.</strong>
+                            <span onclick="map.panTo(waypoints[${i}].latLng, {animate:true})" title="${wp.name.replace(/"/g,'&quot;')}" style="font-size:0.85rem; cursor:pointer; text-decoration:underline dotted; text-underline-offset:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${label}</span>
                         </div>
-                        <div style="display: flex; gap: 4px;">
+                        <div style="display: flex; gap: 4px; flex-shrink:0; margin-left:4px;">
                             <button onclick="moveWaypoint(${i}, -1)" ${i === 0 ? 'disabled' : ''} style="padding: 2px 6px; cursor: pointer; border: 1px solid #ccc; background: #eee; border-radius: 3px;" title="Вгору">⬆️</button>
                             <button onclick="moveWaypoint(${i}, 1)" ${i === waypoints.length - 1 ? 'disabled' : ''} style="padding: 2px 6px; cursor: pointer; border: 1px solid #ccc; background: #eee; border-radius: 3px;" title="Вниз">⬇️</button>
                             <button onclick="openCalendarModal(${i})" style="padding: 2px 6px; cursor: pointer; border: 1px solid #4285F4; background: #e8f0fe; color: #4285F4; border-radius: 3px;" title="Додати в Google Calendar">📅</button>
@@ -1358,7 +1443,7 @@
                     html += `
                         <div style="display: flex; align-items: center; gap: 6px; padding: 2px 12px;">
                             <div style="width: 3px; height: 22px; background: ${color}; border-radius: 2px; margin-left: 6px; flex-shrink: 0;"></div>
-                            <span style="font-size: 0.75rem; color: ${color}; font-weight: 600;">${wp.name.length > 18 ? wp.name.slice(0,18)+'…' : wp.name} → ${waypoints[i+1].name.length > 18 ? waypoints[i+1].name.slice(0,18)+'…' : waypoints[i+1].name}</span>
+                            <span style="font-size: 0.75rem; color: ${color}; font-weight: 600;">${trunc(wp.name)} → ${trunc(waypoints[i+1].name)}</span>
                         </div>
                     `;
                 }
@@ -1617,6 +1702,330 @@
             setTimeout(function() { map.invalidateSize(); }, 310);
         });
     })();
+
+    // ==========================================
+    // 3D КАРТА — MapLibre GL
+    // ==========================================
+    (function() {
+        const mapEl   = document.getElementById('map');
+        const map3dEl = document.getElementById('map3d');
+        let map3d     = null;
+        let is3D      = false;
+
+        // Кнопка — вставляємо в навбар після "🚗 Маршрут"
+        const btn = document.createElement('button');
+        btn.id    = 'toggle-3d-btn';
+        btn.title = '3D карта із супутника';
+        btn.textContent = '🏔️ 3D';
+        btn.style.cssText = [
+            'background:#8e44ad', 'color:white', 'border:none',
+            'border-radius:6px', 'padding:5px 12px', 'cursor:pointer',
+            'font-weight:500', 'font-size:0.88rem', 'transition:background 0.2s'
+        ].join(';');
+        btn.onmouseover = function() { if (!is3D) this.style.background = '#7d3c98'; };
+        btn.onmouseout  = function() { if (!is3D) this.style.background = '#8e44ad'; };
+
+        const routeToggleBtn = document.getElementById('route-toggle-btn');
+        routeToggleBtn.insertAdjacentElement('afterend', btn);
+
+        btn.addEventListener('click', function() {
+            is3D = !is3D;
+            if (is3D) {
+                mapEl.style.display   = 'none';
+                map3dEl.style.display = 'flex';
+                map3dEl.style.flex    = '1';
+                btn.style.background  = '#5b2c6f';
+                btn.textContent       = '🗺️ 2D';
+                if (!map3d) {
+                    initMap3D();
+                } else {
+                    // Синхронізуємо 3D → поточний екстент 2D карти
+                    const c = map.getCenter();
+                    map3d.jumpTo({ center: [c.lng, c.lat], zoom: map.getZoom() });
+                    map3d.resize();
+                }
+            } else {
+                map3dEl.style.display = 'none';
+                mapEl.style.display   = 'block';
+                btn.style.background  = '#8e44ad';
+                btn.textContent       = '🏔️ 3D';
+                // Синхронізуємо 2D → поточний екстент 3D карти
+                if (map3d) {
+                    const c = map3d.getCenter();
+                    map.setView([c.lat, c.lng], map3d.getZoom(), { animate: false });
+                }
+                map.invalidateSize();
+            }
+        });
+
+        function initMap3D() {
+            const center = map.getCenter();
+            const routeColors = ['#f1c40f','#ff4444','#00aaff','#00ff88','#ff8800','#dd44ff'];
+
+            // Тільки супутник в початковому стилі — terrain додаємо після load
+            map3d = new maplibregl.Map({
+                container: 'map3d',
+                style: {
+                    version: 8,
+                    sources: {
+                        'satellite': {
+                            type: 'raster',
+                            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+                            tileSize: 256,
+                            attribution: '© Esri',
+                            maxzoom: 19,
+                        },
+                    },
+                    layers: [
+                        { id: 'satellite-layer', type: 'raster', source: 'satellite' },
+                    ],
+                },
+                center: [center.lng, center.lat],
+                zoom: map.getZoom(),
+                pitch: 55,
+                bearing: -10,
+                antialias: true,
+            });
+
+            map3d.addControl(new maplibregl.NavigationControl(), 'top-right');
+            map3d.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
+
+            map3d.on('error', function(e) {
+                console.error('[MapLibre3D] error:', e.error || e);
+            });
+
+            map3d.on('load', function() {
+                // Додаємо маршрути одразу після завантаження стилю
+                savedRoutes.forEach(function(route, idx) {
+                    const color = routeColors[idx % routeColors.length];
+                    const geojsonData = {
+                        type: 'FeatureCollection',
+                        features: [{
+                            type: 'Feature',
+                            properties: { name: route.name, distance: route.distance, duration: route.duration },
+                            geometry: route.geojson,
+                        }],
+                    };
+                    try {
+                        map3d.addSource('r3d-' + route.id, { type: 'geojson', data: geojsonData });
+                        map3d.addLayer({
+                            id: 'r3d-casing-' + route.id, type: 'line',
+                            source: 'r3d-' + route.id,
+                            layout: { 'line-join': 'round', 'line-cap': 'round' },
+                            paint: { 'line-color': '#ffffff', 'line-width': 9, 'line-opacity': 0.9 },
+                        });
+                        map3d.addLayer({
+                            id: 'r3d-line-' + route.id, type: 'line',
+                            source: 'r3d-' + route.id,
+                            layout: { 'line-join': 'round', 'line-cap': 'round' },
+                            paint: { 'line-color': color, 'line-width': 5, 'line-opacity': 1 },
+                        });
+                        map3d.on('click', 'r3d-line-' + route.id, function(e) {
+                            new maplibregl.Popup({ maxWidth: '240px' })
+                                .setLngLat(e.lngLat)
+                                .setHTML('<strong>' + route.name + '</strong><br><small>🛣️ ' + route.distance + ' км · ⏱️ ' + route.duration + ' хв</small>')
+                                .addTo(map3d);
+                        });
+                        map3d.on('mouseenter', 'r3d-line-' + route.id, function() { map3d.getCanvas().style.cursor = 'pointer'; });
+                        map3d.on('mouseleave', 'r3d-line-' + route.id, function() { map3d.getCanvas().style.cursor = ''; });
+                    } catch(err) {
+                        console.error('[MapLibre3D] route error [' + route.id + ']:', err);
+                    }
+                });
+
+                // Terrain — додаємо окремо після маршрутів; якщо не вдається — карта продовжує працювати
+                try {
+                    map3d.addSource('terrain-dem', {
+                        type: 'raster-dem',
+                        tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+                        tileSize: 256,
+                        encoding: 'terrarium',
+                        maxzoom: 14,
+                    });
+                    map3d.setTerrain({ source: 'terrain-dem', exaggeration: 1.4 });
+                } catch(err) {
+                    console.warn('[MapLibre3D] terrain not available:', err.message);
+                }
+            });
+        }
+    })();
+
+    // ==========================================
+    // ГРАФІК ВИСОТ — панель внизу карти
+    // ==========================================
+    let elevationChartInstance = null;
+    let elevationMarker = null;
+    let currentProfile  = [];
+
+    // Вертикальна лінія курсору поверх графіка
+    const crosshairPlugin = {
+        id: 'crosshair',
+        afterDraw(chart) {
+            const active = chart.tooltip._active;
+            if (!active || !active.length) return;
+            const { ctx, chartArea: { top, bottom } } = chart;
+            const x = active[0].element.x;
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x, top);
+            ctx.lineTo(x, bottom);
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = 'rgba(39,174,96,0.7)';
+            ctx.setLineDash([4, 3]);
+            ctx.stroke();
+            ctx.restore();
+        }
+    };
+
+    // Маркер на маршруті
+    function moveElevMarker(lat, lng, elev) {
+        if (!elevationMarker) {
+            elevationMarker = L.circleMarker([lat, lng], {
+                radius: 7,
+                color: '#27ae60',
+                weight: 3,
+                fillColor: '#fff',
+                fillOpacity: 1,
+                zIndexOffset: 500,
+            }).addTo(map)
+              .bindTooltip('', { permanent: true, direction: 'top', offset: [0, -10], className: 'elev-tooltip' });
+        }
+        elevationMarker.setLatLng([lat, lng]);
+        elevationMarker.setTooltipContent(`<strong>${elev} м</strong>`);
+        elevationMarker.openTooltip();
+    }
+
+    function removeElevMarker() {
+        if (elevationMarker) {
+            map.removeLayer(elevationMarker);
+            elevationMarker = null;
+        }
+    }
+
+    function closeElevationPanel() {
+        document.getElementById('elevation-panel').style.display = 'none';
+        document.getElementById('elevation-chart').style.display  = 'none';
+        if (elevationChartInstance) { elevationChartInstance.destroy(); elevationChartInstance = null; }
+        removeElevMarker();
+        currentProfile = [];
+        map.invalidateSize();
+    }
+
+    document.getElementById('elev-panel-close').addEventListener('click', closeElevationPanel);
+
+    // Забороняємо колесо миші та кліки карти під панеллю
+    L.DomEvent.disableScrollPropagation(document.getElementById('elevation-panel'));
+    L.DomEvent.disableClickPropagation(document.getElementById('elevation-panel'));
+
+    window.showElevationChart = function(routeId, routeName) {
+        const panel    = document.getElementById('elevation-panel');
+        const title    = document.getElementById('elev-panel-title');
+        const statsEl  = document.getElementById('elev-panel-stats');
+        const loading  = document.getElementById('elevation-loading');
+        const errorEl  = document.getElementById('elevation-error');
+        const canvas   = document.getElementById('elevation-chart');
+
+        title.textContent   = `📊 ${routeName}`;
+        statsEl.innerHTML   = '';
+        panel.style.display = 'block';
+        loading.style.display = 'block';
+        errorEl.style.display = 'none';
+        canvas.style.display  = 'none';
+
+        if (elevationChartInstance) { elevationChartInstance.destroy(); elevationChartInstance = null; }
+        removeElevMarker();
+        currentProfile = [];
+
+        fetch(`/api/routes/${routeId}/elevation/`)
+            .then(r => r.json())
+            .then(data => {
+                loading.style.display = 'none';
+                if (data.error) { errorEl.textContent = `❌ ${data.error}`; errorEl.style.display = 'block'; return; }
+
+                currentProfile = data.profile || [];
+                if (!currentProfile.length) {
+                    errorEl.textContent = '❌ Немає даних висот';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+
+                const elevs     = currentProfile.map(p => p.elevation_m);
+                const minElev   = Math.min(...elevs);
+                const maxElev   = Math.max(...elevs);
+                const totalClimb = elevs.reduce((sum, e, i) => sum + (i > 0 && e > elevs[i-1] ? e - elevs[i-1] : 0), 0);
+
+                statsEl.innerHTML =
+                    `<span>📉 ${Math.round(minElev)} м</span>` +
+                    `<span>📈 ${Math.round(maxElev)} м</span>` +
+                    `<span>⬆️ +${Math.round(totalClimb)} м</span>`;
+
+                canvas.style.display = 'block';
+                const ctx = canvas.getContext('2d');
+                elevationChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    plugins: [crosshairPlugin],
+                    data: {
+                        labels: currentProfile.map(p => p.distance_km.toFixed(2)),
+                        datasets: [{
+                            data: elevs,
+                            borderColor: '#27ae60',
+                            backgroundColor: 'rgba(39,174,96,0.13)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: true,
+                            tension: 0.35
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    title: items => `${items[0].label} км`,
+                                    label: item  => `${item.raw} м`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Відстань (км)', font: { size: 10 } },
+                                ticks: { maxTicksLimit: 8, font: { size: 9 } }
+                            },
+                            y: {
+                                title: { display: true, text: 'Висота (м)', font: { size: 10 } },
+                                suggestedMin: minElev - 20,
+                                ticks: { font: { size: 9 } }
+                            }
+                        },
+                        onHover: (event, elements) => {
+                            if (elements.length > 0) {
+                                const p = currentProfile[elements[0].index];
+                                if (p) moveElevMarker(p.lat, p.lng, p.elevation_m);
+                            }
+                        }
+                    }
+                });
+
+                // mouseleave — прибираємо маркер
+                canvas.addEventListener('mouseleave', removeElevMarker, { once: false });
+
+                // Зрушуємо карту вгору щоб маршрут не ховався за панеллю
+                map.invalidateSize();
+                const routeLayer = routeLayers[routeId];
+                if (routeLayer) {
+                    const panelH = panel.getBoundingClientRect().height;
+                    map.fitBounds(routeLayer.getBounds(), { paddingBottomRight: [0, panelH + 10], paddingTopLeft: [0, 10] });
+                }
+            })
+            .catch(err => {
+                loading.style.display = 'none';
+                errorEl.textContent = `❌ ${err.message}`;
+                errorEl.style.display = 'block';
+            });
+    };
 
 </script>
 {% endblock %}

@@ -85,3 +85,56 @@ def ivfrankdist_geojson(request):
     except Exception:
         data = _table_geojson('ivfrankdist')
     return JsonResponse(data, safe=False)
+
+
+def route_elevation(request, route_id):
+    import math
+    import requests as http_requests
+    from django.shortcuts import get_object_or_404
+
+    route = get_object_or_404(Route, pk=route_id, is_published=True)
+    if not route.path:
+        return JsonResponse({'error': 'Маршрут не має геометрії'}, status=404)
+
+    coords = list(route.path.coords)  # [(lon, lat), ...]
+
+    MAX_POINTS = 100
+    if len(coords) > MAX_POINTS:
+        indices = [int(i * (len(coords) - 1) / (MAX_POINTS - 1)) for i in range(MAX_POINTS)]
+        coords = [coords[i] for i in indices]
+
+    def haversine_km(c1, c2):
+        R = 6371.0
+        lat1, lon1 = math.radians(c1[1]), math.radians(c1[0])
+        lat2, lon2 = math.radians(c2[1]), math.radians(c2[0])
+        dlat, dlon = lat2 - lat1, lon2 - lon1
+        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+        return R * 2 * math.asin(math.sqrt(a))
+
+    distances = [0.0]
+    for i in range(1, len(coords)):
+        distances.append(distances[-1] + haversine_km(coords[i-1], coords[i]))
+
+    locs = '|'.join(f'{c[1]},{c[0]}' for c in coords)
+    try:
+        resp = http_requests.get(
+            f'https://api.opentopodata.org/v1/srtm90m?locations={locs}',
+            timeout=20
+        )
+        resp.raise_for_status()
+        results = resp.json().get('results', [])
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=502)
+
+    profile = [
+        {
+            'distance_km': round(distances[i], 3),
+            'elevation_m': round(r['elevation'], 1),
+            'lat': round(coords[i][1], 6),
+            'lng': round(coords[i][0], 6),
+        }
+        for i, r in enumerate(results)
+        if r.get('elevation') is not None
+    ]
+
+    return JsonResponse({'profile': profile, 'name': route.name})
