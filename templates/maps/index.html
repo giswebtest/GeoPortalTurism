@@ -69,13 +69,13 @@
 
     <!-- Бокова панель -->
     <aside class="sidebar" id="main-sidebar">
-        <h2 style="margin-bottom:8px;">📍 Місця</h2>
+        <h2 style="margin-bottom:8px;">🇺🇦 Україна</h2>
 
         <!-- ===== 🌍 КРАЇНИ ===== -->
         {% if countries %}
         <div class="sb-section">
             <div class="sb-section__hdr open" data-target="sb-countries">
-                <span>🌍 Країни</span>
+                <span>🌍 Екстент</span>
                 <span class="sb-chevron">▾</span>
             </div>
             <div class="sb-section__body" id="sb-countries">
@@ -83,7 +83,7 @@
                     <select id="country-select"
                         style="width:100%; padding:7px 10px; border:1px solid #ccc; border-radius:6px;
                                font-size:0.88rem; margin-bottom:10px; box-sizing:border-box;">
-                        <option value="">— Оберіть країну —</option>
+                        <option value="">— Оберіть область —</option>
                         {% for country in countries %}
                         <option value="{{ country.id }}" data-extent="{{ country.extent_code }}">
                             {{ country.name }}
@@ -398,10 +398,9 @@
 
     // 2. Ініціалізуємо карту і додаємо стандартний шар
     const map = L.map('map', {
-        center: [48.6438, 24.5984],
-        zoom: 9,
-        layers: [osmTourist] // Шар за замовчуванням
+        layers: [osmTourist]
     });
+    map.fitBounds([[44.3, 22.1], [52.4, 40.2]]);
 
     // 3. Створюємо об'єкт з нашими картами для меню
     const baseMaps = {
@@ -908,7 +907,7 @@
             applyMarkerFilters();
             buildCatLegend();
 
-            // Автозум на екстент країни
+            // Автозум: якщо країна не вибрана — Україна, інакше на екстент країни
             const opt = countrySelect.selectedOptions[0];
             const ext = opt && opt.dataset.extent;
             if (ext) {
@@ -917,6 +916,9 @@
                     const [minLng, minLat, maxLng, maxLat] = parts;
                     map.fitBounds([[minLat, minLng], [maxLat, maxLng]], { animate: true, padding: [20, 20] });
                 }
+            } else {
+                // Зум на Україну (bbox: 22.1°E–40.2°E, 44.3°N–52.4°N)
+                map.fitBounds([[44.3, 22.1], [52.4, 40.2]], { animate: true, padding: [20, 20] });
             }
         });
     }
@@ -1005,14 +1007,14 @@
 
         markers.forEach(({ index, marker }) => {
             const loc = locations[index];
-            const passCountry = !activeCountryId || loc.countryId === activeCountryId;
+            const passCountry = !!activeCountryId && loc.countryId === activeCountryId;
             const passCb      = allChecked || checkedSlugs.has(loc.categorySlug) || !loc.categorySlug;
             const show = passCountry && passCb;
             show ? marker.addTo(map) : map.removeLayer(marker);
         });
 
         document.querySelectorAll('.location-card').forEach(card => {
-            const countryOk  = !activeCountryId || parseInt(card.dataset.country) === activeCountryId;
+            const countryOk  = !!activeCountryId && parseInt(card.dataset.country) === activeCountryId;
             const catSlug    = card.dataset.category;
             const catVisible = !catSlug || visibleCatSlugs.has(catSlug);
             const cbOk       = allChecked || checkedSlugs.has(catSlug) || !catSlug;

@@ -32,9 +32,9 @@
         {% endif %}
         {% if user.is_authenticated %}
             <span>👤 {{ user.username }}</span>
-            <a href="{% url 'accounts:logout' %}">Выйти</a>
+            <a href="{% url 'accounts:logout' %}">Вийти</a>
         {% else %}
-            <a href="{% url 'accounts:login' %}">Войти</a>
+            <a href="{% url 'accounts:login' %}">Увійти</a>
         {% endif %}
     </div>
 </nav>

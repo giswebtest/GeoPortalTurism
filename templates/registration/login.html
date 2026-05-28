@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
-{% block title %}Вход{% endblock %}
+{% block title %}Вхід{% endblock %}
 
 {% block content %}
 <div class="auth-form">
-    <h2>🔐 Вход</h2>
+    <h2>🔐 Вхід</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Войти</button>
+        <button type="submit">Увійти</button>
     </form>
 </div>
 {% endblock %}

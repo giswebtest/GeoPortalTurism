@@ -73,7 +73,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Язык и время
-LANGUAGE_CODE = 'ru-ru'
+LANGUAGE_CODE = 'uk'
 TIME_ZONE = 'Europe/Kyiv'
 USE_I18N = True
 USE_TZ = True
