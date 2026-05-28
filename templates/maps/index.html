@@ -196,11 +196,10 @@
             <div class="sb-section__body hidden sidebar__routes" id="sb-routes">
                 <ul style="list-style:none; padding:0; padding-bottom:12px;">
                     {% for route in routes %}
-                    <li style="margin-bottom:10px; padding:10px; background:#f0f9eb; border-radius:8px; border:1px solid #c2e0b4; transition:0.2s;">
+                    <li data-route-id="{{ route.id }}" style="margin-bottom:10px; padding:10px; background:#f0f9eb; border-radius:8px; border:1px solid #c2e0b4; transition:background 0.2s;">
                         <div style="cursor:pointer;"
-                            onmouseover="this.parentElement.style.background='#e2f0d9'" onmouseout="this.parentElement.style.background='#f0f9eb'"
                             onclick="focusRoute('{{ route.id }}')">
-                            <strong style="font-size:0.95rem; color:#27ae60;">{{ route.name }}</strong><br>
+                            <strong class="route-sb-name" style="font-size:0.95rem; color:#27ae60;">{{ route.name }}</strong><br>
                             <small style="color:#666;">🛣️ {{ route.distance_km|default:'?' }} км | ⏱️ ~{{ route.duration_min|default:'?' }} хв</small><br>
                             <small style="color:#999;">Складність: {{ route.get_difficulty_display }}</small>
                         </div>
@@ -300,31 +299,32 @@
             </div>
         </div>
 
-        <!-- Панель профілю висот (нижня частина карти) -->
-        <div id="elevation-panel" style="
-            display:none; position:absolute; bottom:0; left:0; right:0; z-index:1000;
-            background:rgba(255,255,255,0.97);
-            border-top:2px solid #27ae60;
-            padding:8px 16px 10px;
-            box-shadow:0 -4px 20px rgba(0,0,0,0.14);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-                    <span id="elev-panel-title" style="font-weight:600; font-size:0.88rem; color:#27ae60;"></span>
-                    <div id="elev-panel-stats" style="display:flex; gap:14px; font-size:0.78rem; color:#666;"></div>
-                </div>
-                <button id="elev-panel-close"
-                    style="background:none;border:none;cursor:pointer;font-size:20px;color:#aaa;line-height:1;padding:0 4px;flex-shrink:0;">✕</button>
-            </div>
-            <div id="elevation-loading" style="text-align:center; padding:20px; color:#888; display:none;">⏳ Завантаження висот…</div>
-            <div id="elevation-error"  style="text-align:center; padding:16px; color:#e74c3c; display:none;"></div>
-            <div style="position:relative; height:130px;">
-                <canvas id="elevation-chart" style="display:none;"></canvas>
-            </div>
-        </div>
     </div>
 
     <!-- 3D карта MapLibre GL -->
     <div id="map3d" style="display:none; flex:1; position:relative;"></div>
+
+    <!-- Панель профілю висот — спільна для 2D і 3D карти -->
+    <div id="elevation-panel" style="
+        display:none; position:absolute; bottom:0; left:0; right:0; z-index:1001;
+        background:rgba(255,255,255,0.97);
+        border-top:2px solid #27ae60;
+        padding:8px 16px 10px;
+        box-shadow:0 -4px 20px rgba(0,0,0,0.14);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                <span id="elev-panel-title" style="font-weight:600; font-size:0.88rem; color:#27ae60;"></span>
+                <div id="elev-panel-stats" style="display:flex; gap:14px; font-size:0.78rem; color:#666;"></div>
+            </div>
+            <button id="elev-panel-close"
+                style="background:none;border:none;cursor:pointer;font-size:20px;color:#aaa;line-height:1;padding:0 4px;flex-shrink:0;">✕</button>
+        </div>
+        <div id="elevation-loading" style="text-align:center; padding:20px; color:#888; display:none;">⏳ Завантаження висот…</div>
+        <div id="elevation-error"  style="text-align:center; padding:16px; color:#e74c3c; display:none;"></div>
+        <div style="position:relative; height:130px;">
+            <canvas id="elevation-chart" style="display:none;"></canvas>
+        </div>
+    </div>
 
 </div>
 
@@ -1203,14 +1203,16 @@
         {% endfor %}
     ];
 
+    const routeColors = ['#f1c40f','#ff4444','#00aaff','#00ff88','#ff8800','#dd44ff'];
     const routeLayers = {};
 
-    savedRoutes.forEach(route => {
+    savedRoutes.forEach((route, idx) => {
+        const color = routeColors[idx % routeColors.length];
         const routeLayer = L.geoJSON(route.geojson, {
             style: {
-                color: '#27ae60',
+                color: color,
                 weight: 5,
-                opacity: 0.8
+                opacity: 0.9
             }
         }).bindPopup(`
             <div style="text-align: center;">
@@ -1222,11 +1224,43 @@
         routeLayers[route.id] = routeLayer;
     });
 
+    // Розфарбовуємо картки маршрутів у сайдбарі відповідно до кольорів на карті
+    savedRoutes.forEach(function(route, idx) {
+        const color = routeColors[idx % routeColors.length];
+        const li = document.querySelector('li[data-route-id="' + route.id + '"]');
+        if (!li) return;
+        const bgLight = color + '22';
+        const bgHover = color + '44';
+        li.style.background   = bgLight;
+        li.style.border       = '1px solid ' + color + '66';
+        li.style.borderLeft   = '4px solid ' + color;
+        const nameEl = li.querySelector('.route-sb-name');
+        if (nameEl) nameEl.style.color = color;
+        const inner = li.querySelector('div[onclick]');
+        if (inner) {
+            inner.addEventListener('mouseover', function() { li.style.background = bgHover; });
+            inner.addEventListener('mouseout',  function() { li.style.background = bgLight; });
+        }
+    });
+
     window.focusRoute = function(id) {
-        const layer = routeLayers[id];
-        if (layer) {
-            map.fitBounds(layer.getBounds(), { padding: [20, 20] });
-            layer.openPopup();
+        if (_is3DActive()) {
+            const route = savedRoutes.find(r => String(r.id) === String(id));
+            if (route && route.geojson && route.geojson.coordinates && route.geojson.coordinates.length) {
+                const coords = route.geojson.coordinates;
+                const lngs = coords.map(c => c[0]);
+                const lats = coords.map(c => c[1]);
+                window._map3d.fitBounds(
+                    [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
+                    { padding: 40, duration: 800 }
+                );
+            }
+        } else {
+            const layer = routeLayers[id];
+            if (layer) {
+                map.fitBounds(layer.getBounds(), { padding: [20, 20] });
+                layer.openPopup();
+            }
         }
     };
 
@@ -1692,14 +1726,20 @@
     // ==========================================
     // ЗГОРТАННЯ БОКОВОЇ ПАНЕЛІ
     // ==========================================
+    // Оновлення лівої межі панелі висот після зміни ширини сайдбару
+    function syncElevPanelLeft() {
+        const sb = document.getElementById('main-sidebar');
+        const ep = document.getElementById('elevation-panel');
+        if (ep) ep.style.left = (sb ? sb.offsetWidth : 0) + 'px';
+    }
+
     (function() {
         var sidebar = document.getElementById('main-sidebar');
         var btn = document.getElementById('sidebar-toggle');
         btn.addEventListener('click', function() {
             var collapsed = sidebar.classList.toggle('sidebar--collapsed');
             btn.textContent = collapsed ? '›' : '‹';
-            // Через 310мс (після анімації) перерахуємо розмір карти
-            setTimeout(function() { map.invalidateSize(); }, 310);
+            setTimeout(function() { map.invalidateSize(); syncElevPanelLeft(); }, 310);
         });
     })();
 
@@ -1760,7 +1800,6 @@
 
         function initMap3D() {
             const center = map.getCenter();
-            const routeColors = ['#f1c40f','#ff4444','#00aaff','#00ff88','#ff8800','#dd44ff'];
 
             // Тільки супутник в початковому стилі — terrain додаємо після load
             map3d = new maplibregl.Map({
@@ -1787,8 +1826,36 @@
                 antialias: true,
             });
 
+            window._map3d = map3d;
             map3d.addControl(new maplibregl.NavigationControl(), 'top-right');
             map3d.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
+
+            // Перемикач підложки: супутник ↔ звичайна карта
+            const basemapTiles = {
+                satellite: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+                standard:  ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            };
+            let activeBm = 'satellite';
+
+            map3d.addControl({
+                onAdd: function() {
+                    const div = document.createElement('div');
+                    div.className = 'maplibregl-ctrl maplibregl-ctrl-group';
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.title = 'Змінити підложку';
+                    btn.textContent = '🗺️ Карта';
+                    btn.style.cssText = 'font-size:0.8rem;padding:0 10px;white-space:nowrap;width:auto;min-width:96px;height:29px;cursor:pointer;';
+                    btn.addEventListener('click', function() {
+                        activeBm = activeBm === 'satellite' ? 'standard' : 'satellite';
+                        map3d.getSource('satellite').setTiles(basemapTiles[activeBm]);
+                        btn.textContent = activeBm === 'satellite' ? '🗺️ Карта' : '🛰️ Супутник';
+                    });
+                    div.appendChild(btn);
+                    return div;
+                },
+                onRemove: function() {},
+            }, 'top-left');
 
             map3d.on('error', function(e) {
                 console.error('[MapLibre3D] error:', e.error || e);
@@ -1828,6 +1895,37 @@
                         });
                         map3d.on('mouseenter', 'r3d-line-' + route.id, function() { map3d.getCanvas().style.cursor = 'pointer'; });
                         map3d.on('mouseleave', 'r3d-line-' + route.id, function() { map3d.getCanvas().style.cursor = ''; });
+
+                        // Підпис назви маршруту на середній точці лінії
+                        const coords = route.geojson && route.geojson.coordinates;
+                        if (coords && coords.length > 0) {
+                            const mid = coords[Math.floor(coords.length / 2)];
+                            const lbl = document.createElement('div');
+                            lbl.style.cssText = [
+                                'background:' + color,
+                                'color:#111',
+                                'padding:3px 9px',
+                                'border-radius:12px',
+                                'font-size:0.72rem',
+                                'font-weight:700',
+                                'white-space:nowrap',
+                                'box-shadow:0 2px 8px rgba(0,0,0,0.5)',
+                                'border:2px solid rgba(255,255,255,0.85)',
+                                'cursor:pointer',
+                                'user-select:none',
+                                'text-shadow:0 1px 2px rgba(255,255,255,0.6)',
+                            ].join(';');
+                            lbl.textContent = route.name;
+                            lbl.addEventListener('click', (function(r) { return function() {
+                                new maplibregl.Popup({ maxWidth: '240px' })
+                                    .setLngLat([mid[0], mid[1]])
+                                    .setHTML('<strong>' + r.name + '</strong><br><small>🛣️ ' + r.distance + ' км · ⏱️ ' + r.duration + ' хв</small>')
+                                    .addTo(map3d);
+                            }; })(route));
+                            new maplibregl.Marker({ element: lbl, anchor: 'center' })
+                                .setLngLat([mid[0], mid[1]])
+                                .addTo(map3d);
+                        }
                     } catch(err) {
                         console.error('[MapLibre3D] route error [' + route.id + ']:', err);
                     }
@@ -1854,8 +1952,14 @@
     // ГРАФІК ВИСОТ — панель внизу карти
     // ==========================================
     let elevationChartInstance = null;
-    let elevationMarker = null;
-    let currentProfile  = [];
+    let elevationMarker  = null;   // Leaflet circleMarker (2D)
+    let elevMarker3d     = null;   // MapLibre Marker (3D)
+    let elevPopup3d      = null;   // MapLibre Popup (3D)
+    let currentProfile   = [];
+
+    function _is3DActive() {
+        return document.getElementById('map3d').style.display !== 'none' && window._map3d;
+    }
 
     // Вертикальна лінія курсору поверх графіка
     const crosshairPlugin = {
@@ -1877,29 +1981,38 @@
         }
     };
 
-    // Маркер на маршруті
+    // Маркер на маршруті — 2D або 3D залежно від активної карти
     function moveElevMarker(lat, lng, elev) {
-        if (!elevationMarker) {
-            elevationMarker = L.circleMarker([lat, lng], {
-                radius: 7,
-                color: '#27ae60',
-                weight: 3,
-                fillColor: '#fff',
-                fillOpacity: 1,
-                zIndexOffset: 500,
-            }).addTo(map)
-              .bindTooltip('', { permanent: true, direction: 'top', offset: [0, -10], className: 'elev-tooltip' });
+        if (_is3DActive()) {
+            const m3d = window._map3d;
+            if (!elevMarker3d) {
+                const el = document.createElement('div');
+                el.style.cssText = 'display:flex;flex-direction:column;align-items:center;pointer-events:none;';
+                elevMarker3d = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+                    .setLngLat([lng, lat]).addTo(m3d);
+            }
+            // Оновлюємо позицію і текст мітки разом
+            elevMarker3d.setLngLat([lng, lat]);
+            elevMarker3d.getElement().innerHTML =
+                '<div style="background:#27ae60;color:#fff;padding:2px 9px;border-radius:6px;font-size:0.8rem;font-weight:700;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.35);">' + elev + ' м</div>' +
+                '<div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid #27ae60;"></div>' +
+                '<div style="width:11px;height:11px;border-radius:50%;background:#27ae60;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4);margin-top:-2px;"></div>';
+        } else {
+            if (!elevationMarker) {
+                elevationMarker = L.circleMarker([lat, lng], {
+                    radius: 7, color: '#27ae60', weight: 3, fillColor: '#fff', fillOpacity: 1, zIndexOffset: 500,
+                }).addTo(map)
+                  .bindTooltip('', { permanent: true, direction: 'top', offset: [0, -10], className: 'elev-tooltip' });
+            }
+            elevationMarker.setLatLng([lat, lng]);
+            elevationMarker.setTooltipContent(`<strong>${elev} м</strong>`);
+            elevationMarker.openTooltip();
         }
-        elevationMarker.setLatLng([lat, lng]);
-        elevationMarker.setTooltipContent(`<strong>${elev} м</strong>`);
-        elevationMarker.openTooltip();
     }
 
     function removeElevMarker() {
-        if (elevationMarker) {
-            map.removeLayer(elevationMarker);
-            elevationMarker = null;
-        }
+        if (elevMarker3d)    { elevMarker3d.remove(); elevMarker3d = null; }
+        if (elevationMarker) { map.removeLayer(elevationMarker); elevationMarker = null; }
     }
 
     function closeElevationPanel() {
@@ -1908,7 +2021,7 @@
         if (elevationChartInstance) { elevationChartInstance.destroy(); elevationChartInstance = null; }
         removeElevMarker();
         currentProfile = [];
-        map.invalidateSize();
+        if (_is3DActive()) { window._map3d.resize(); } else { map.invalidateSize(); }
     }
 
     document.getElementById('elev-panel-close').addEventListener('click', closeElevationPanel);
@@ -1928,6 +2041,7 @@
         title.textContent   = `📊 ${routeName}`;
         statsEl.innerHTML   = '';
         panel.style.display = 'block';
+        syncElevPanelLeft();
         loading.style.display = 'block';
         errorEl.style.display = 'none';
         canvas.style.display  = 'none';
@@ -2012,12 +2126,26 @@
                 // mouseleave — прибираємо маркер
                 canvas.addEventListener('mouseleave', removeElevMarker, { once: false });
 
-                // Зрушуємо карту вгору щоб маршрут не ховався за панеллю
-                map.invalidateSize();
-                const routeLayer = routeLayers[routeId];
-                if (routeLayer) {
-                    const panelH = panel.getBoundingClientRect().height;
-                    map.fitBounds(routeLayer.getBounds(), { paddingBottomRight: [0, panelH + 10], paddingTopLeft: [0, 10] });
+                // Підганяємо вид карти під маршрут з урахуванням висоти панелі
+                const panelH = panel.getBoundingClientRect().height;
+                if (_is3DActive()) {
+                    window._map3d.resize();
+                    const route3d = savedRoutes.find(r => String(r.id) === String(routeId));
+                    if (route3d && route3d.geojson && route3d.geojson.coordinates) {
+                        const coords = route3d.geojson.coordinates;
+                        const lngs = coords.map(c => c[0]);
+                        const lats = coords.map(c => c[1]);
+                        window._map3d.fitBounds(
+                            [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
+                            { padding: { top: 20, bottom: panelH + 20, left: 20, right: 20 }, duration: 800 }
+                        );
+                    }
+                } else {
+                    map.invalidateSize();
+                    const routeLayer = routeLayers[routeId];
+                    if (routeLayer) {
+                        map.fitBounds(routeLayer.getBounds(), { paddingBottomRight: [0, panelH + 10], paddingTopLeft: [0, 10] });
+                    }
                 }
             })
             .catch(err => {

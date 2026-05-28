@@ -49,6 +49,7 @@ body {
 .map-layout {
     display: flex;
     height: calc(100vh - 54px);
+    position: relative;
 }
 
 /* Sidebar */
