@@ -112,16 +112,21 @@
                 <span class="sb-chevron">▾</span>
             </div>
             <div class="sb-section__body hidden" id="sb-services">
-                <div style="padding-bottom:12px; display:flex; gap:8px;">
+                <div style="padding:8px 0 8px; display:flex; gap:8px; flex-wrap:wrap;">
                     <button id="booking-btn"
-                        style="flex:1; padding:10px; background:#003580; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:500; font-size:0.85rem; transition:opacity 0.2s;"
+                        style="flex:1; min-width:80px; padding:10px; background:#003580; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:500; font-size:0.85rem; transition:opacity 0.2s;"
                         onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
                         🏨 Booking
                     </button>
                     <button id="airbnb-btn"
-                        style="flex:1; padding:10px; background:#FF5A5F; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:500; font-size:0.85rem; transition:opacity 0.2s;"
+                        style="flex:1; min-width:80px; padding:10px; background:#FF5A5F; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:500; font-size:0.85rem; transition:opacity 0.2s;"
                         onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
                         🏠 Airbnb
+                    </button>
+                    <button id="google-hotels-btn"
+                        style="flex:1; min-width:80px; padding:10px; background:#EA4335; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:500; font-size:0.85rem; transition:opacity 0.2s;"
+                        onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                        🔍 Google
                     </button>
                 </div>
             </div>
@@ -763,16 +768,15 @@
     ];
     const markers = [];
 
+    function extractUrl(desc) {
+        if (!desc) return null;
+        const m = desc.match(/https?:\/\/[^\s"<>\]]+/);
+        return m ? m[0] : null;
+    }
+
     function formatDescription(desc) {
         if (!desc) return '';
-        // Витягуємо URL з опису (є в записах імпортованих з HystoryOb)
-        const urlMatch = desc.match(/https?:\/\/[^\s"<>\]]+/);
-        if (urlMatch) {
-            return `<a href="${urlMatch[0]}" target="_blank" rel="noopener"
-                       style="color:#1a6fa8;font-size:0.82rem;text-decoration:none;
-                              border-bottom:1px dotted #1a6fa8;">Див. ↗</a>`;
-        }
-        // Якщо URL немає — показуємо скорочений текст
+        if (/https?:\/\//.test(desc)) return ''; // URL — показуємо лупою на фото
         const plain = desc.replace(/<[^>]+>/g, '').trim();
         if (!plain) return '';
         const words = plain.split(/\s+/).slice(0, 12).join(' ');
@@ -790,13 +794,22 @@
             })
         }).addTo(map);
         const descHtml = formatDescription(loc.description);
+        const descUrl  = extractUrl(loc.description);
         marker.bindPopup(`
             <div class="popup">
-                ${loc.photo ? `<img src="${loc.photo}" style="width:100%;border-radius:8px;margin-bottom:8px;max-height:150px;object-fit:cover">` : ''}
-                <strong>${loc.categoryIcon} ${loc.name}</strong><br>
-                <small>${loc.category}</small>
-                ${descHtml ? `<div style="margin-top:5px;">${descHtml}</div>` : ''}
-                <button onclick="addWaypointFromPopup(${index})" style="margin-top: 8px; padding: 6px 12px; background: #1a6fa8; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">➕ До маршруту</button>
+                ${loc.photo ? `<img src="${loc.photo}" alt="${loc.name}">` : ''}
+                <div class="popup-body">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+                        <strong>${loc.categoryIcon} ${loc.name}</strong>
+                        ${descUrl ? `<a href="${descUrl}" target="_blank" rel="noopener"
+                            style="flex-shrink:0;width:24px;height:24px;background:#f0f4f8;
+                                   color:#1a6fa8;border-radius:50%;display:flex;align-items:center;
+                                   justify-content:center;font-size:13px;text-decoration:none;"
+                            title="Відкрити джерело">🔍</a>` : ''}
+                    </div>
+                    ${descHtml ? `<div style="margin-top:5px;">${descHtml}</div>` : ''}
+                    <button onclick="addWaypointFromPopup(${index})" style="margin-top:5px;padding:5px 12px;background:#1a6fa8;color:white;border:none;border-radius:4px;cursor:pointer;width:100%;font-size:0.82rem;">➕ До маршруту</button>
+                </div>
             </div>
         `);
         markers.push({ index, marker });
@@ -1350,7 +1363,7 @@
                 <div style="text-align: center;">
                     <strong>📍 Власна точка</strong><br>
                     <small>${lat.toFixed(5)}, ${lng.toFixed(5)}</small><br>
-                    <button onclick="addCustomWaypoint(${lat}, ${lng})" style="margin-top: 8px; padding: 6px 12px; background: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">➕ Додати до маршруту</button>
+                    <button onclick="addCustomWaypoint(${lat}, ${lng})" style="margin-top: 1px; padding: 6px 12px; background: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">➕ Додати до маршруту</button>
                 </div>
             `)
             .openOn(map);
@@ -1645,6 +1658,14 @@
             + `&sw_lng=${sw.lng.toFixed(10)}`
             + `&zoom=${zoom}`
             + `&zoom_level=${zoom}`;
+        window.open(url, '_blank');
+    });
+
+    // Обробка кліку "Google Готелі" — пошук готелів на поточному екстенті
+    document.getElementById('google-hotels-btn').addEventListener('click', () => {
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        const url = `https://www.google.com/maps/search/готелі/@${center.lat.toFixed(6)},${center.lng.toFixed(6)},${zoom}z`;
         window.open(url, '_blank');
     });
 
