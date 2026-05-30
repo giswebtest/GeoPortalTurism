@@ -34,7 +34,7 @@ body {
 #route-nav-panel {
     display: none;
     position: fixed;
-    top: 52px;
+    top: 58px;
     right: 0;
     z-index: 2000;
     background: #e8f4fd;
@@ -189,3 +189,65 @@ body {
 .sidebar__list::-webkit-scrollbar-track { background: transparent; }
 .sidebar__list::-webkit-scrollbar-thumb { background: #c8d8e8; border-radius: 4px; }
 .sidebar__list::-webkit-scrollbar-thumb:hover { background: #1a6fa8; }
+
+/* Leaflet popup — мінімальна рамка */
+.leaflet-popup-content-wrapper {
+    border: 1px solid #eee;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 0;
+    overflow: hidden;
+}
+.leaflet-popup-content {
+    margin: 0;
+    width: 220px !important;
+}
+.leaflet-popup-content .popup img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+    border-radius: 0;
+    margin: 0;
+}
+.leaflet-popup-content .popup-img-wrap {
+    position: relative;
+}
+.leaflet-popup-content .popup-img-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 22px 9px 7px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.68));
+    color: #fff;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+}
+.leaflet-popup-content .popup-img-overlay strong {
+    font-size: 13px;
+    line-height: 1.3;
+}
+.leaflet-popup-content .popup-img-overlay .lupa {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    text-decoration: none;
+    backdrop-filter: blur(2px);
+}
+.leaflet-popup-content .popup-body {
+    padding: 6px 10px 8px;
+}
+.leaflet-popup-tip-container .leaflet-popup-tip {
+    box-shadow: none;
+}

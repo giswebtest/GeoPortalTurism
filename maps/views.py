@@ -23,11 +23,30 @@ def index(request):
 
 
 def country_polygons_geojson(request, country_id):
-    from django.core.serializers import serialize
     import json
-    polygons = CountryPolygon.objects.filter(country_id=country_id).only('name', 'geom')
-    data = json.loads(serialize('geojson', polygons, geometry_field='geom', fields=['name']))
-    return JsonResponse(data, safe=False)
+    from django.db.models.expressions import RawSQL
+
+    polygons = CountryPolygon.objects.filter(country_id=country_id).annotate(
+        location_count=RawSQL(
+            """(SELECT COUNT(*) FROM maps_location
+               WHERE maps_location.is_published = true
+               AND ST_Within(maps_location.geom::geometry, "maps_countrypolygon"."geom"))""",
+            []
+        )
+    )
+
+    features = []
+    for poly in polygons:
+        features.append({
+            'type': 'Feature',
+            'geometry': json.loads(poly.geom.json),
+            'properties': {
+                'name': poly.name,
+                'location_count': poly.location_count,
+            },
+        })
+
+    return JsonResponse({'type': 'FeatureCollection', 'features': features}, safe=False)
 
 
 def _table_geojson(table_name):
