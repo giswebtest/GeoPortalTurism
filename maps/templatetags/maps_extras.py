@@ -5,6 +5,14 @@ from django.utils.html import format_html
 register = template.Library()
 
 
+@register.filter
+def extract_url(description):
+    if not description:
+        return ''
+    match = re.search(r'https?://[^\s"<>\]]+', description)
+    return match.group(0) if match else ''
+
+
 @register.simple_tag
 def description_link(description):
     """Повертає 'Див. ↗' як посилання якщо опис містить URL, інакше — скорочений текст."""

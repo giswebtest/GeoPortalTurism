@@ -178,23 +178,33 @@
                         data-lng="{{ loc.geom.x|stringformat:'.6f' }}" data-name="{{ loc.name }}"
                         data-category="{{ loc.category.slug|default:'' }}"
                         data-country="{{ loc.country.id|default:'' }}">
-                        {% if loc.image %}
-                        <img src="{{ loc.image.url }}" alt="{{ loc.name }}">
-                        {% elif loc.gx_media_links %}
-                        <img src="{{ loc.gx_media_links }}" alt="{{ loc.name }}">
-                        {% endif %}
+                        <div class="location-card__img-wrap">
+                            {% if loc.image %}
+                            <img src="{{ loc.image.url }}" alt="{{ loc.name }}">
+                            {% elif loc.gx_media_links %}
+                            <img src="{{ loc.gx_media_links }}" alt="{{ loc.name }}">
+                            {% else %}
+                            <div class="location-card__no-img">📍</div>
+                            {% endif %}
+                            <div class="location-card__top">
+                                <div class="location-card__tags">
+                                    {% if loc.category %}<span class="badge">{{ loc.category.icon }} {{ loc.category.name }}</span>{% endif %}
+                                    {% if loc.region %}<span class="badge">📍 {{ loc.region.name }}</span>{% endif %}
+                                </div>
+                                {% with url=loc.description|extract_url %}{% if url %}
+                                <a href="{{ url }}" target="_blank" rel="noopener"
+                                    class="location-card__lupa" title="Відкрити джерело"
+                                    onclick="event.stopPropagation()">🔍</a>
+                                {% endif %}{% endwith %}
+                            </div>
+                            <div class="location-card__name-overlay">
+                                <h3>{{ loc.name }}</h3>
+                            </div>
+                        </div>
                         <div class="location-card__body">
-                            <h3>{{ loc.name }}</h3>
-                            {% if loc.category %}
-                            <span class="badge">{{ loc.category.icon }} {{ loc.category.name }}</span>
-                            {% endif %}
-                            {% if loc.region %}
-                            <span class="badge badge--region">📍 {{ loc.region.name }}</span>
-                            {% endif %}
-                            <div style="margin-top:5px;">{% description_link loc.description %}</div>
                             <button class="add-to-route-btn" data-lat="{{ loc.geom.y }}" data-lng="{{ loc.geom.x }}"
                                 data-name="{{ loc.name }}"
-                                style="margin-top:12px; padding:6px 12px; background:#1a6fa8; color:white; border:none; border-radius:6px; cursor:pointer; font-size:0.8rem; transition:background 0.2s;">
+                                style="padding:6px 12px; background:#1a6fa8; color:white; border:none; border-radius:6px; cursor:pointer; width:100%; font-size:0.8rem; transition:background 0.2s;">
                                 ➕ До маршруту
                             </button>
                         </div>
@@ -1236,10 +1246,19 @@
     // Клик по карточке — зум на маркер и открытие попапа
     document.querySelectorAll('.location-card').forEach((card, index) => {
         card.addEventListener('click', () => {
-            const found = markers[index];
-            if (found) {
-                found.marker.openPopup();
-                map.setView(found.marker.getLatLng(), 12, { animate: true });
+            if (_is3DActive()) {
+                const m3dEntry = markers3d[index];
+                if (m3dEntry) {
+                    const ll = m3dEntry.marker.getLngLat();
+                    window._map3d.flyTo({ center: [ll.lng, ll.lat], zoom: 14, duration: 800 });
+                    window._map3d.once('moveend', () => m3dEntry.marker.togglePopup());
+                }
+            } else {
+                const found = markers[index];
+                if (found) {
+                    found.marker.openPopup();
+                    map.setView(found.marker.getLatLng(), 12, { animate: true });
+                }
             }
         });
     });
