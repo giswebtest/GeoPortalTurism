@@ -36,5 +36,24 @@ services:
       retries: 10
       start_period: 90s
 
+  pycsw:
+    image: geopython/pycsw:2.6.1
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./docker/pycsw.cfg:/etc/pycsw/pycsw.cfg:ro
+      - pycsw_data:/home/pycsw
+    environment:
+      - PYCSW_CONFIG=/etc/pycsw/pycsw.cfg
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf 'http://localhost:8080/csw?SERVICE=CSW&REQUEST=GetCapabilities' || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
 volumes:
   geoserver_data:
+  pycsw_data:
