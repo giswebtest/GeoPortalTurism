@@ -2101,7 +2101,7 @@
     const crosshairPlugin = {
         id: 'crosshair',
         afterDraw(chart) {
-            const active = chart.tooltip._active;
+            const active = chart.tooltip?._active;
             if (!active || !active.length) return;
             const { ctx, chartArea: { top, bottom } } = chart;
             const x = active[0].element.x;
@@ -2211,6 +2211,8 @@
 
                 canvas.style.display = 'block';
                 const ctx = canvas.getContext('2d');
+                const staleChart = Chart.getChart(canvas);
+                if (staleChart) { staleChart.destroy(); }
                 elevationChartInstance = new Chart(ctx, {
                     type: 'line',
                     plugins: [crosshairPlugin],

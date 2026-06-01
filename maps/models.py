@@ -1,3 +1,4 @@
+import uuid
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 
@@ -32,6 +33,7 @@ class Category(models.Model):
 
 class Location(models.Model):
     """Туристическое место"""
+    uid  = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID (OGC)')
     name = models.CharField(max_length=200, verbose_name='Название')
     description = models.TextField(blank=True, verbose_name='Описание')
 
@@ -91,6 +93,7 @@ class Location(models.Model):
 
 class Route(models.Model):
     """Туристичний маршрут"""
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID (OGC)')
 
     DIFFICULTY_CHOICES = [
         ('easy',   '🟢 Легкий'),
@@ -268,6 +271,7 @@ class Country(models.Model):
 
 class CountryPolygon(models.Model):
     """Полігон, прив'язаний до країни."""
+    uid     = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID (OGC)')
     country = models.ForeignKey(
         Country, on_delete=models.CASCADE,
         related_name='polygons',
