@@ -450,10 +450,13 @@
     <h1>GeoPortal Turism</h1>
     <p class="header-sub">Геопросторовий веб-портал для туристичних маршрутів та локацій України, побудований на Django + PostGIS + Leaflet / MapLibre GL</p>
     <div class="header-meta">
-      <div class="meta-chip">🐍 <span>Django 4.x</span> + GeoDjango</div>
-      <div class="meta-chip">🐘 <span>PostgreSQL</span> + PostGIS</div>
+      <div class="meta-chip">🐍 <span>Django 5.x</span> + GeoDjango</div>
+      <div class="meta-chip">🐘 <span>PostgreSQL 16</span> + PostGIS 3.4</div>
       <div class="meta-chip">🐳 <span>Docker</span> Compose</div>
       <div class="meta-chip">🌍 <span>Leaflet</span> + MapLibre GL</div>
+      <div class="meta-chip">🗺️ <span>GeoServer</span> 2.24 WMS/WFS/WMTS</div>
+      <div class="meta-chip">📋 <span>PyCSW</span> 2.6.1 CSW/ISO 19115</div>
+      <div class="meta-chip">🔌 <span>OGC API</span> Features + Nginx</div>
       <div class="meta-chip">🇺🇦 <span>Мова:</span> Українська</div>
     </div>
   </div>
@@ -464,29 +467,41 @@
 
   <!-- OVERVIEW FLOW -->
   <div class="section-title">Загальна схема системи</div>
-  <div class="overview">
+  <div class="overview" style="grid-template-columns:1fr auto 1fr auto 1fr auto 1fr auto 1fr auto 1fr;">
     <div class="ov-layer">
       <div class="ov-icon">🌐</div>
-      <div class="ov-label">Браузер</div>
-      <div class="ov-sub">HTML / JS / CSS<br>Leaflet · MapLibre GL<br>Chart.js</div>
+      <div class="ov-label">Браузер / ГІС-клієнт</div>
+      <div class="ov-sub">HTML / JS / CSS<br>Leaflet · MapLibre GL<br>QGIS · ArcGIS Pro</div>
     </div>
-    <div class="ov-arrow"><div class="ov-arrow-line"></div><div class="ov-arrow-label">HTTP / REST</div></div>
+    <div class="ov-arrow"><div class="ov-arrow-line"></div><div class="ov-arrow-label">HTTP/80</div></div>
+    <div class="ov-layer">
+      <div class="ov-icon">🌐</div>
+      <div class="ov-label">Nginx</div>
+      <div class="ov-sub">Reverse Proxy<br>/ → Django<br>/geoserver/ · /csw</div>
+    </div>
+    <div class="ov-arrow"><div class="ov-arrow-line"></div><div class="ov-arrow-label">WSGI / proxy</div></div>
     <div class="ov-layer">
       <div class="ov-icon">⚙️</div>
-      <div class="ov-label">Django Backend</div>
-      <div class="ov-sub">Views · Templates<br>Admin Panel<br>GeoDjango ORM</div>
+      <div class="ov-label">Django</div>
+      <div class="ov-sub">Views · OGC API<br>Admin · Gunicorn<br>GeoDjango ORM</div>
     </div>
-    <div class="ov-arrow"><div class="ov-arrow-line"></div><div class="ov-arrow-label">GeoJSON / SQL</div></div>
+    <div class="ov-arrow"><div class="ov-arrow-line"></div><div class="ov-arrow-label">SQL / PostGIS</div></div>
     <div class="ov-layer">
       <div class="ov-icon">🐘</div>
       <div class="ov-label">PostgreSQL</div>
-      <div class="ov-sub">PostGIS Extension<br>WGS-84 (SRID 4326)<br>Геометрія маршрутів</div>
+      <div class="ov-sub">PostGIS 3.4<br>WGS-84 SRID 4326<br>Геометрії · Метадані</div>
     </div>
-    <div class="ov-arrow"><div class="ov-arrow-line"></div><div class="ov-arrow-label">HTTP API</div></div>
+    <div class="ov-arrow"><div class="ov-arrow-line"></div><div class="ov-arrow-label">WMS/WFS</div></div>
     <div class="ov-layer">
-      <div class="ov-icon">🔌</div>
-      <div class="ov-label">Зовнішні API</div>
-      <div class="ov-sub">OSRM · Overpass<br>OpenTopoData<br>OSM Tiles</div>
+      <div class="ov-icon">🗺️</div>
+      <div class="ov-label">GeoServer 2.24</div>
+      <div class="ov-sub">WMS 1.3.0<br>WFS 2.0 · WMTS<br>Шари з PostGIS</div>
+    </div>
+    <div class="ov-arrow"><div class="ov-arrow-line"></div><div class="ov-arrow-label">CSW 2.0</div></div>
+    <div class="ov-layer">
+      <div class="ov-icon">📋</div>
+      <div class="ov-label">PyCSW 2.6.1</div>
+      <div class="ov-sub">CSW 2.0.2 / 3.0<br>ISO 19115 XML<br>Каталог метаданих</div>
     </div>
   </div>
 
@@ -617,12 +632,13 @@
       <thead>
         <tr>
           <th style="width:90px;">Метод</th>
-          <th style="width:320px;">URL</th>
+          <th style="width:340px;">URL</th>
           <th>Опис</th>
           <th style="width:120px;">Формат</th>
         </tr>
       </thead>
       <tbody>
+        <tr><td colspan="4" style="padding:6px 14px;background:rgba(46,160,67,0.06);font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#3fb950;">Django — Основні</td></tr>
         <tr><td><span class="method method-get">GET</span></td><td><code>/</code></td><td>Головна сторінка — повна карта з усіма шарами</td><td><span class="tag tag-blue">HTML</span></td></tr>
         <tr><td><span class="method method-get">GET</span></td><td><code>/api/hystory-ob/</code></td><td>GeoJSON культурних пам'яток (таблиця HystoryOb)</td><td><span class="tag tag-green">GeoJSON</span></td></tr>
         <tr><td><span class="method method-get">GET</span></td><td><code>/api/ivfrankdist/</code></td><td>GeoJSON кордонів районів Івано-Франківщини</td><td><span class="tag tag-green">GeoJSON</span></td></tr>
@@ -632,6 +648,22 @@
         <tr><td><span class="method method-post">POST</span></td><td><code>/admin/maps/route/&lt;id&gt;/build-osrm/</code></td><td>Побудова геометрії маршруту через OSRM (адмін)</td><td><span class="tag tag-blue">JSON</span></td></tr>
         <tr><td><span class="method method-post">POST</span></td><td><code>/admin/maps/route/import-gpx/</code></td><td>Імпорт маршрутів з GPX файлу (адмін)</td><td><span class="tag">Form</span></td></tr>
         <tr><td><span class="method method-post">POST</span></td><td><code>/admin/maps/location/import-geojson/</code></td><td>Масовий імпорт локацій з GeoJSON (адмін)</td><td><span class="tag">Form</span></td></tr>
+        <tr><td colspan="4" style="padding:6px 14px;background:rgba(56,139,253,0.06);font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#79c0ff;">OGC API Features — Django (:8000)</td></tr>
+        <tr><td><span class="method method-get">GET</span></td><td><code>/ogc/</code></td><td>Landing page — список доступних ресурсів API</td><td><span class="tag tag-yellow">JSON</span></td></tr>
+        <tr><td><span class="method method-get">GET</span></td><td><code>/ogc/conformance/</code></td><td>Класи відповідності OGC API Features</td><td><span class="tag tag-yellow">JSON</span></td></tr>
+        <tr><td><span class="method method-get">GET</span></td><td><code>/ogc/collections/</code></td><td>Список усіх колекцій з метаданими та extent</td><td><span class="tag tag-yellow">JSON</span></td></tr>
+        <tr><td><span class="method method-get">GET</span></td><td><code>/ogc/collections/locations/items/</code></td><td>Туристичні локації · ?bbox · ?limit · ?offset</td><td><span class="tag tag-green">GeoJSON</span></td></tr>
+        <tr><td><span class="method method-get">GET</span></td><td><code>/ogc/collections/routes/items/</code></td><td>Туристичні маршрути (LineString)</td><td><span class="tag tag-green">GeoJSON</span></td></tr>
+        <tr><td><span class="method method-get">GET</span></td><td><code>/ogc/collections/hystory-ob/items/</code></td><td>Пам'ятки культури</td><td><span class="tag tag-green">GeoJSON</span></td></tr>
+        <tr><td><span class="method method-get">GET</span></td><td><code>/ogc/collections/districts/items/</code></td><td>Райони Івано-Франківської обл. (полігони)</td><td><span class="tag tag-green">GeoJSON</span></td></tr>
+        <tr><td><span class="method method-get">GET</span></td><td><code>/ogc/collections/&lt;id&gt;/metadata/</code></td><td>ISO 19115:2003/19139 XML метадані колекції</td><td><span class="tag tag-purple">XML</span></td></tr>
+        <tr><td colspan="4" style="padding:6px 14px;background:rgba(210,153,34,0.06);font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#e3b341;">GeoServer 2.24 — WMS/WFS/WMTS (:8080)</td></tr>
+        <tr><td><span class="method method-get">GET</span></td><td><code>/geoserver/geoportal/wms?SERVICE=WMS&amp;REQUEST=GetCapabilities</code></td><td>WMS 1.3.0 — можливості картографічного сервісу</td><td><span class="tag tag-purple">XML</span></td></tr>
+        <tr><td><span class="method method-get">GET</span></td><td><code>/geoserver/ows?service=WFS&amp;request=GetCapabilities</code></td><td>WFS 2.0 — можливості сервісу просторових об'єктів</td><td><span class="tag tag-purple">XML</span></td></tr>
+        <tr><td><span class="method method-get">GET</span></td><td><code>/geoserver/gwc/service/wmts?REQUEST=GetCapabilities</code></td><td>WMTS 1.0 — можливості тайлового кешу</td><td><span class="tag tag-purple">XML</span></td></tr>
+        <tr><td colspan="4" style="padding:6px 14px;background:rgba(130,80,223,0.06);font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#d2a8ff;">PyCSW 2.6.1 — CSW каталог метаданих (:8001)</td></tr>
+        <tr><td><span class="method method-get">GET</span></td><td><code>/csw?SERVICE=CSW&amp;REQUEST=GetCapabilities</code></td><td>CSW 2.0.2/3.0 — можливості каталогу метаданих</td><td><span class="tag tag-purple">XML</span></td></tr>
+        <tr><td><span class="method method-get">GET</span></td><td><code>/csw?SERVICE=CSW&amp;REQUEST=GetRecords</code></td><td>Пошук записів метаданих ISO 19115 у каталозі</td><td><span class="tag tag-purple">XML</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -695,30 +727,57 @@
   <div class="section-title">Інфраструктура (Docker Compose)</div>
   <div class="cards cards-3">
     <div class="card c-blue">
-      <div class="card-header"><div class="card-icon">🐍</div><div><div class="card-title">web</div><div class="card-sub">Django застосунок</div></div></div>
+      <div class="card-header"><div class="card-icon">🐍</div><div><div class="card-title">web</div><div class="card-sub">Django застосунок · :8000</div></div></div>
       <ul class="items">
         <li><div class="dot"></div><div><strong>Base:</strong> python:3.12-slim</div></li>
-        <li><div class="dot"></div><div><strong>Server:</strong> Gunicorn WSGI</div></li>
+        <li><div class="dot"></div><div><strong>Dev:</strong> runserver · <strong>Prod:</strong> Gunicorn 3 workers</div></li>
         <li><div class="dot"></div><div><strong>GIS libs:</strong> GDAL, PROJ, binutils</div></li>
-        <li><div class="dot"></div><div><strong>Port:</strong> 8000</div></li>
+        <li><div class="dot"></div><div><strong>Endpoints:</strong> Django Views + OGC API</div></li>
       </ul>
     </div>
     <div class="card c-purple">
-      <div class="card-header"><div class="card-icon">🐘</div><div><div class="card-title">db</div><div class="card-sub">База даних</div></div></div>
+      <div class="card-header"><div class="card-icon">🐘</div><div><div class="card-title">db</div><div class="card-sub">База даних · :5432</div></div></div>
       <ul class="items">
-        <li><div class="dot"></div><div><strong>Image:</strong> postgres + postgis</div></li>
-        <li><div class="dot"></div><div><strong>Extension:</strong> PostGIS</div></li>
+        <li><div class="dot"></div><div><strong>Image:</strong> postgis/postgis:16-3.4</div></li>
+        <li><div class="dot"></div><div><strong>Extension:</strong> PostGIS 3.4</div></li>
         <li><div class="dot"></div><div><strong>SRID:</strong> 4326 (WGS-84)</div></li>
-        <li><div class="dot"></div><div><strong>Port:</strong> 5432</div></li>
+        <li><div class="dot"></div><div><strong>Volumes:</strong> pgdata</div></li>
       </ul>
     </div>
     <div class="card c-yellow">
-      <div class="card-header"><div class="card-icon">📁</div><div><div class="card-title">Volumes &amp; Media</div><div class="card-sub">Статика та медіа</div></div></div>
+      <div class="card-header"><div class="card-icon">🗺️</div><div><div class="card-title">geoserver</div><div class="card-sub">GeoServer 2.24 · :8080</div></div></div>
       <ul class="items">
-        <li><div class="dot"></div><div><code>/static/css/style.css</code> — кастомні стилі</div></li>
-        <li><div class="dot"></div><div><code>/media/locations/</code> — фото локацій</div></li>
-        <li><div class="dot"></div><div><code>/media/guides/</code> — фото гідів</div></li>
-        <li><div class="dot"></div><div>Config через <code>.env</code> файл</div></li>
+        <li><div class="dot"></div><div><strong>Image:</strong> kartoza/geoserver:2.24.0</div></li>
+        <li><div class="dot"></div><div><strong>Протоколи:</strong> WMS 1.3.0 · WFS 2.0 · WMTS</div></li>
+        <li><div class="dot"></div><div><strong>Дані:</strong> шари з PostGIS через DataStore</div></li>
+        <li><div class="dot"></div><div><strong>Volumes:</strong> geoserver_data</div></li>
+      </ul>
+    </div>
+    <div class="card c-purple">
+      <div class="card-header"><div class="card-icon">📋</div><div><div class="card-title">pycsw</div><div class="card-sub">PyCSW 2.6.1 · :8001</div></div></div>
+      <ul class="items">
+        <li><div class="dot"></div><div><strong>Image:</strong> geopython/pycsw:2.6.1</div></li>
+        <li><div class="dot"></div><div><strong>Протокол:</strong> CSW 2.0.2 / 3.0</div></li>
+        <li><div class="dot"></div><div><strong>Метадані:</strong> ISO 19115 / INSPIRE</div></li>
+        <li><div class="dot"></div><div><strong>Config:</strong> docker/pycsw.cfg</div></li>
+      </ul>
+    </div>
+    <div class="card c-green">
+      <div class="card-header"><div class="card-icon">🌐</div><div><div class="card-title">nginx</div><div class="card-sub">Reverse Proxy · :80 / :443</div></div></div>
+      <ul class="items">
+        <li><div class="dot"></div><div><strong>Image:</strong> nginx:1.25-alpine</div></li>
+        <li><div class="dot"></div><div><code>/</code> → web:8000 (Django)</div></li>
+        <li><div class="dot"></div><div><code>/geoserver/</code> → geoserver:8080</div></li>
+        <li><div class="dot"></div><div><code>/csw</code> → pycsw:8000</div></li>
+      </ul>
+    </div>
+    <div class="card c-orange">
+      <div class="card-header"><div class="card-icon">📁</div><div><div class="card-title">Volumes &amp; Config</div><div class="card-sub">Дані та конфігурація</div></div></div>
+      <ul class="items">
+        <li><div class="dot"></div><div><code>pgdata</code> · <code>geoserver_data</code> · <code>pycsw_data</code></div></li>
+        <li><div class="dot"></div><div><code>static_vol</code> · <code>media_vol</code></div></li>
+        <li><div class="dot"></div><div><code>certbot_www</code> · <code>certbot_certs</code> (SSL)</div></li>
+        <li><div class="dot"></div><div>Config: <code>.env</code> / <code>.env.prod</code> · <code>pycsw.cfg</code></div></li>
       </ul>
     </div>
   </div>
@@ -830,6 +889,11 @@
             <div class="uml-leaf lg" style="flex:0 0 auto;">
               <span class="uml-leaf-name">🗺️ Brand</span>
               <span class="uml-leaf-desc">GeoPortal Turism</span>
+            </div>
+
+            <div class="uml-leaf lb" style="flex:0 0 auto;">
+              <span class="uml-leaf-name">🔗 Підключити дані</span>
+              <span class="uml-leaf-desc">#connect-data-toggle<br>→ #connect-modal-overlay</span>
             </div>
 
             <div class="uml-leaf" style="flex:0 0 auto;">
@@ -1006,6 +1070,42 @@
 
       </div>
     </div><!-- /base.html -->
+
+    <!-- ── #connect-modal-overlay (fixed overlay) ── -->
+    <div class="uml-modal-row">
+      <div class="uml-modal-stem">
+        <div class="uml-modal-line"></div>
+        <div class="uml-modal-arrow-head">↓</div>
+        <div class="uml-modal-tag">fixed</div>
+      </div>
+      <div class="uml-box uml-o" style="flex:1;">
+        <div class="uml-hdr">
+          <div class="uml-hdr-left">
+            <span class="uml-stereo">«fixed overlay · position:fixed · inset:0 · z-index:10000 · display:none за замовчуванням»</span>
+            <span class="uml-name">#connect-modal-overlay · «Підключити дані»</span>
+          </div>
+          <div class="uml-sym" style="color:var(--accent4);"><div class="uml-sym-body"></div></div>
+        </div>
+        <div class="uml-body uml-row">
+          <div class="uml-leaf lo">
+            <span class="uml-leaf-name">WMS / WFS / WMTS</span>
+            <span class="uml-leaf-desc">GeoServer :8080<br>URL + 📋 копіювати</span>
+          </div>
+          <div class="uml-leaf lb">
+            <span class="uml-leaf-name">OGC API Features</span>
+            <span class="uml-leaf-desc">Django :8000/ogc/<br>4 колекції + 📋</span>
+          </div>
+          <div class="uml-leaf lp">
+            <span class="uml-leaf-name">CSW каталог</span>
+            <span class="uml-leaf-desc">PyCSW :8001/csw<br>ISO 19115 + 📋</span>
+          </div>
+          <div class="uml-leaf">
+            <span class="uml-leaf-name">clipboard API</span>
+            <span class="uml-leaf-desc">navigator.clipboard<br>.writeText(url)</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- ── #gcal-modal (fixed overlay, поза потоком документа) ── -->
     <div class="uml-modal-row">
@@ -1889,7 +1989,17 @@
       <tr>
         <td><div class="sw-name"><span class="sw-name-icon">🌐</span>Nginx</div></td>
         <td><span class="sw-ver v-yellow">1.25-alpine</span></td>
-        <td class="sw-role"><strong>Reverse proxy для production.</strong> Роздача статики/медіа, проксі до Gunicorn, SSL termination. Порти 80/443</td>
+        <td class="sw-role"><strong>Reverse proxy.</strong> Роздача статики/медіа, SSL termination. Роутинг: <code>/</code>→Django · <code>/geoserver/</code>→GeoServer · <code>/csw</code>→PyCSW</td>
+      </tr>
+      <tr>
+        <td><div class="sw-name"><span class="sw-name-icon">🗺️</span>GeoServer</div></td>
+        <td><span class="sw-ver v-green">2.24.0</span></td>
+        <td class="sw-role"><strong>Геопросторовий сервер OGC.</strong> Docker image: <code>kartoza/geoserver:2.24.0</code>. WMS 1.3.0 · WFS 2.0 · WMTS. Workspace geoportal, шари з PostGIS DataStore. Port: 8080</td>
+      </tr>
+      <tr>
+        <td><div class="sw-name"><span class="sw-name-icon">📋</span>PyCSW</div></td>
+        <td><span class="sw-ver v-blue">2.6.1</span></td>
+        <td class="sw-role"><strong>CSW-каталог метаданих.</strong> Docker image: <code>geopython/pycsw:2.6.1</code>. CSW 2.0.2 / 3.0 · ISO 19115:2003/19139 · INSPIRE. Config: <code>docker/pycsw.cfg</code>. Port: 8001</td>
       </tr>
       <tr>
         <td><div class="sw-name"><span class="sw-name-icon">🔒</span>Certbot</div></td>
@@ -2198,12 +2308,13 @@
         Архітектура системи проектувалась з урахуванням вимог Закону України «Про національну інфраструктуру геопросторових даних» та директив INSPIRE. Поточна версія реалізує базовий рівень геовебсервісу; концепція повної версії передбачає відповідність усім обов'язковим вимогам вузла НІГД рівня ОМС.
       </p>
       <table class="nigd-table">
-        <tr><td>WMS 1.3.0 / WMTS 1.0 (веб-картографічний сервіс)</td><td><span class="status-plan">⬡ Концепція</span> — GeoServer 2.24 у Docker Compose</td></tr>
-        <tr><td>WFS 2.0 (веб-сервіс просторових об'єктів)</td><td><span class="status-plan">⬡ Концепція</span> — GeoServer публікує шари з PostGIS</td></tr>
-        <tr><td>OGC API Features (REST GeoJSON API)</td><td><span class="status-done">✓ Реалізовано</span> — Django GeoJSON endpoints</td></tr>
-        <tr><td>Метадані ISO 19115 / CSW 2.0.2</td><td><span class="status-plan">⬡ Концепція</span> — PyCSW + Django ISO XML генерація</td></tr>
-        <tr><td>UUID-ідентифікатори просторових об'єктів</td><td><span class="status-plan">⬡ Концепція</span> — міграція моделей Django</td></tr>
-        <tr><td>HTTPS / TLS (захищений доступ)</td><td><span class="status-done">✓ Реалізовано</span> — Nginx + Certbot (Let's Encrypt)</td></tr>
+        <tr><td>WMS 1.3.0 / WMTS 1.0 (веб-картографічний сервіс)</td><td><span class="status-done">✓ Реалізовано</span> — GeoServer 2.24 · kartoza/geoserver:2.24.0 · :8080</td></tr>
+        <tr><td>WFS 2.0 (веб-сервіс просторових об'єктів)</td><td><span class="status-done">✓ Реалізовано</span> — GeoServer 2.24 · шари з PostGIS workspace geoportal</td></tr>
+        <tr><td>OGC API Features (REST GeoJSON API)</td><td><span class="status-done">✓ Реалізовано</span> — Django ogc_views.py · /ogc/ · 4 колекції · ISO 19115 XML</td></tr>
+        <tr><td>Метадані ISO 19115 / CSW 2.0.2</td><td><span class="status-done">✓ Реалізовано</span> — PyCSW 2.6.1 · geopython/pycsw:2.6.1 · :8001</td></tr>
+        <tr><td>UUID-ідентифікатори просторових об'єктів</td><td><span class="status-done">✓ Реалізовано</span> — UUIDField у моделях Location, Route, CountryPolygon</td></tr>
+        <tr><td>Nginx reverse proxy (єдина точка входу)</td><td><span class="status-done">✓ Реалізовано</span> — nginx:1.25-alpine · / · /geoserver/ · /csw routing</td></tr>
+        <tr><td>HTTPS / TLS (захищений доступ)</td><td><span class="status-done">✓ Реалізовано</span> — Nginx + Certbot (Let's Encrypt) · compose.prod.yaml</td></tr>
         <tr><td>Відкрита ліцензія на дані (CC BY 4.0)</td><td><span class="status-done">✓ Реалізовано</span> — лише відкриті джерела OSM, SRTM</td></tr>
         <tr><td>Синхронізація з реєстром пам'яток МКІП</td><td><span class="status-concept">◌ Перспектива</span> — management command sync_monuments</td></tr>
       </table>
@@ -2212,24 +2323,19 @@
       <div class="conclusion-h2" style="margin-top:32px;">Перспективи подальшого розвитку</div>
       <div class="prospects-grid">
         <div class="prospect-card">
-          <div class="prospect-icon">🌐</div>
-          <div class="prospect-title">Вузол НІГД — GeoServer + PyCSW</div>
-          <div class="prospect-desc">Додавання GeoServer 2.24 та PyCSW до Docker Compose перетворить портал на повноцінний вузол НІГД рівня ОМС із підтримкою WMS 1.3.0, WFS 2.0 та CSW-каталогу метаданих ISO 19115 для публікації на Національному геопорталі.</div>
-        </div>
-        <div class="prospect-card">
-          <div class="prospect-icon">📋</div>
-          <div class="prospect-title">OGC API Features + UUID моделі</div>
-          <div class="prospect-desc">Стандартизація REST API за специфікацією OGC API Features (bbox, limit, offset параметри) та додавання UUID-полів до моделей Location, Route, CountryPolygon забезпечить повну сумісність з системами обміну геоданими.</div>
-        </div>
-        <div class="prospect-card">
           <div class="prospect-icon">🏛️</div>
           <div class="prospect-title">Синхронізація з реєстром МКІП</div>
           <div class="prospect-desc">Заміна статичної таблиці hystory_ob на живу синхронізацію з реєстром пам'яток Міністерства культури та інформаційної політики через management command <code>sync_monuments</code> з інкрементальним оновленням.</div>
         </div>
         <div class="prospect-card">
+          <div class="prospect-icon">🗺️</div>
+          <div class="prospect-title">GeoServer — публікація шарів WMTS</div>
+          <div class="prospect-desc">Налаштування тайлового кешування GeoWebCache (WMTS) для шарів hystory_ob та ivfrankdist — прискорення відображення великих наборів даних у QGIS та веб-клієнтах через попередньо нарендерені тайли.</div>
+        </div>
+        <div class="prospect-card">
           <div class="prospect-icon">📱</div>
           <div class="prospect-title">PWA та мобільний застосунок</div>
-          <div class="prospect-desc">Перетворення порталу на Progressive Web App з офлайн-підтримкою (Service Worker, кешування тайлів) та нативний мобільний застосунок для iOS/Android на базі існуючого REST API.</div>
+          <div class="prospect-desc">Перетворення порталу на Progressive Web App з офлайн-підтримкою (Service Worker, кешування тайлів) та нативний мобільний застосунок для iOS/Android на базі існуючого REST API та OGC API Features.</div>
         </div>
         <div class="prospect-card">
           <div class="prospect-icon">🔐</div>
@@ -2240,6 +2346,11 @@
           <div class="prospect-icon">📊</div>
           <div class="prospect-title">Аналітика та статистика відвідувань</div>
           <div class="prospect-desc">Інтеграція модуля аналітики туристичних потоків: теплові карти відвідуваності локацій, найпопулярніші маршрути, сезонна динаміка — для підтримки прийняття управлінських рішень у сфері туризму.</div>
+        </div>
+        <div class="prospect-card">
+          <div class="prospect-icon">🔌</div>
+          <div class="prospect-title">Публікація на Національному геопорталі</div>
+          <div class="prospect-desc">Реєстрація CSW-каталогу PyCSW та WMS/WFS GeoServer-сервісів на Національному геопорталі України як офіційного вузла НІГД рівня органу місцевого самоврядування Івано-Франківської області.</div>
         </div>
       </div>
 
@@ -2260,8 +2371,8 @@
 
 <!-- ══════════ FOOTER ══════════ -->
 <footer>
-  <div>GeoPortal Turism — Концептуальна Архітектура · <span style="color:var(--text);">v1.0</span></div>
-  <div>Django + GeoDjango · PostgreSQL + PostGIS · Leaflet · MapLibre GL · Chart.js</div>
+  <div>GeoPortal Turism — Концептуальна Архітектура · <span style="color:var(--text);">v2.0</span> · Оновлено: 2026-06-02</div>
+  <div>Django · PostgreSQL/PostGIS · GeoServer 2.24 · PyCSW 2.6.1 · OGC API Features · Nginx · Leaflet · MapLibre GL</div>
 </footer>
 </body>
 </html>
