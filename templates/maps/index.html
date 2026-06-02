@@ -111,6 +111,12 @@
                                    opacity:0.45; transition:opacity 0.2s;">
                             🗺️ Показати полігони
                         </button>
+                        <button id="heatmap-btn"
+                            style="flex:1; padding:8px 6px; background:#e67e22; color:white; border:none;
+                                   border-radius:6px; cursor:pointer; font-size:0.8rem; font-weight:500;
+                                   transition:background 0.2s;">
+                            🌡️ Теплова карта
+                        </button>
                     </div>
                     <div id="country-poly-status" style="margin-top:7px; font-size:0.78rem; color:#666; min-height:16px;"></div>
                 </div>
@@ -401,6 +407,7 @@
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.js"></script>
 <!-- Leaflet Routing Machine JS -->
 <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <!-- Leaflet Control Geocoder JS -->
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 <!-- osmtogeojson: конвертація Overpass JSON → GeoJSON -->
@@ -846,6 +853,39 @@
         `);
         markers.push({ index, marker });
     });
+
+    // ==========================================
+    // ТЕПЛОВА КАРТА ЩІЛЬНОСТІ ЛОКАЦІЙ
+    // ==========================================
+    (function () {
+        var heatBtn = document.getElementById('heatmap-btn');
+        if (!heatBtn || typeof L.heatLayer === 'undefined') return;
+
+        var heatLayer = null;
+        var active = false;
+
+        var points = locations
+            .filter(function (l) { return l.lat && l.lng; })
+            .map(function (l) { return [l.lat, l.lng, 1]; });
+
+        heatBtn.addEventListener('click', function () {
+            active = !active;
+            if (active) {
+                heatLayer = L.heatLayer(points, {
+                    radius: 30,
+                    blur: 20,
+                    maxZoom: 12,
+                    gradient: { 0.2: '#3498db', 0.5: '#f1c40f', 0.8: '#e67e22', 1.0: '#e74c3c' }
+                }).addTo(map);
+                heatBtn.style.background = '#c0392b';
+                heatBtn.textContent = '🌡️ Сховати карту';
+            } else {
+                if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; }
+                heatBtn.style.background = '#e67e22';
+                heatBtn.textContent = '🌡️ Теплова карта';
+            }
+        });
+    })();
 
     // ==========================================
     // КРАЇНИ — екстент, полігони та легенда
@@ -1434,9 +1474,8 @@
 
     window.removeWaypoint = function(index) {
         const wp = waypoints[index];
-        if (wp.marker) {
-            map.removeLayer(wp.marker);
-        }
+        if (wp.marker) map.removeLayer(wp.marker);
+        if (highlightCircle) { map.removeLayer(highlightCircle); highlightCircle = null; }
         waypoints.splice(index, 1);
         if (routingControl) { map.removeControl(routingControl); routingControl = null; }
         clearSegments();

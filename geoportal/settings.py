@@ -89,7 +89,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.app', 'https://*.ngrok-free.dev']
+CSRF_TRUSTED_ORIGINS = config(
+    'DJANGO_CSRF_TRUSTED_ORIGINS',
+    default='https://*.ngrok-free.app,https://*.ngrok-free.dev,https://*.trycloudflare.com'
+).split(',')
 
 # Авторизация
 LOGIN_URL = '/accounts/login/'
