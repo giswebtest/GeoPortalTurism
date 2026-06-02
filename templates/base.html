@@ -26,6 +26,7 @@
         <button id="route-toggle-btn" title="Маршрут">🚗 Маршрут</button>
     </div>
     <div class="navbar__links">
+        <button class="connect-btn" id="connect-data-toggle" title="Підключити дані до ГІС-клієнта">🔗 Підключити дані</button>
         <a href="{% url 'maps:index' %}">Карта</a>
         {% if user.is_staff %}
             <a href="/admin/">⚙️ Адмін</a>
@@ -43,6 +44,88 @@
     {% block content %}{% endblock %}
 </main>
 
+<!-- Модальне вікно: Підключити дані -->
+<div class="connect-modal-overlay" id="connect-modal-overlay">
+    <div class="connect-modal">
+        <div class="connect-modal__header">
+            <span>🔗 Підключити дані до ГІС-клієнта</span>
+            <button class="connect-modal__close" id="connect-modal-close">✕</button>
+        </div>
+        <div class="connect-modal__body">
+
+            <div class="connect-group">
+                <div class="connect-group__title">WMS — растрові тайли</div>
+                <div class="connect-row">
+                    <div class="connect-copy-row">
+                        <code id="url-wms">http://localhost:8080/geoserver/geoportal/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities</code>
+                        <button class="copy-btn" data-target="url-wms" title="Копіювати">📋</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connect-group">
+                <div class="connect-group__title">WFS — вектор</div>
+                <div class="connect-row">
+                    <div class="connect-copy-row">
+                        <code id="url-wfs">http://localhost:8080/geoserver/ows?service=WFS&request=GetCapabilities</code>
+                        <button class="copy-btn" data-target="url-wfs" title="Копіювати">📋</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connect-group">
+                <div class="connect-group__title">WMTS — тайловий кеш</div>
+                <div class="connect-row">
+                    <div class="connect-copy-row">
+                        <code id="url-wmts">http://localhost:8080/geoserver/gwc/service/wmts?REQUEST=GetCapabilities</code>
+                        <button class="copy-btn" data-target="url-wmts" title="Копіювати">📋</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connect-group">
+                <div class="connect-group__title">OGC API Features</div>
+                <div class="connect-row">
+                    <div class="connect-copy-row">
+                        <code id="url-ogc">http://localhost:8000/ogc/</code>
+                        <button class="copy-btn" data-target="url-ogc" title="Копіювати">📋</button>
+                    </div>
+                </div>
+                <div class="connect-row">
+                    <div class="connect-copy-row">
+                        <code id="url-ogc-loc">http://localhost:8000/ogc/collections/locations/items/</code>
+                        <button class="copy-btn" data-target="url-ogc-loc" title="Копіювати">📋</button>
+                    </div>
+                </div>
+                <div class="connect-row">
+                    <div class="connect-copy-row">
+                        <code id="url-ogc-routes">http://localhost:8000/ogc/collections/routes/items/</code>
+                        <button class="copy-btn" data-target="url-ogc-routes" title="Копіювати">📋</button>
+                    </div>
+                </div>
+                <div class="connect-row">
+                    <div class="connect-copy-row">
+                        <code id="url-ogc-dist">http://localhost:8000/ogc/collections/districts/items/</code>
+                        <button class="copy-btn" data-target="url-ogc-dist" title="Копіювати">📋</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connect-group">
+                <div class="connect-group__title">CSW — каталог метаданих</div>
+                <div class="connect-row">
+                    <div class="connect-copy-row">
+                        <code id="url-csw">http://localhost:8001/csw?SERVICE=CSW&REQUEST=GetCapabilities</code>
+                        <button class="copy-btn" data-target="url-csw" title="Копіювати">📋</button>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -50,6 +133,52 @@ document.getElementById('route-toggle-btn')?.addEventListener('click', function 
     var panel = document.getElementById('route-nav-panel');
     if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
 });
+
+(function () {
+    var btn = document.getElementById('api-dropdown-toggle');
+    var menu = document.getElementById('api-dropdown-menu');
+    if (!btn || !menu) return;
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        menu.classList.toggle('api-dropdown__menu--open');
+    });
+    document.addEventListener('click', function () {
+        menu.classList.remove('api-dropdown__menu--open');
+    });
+})();
+
+(function () {
+    var openBtn  = document.getElementById('connect-data-toggle');
+    var overlay  = document.getElementById('connect-modal-overlay');
+    var closeBtn = document.getElementById('connect-modal-close');
+    if (!openBtn || !overlay) return;
+
+    openBtn.addEventListener('click', function () {
+        overlay.classList.add('connect-modal-overlay--open');
+    });
+    closeBtn.addEventListener('click', function () {
+        overlay.classList.remove('connect-modal-overlay--open');
+    });
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) overlay.classList.remove('connect-modal-overlay--open');
+    });
+
+    document.querySelectorAll('.copy-btn').forEach(function (btn) {
+        var id   = btn.getAttribute('data-target');
+        var code = document.getElementById(id);
+        btn.addEventListener('click', function () {
+            navigator.clipboard.writeText(code.textContent.trim()).then(function () {
+                var orig = btn.textContent;
+                btn.textContent = 'Скопійовано!';
+                btn.classList.add('copy-btn--done');
+                setTimeout(function () {
+                    btn.textContent = orig;
+                    btn.classList.remove('copy-btn--done');
+                }, 2000);
+            });
+        });
+    });
+})();
 </script>
 {% block extra_js %}{% endblock %}
 

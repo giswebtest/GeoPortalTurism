@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/routes/<int:route_id>/elevation/', views.route_elevation, name='route_elevation'),
 
     # ── OGC API Features Part 1 ───────────────────────────────
+    path('ogc',                                           ogc_views.ogc_landing,     name='ogc_landing_noslash'),
     path('ogc/',                                          ogc_views.ogc_landing,     name='ogc_landing'),
     path('ogc/conformance/',                              ogc_views.ogc_conformance, name='ogc_conformance'),
     path('ogc/collections/',                              ogc_views.ogc_collections, name='ogc_collections'),

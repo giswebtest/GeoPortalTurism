@@ -107,9 +107,11 @@ def ogc_landing(request):
         'title':       'GeoPortal Turism — OGC API Features',
         'description': "Геопросторовий портал туристичних ресурсів Івано-Франківської області",
         'links': [
-            {'href': f'{base}/',            'rel': 'self',        'type': 'application/json', 'title': 'This document'},
-            {'href': f'{base}/conformance/','rel': 'conformance', 'type': 'application/json', 'title': 'Conformance'},
-            {'href': f'{base}/collections/','rel': 'data',        'type': 'application/json', 'title': 'Collections'},
+            {'href': f'{base}/',             'rel': 'self',                                                   'type': 'application/json', 'title': 'This document'},
+            {'href': f'{base}/conformance/', 'rel': 'conformance',                                            'type': 'application/json', 'title': 'OGC API conformance classes'},
+            {'href': f'{base}/conformance/', 'rel': 'http://www.opengis.net/def/rel/ogc/1.0/conformance',    'type': 'application/json', 'title': 'OGC API conformance classes'},
+            {'href': f'{base}/collections/', 'rel': 'data',                                                   'type': 'application/json', 'title': 'Collections'},
+            {'href': f'{base}/collections/', 'rel': 'http://www.opengis.net/def/rel/ogc/1.0/data',           'type': 'application/json', 'title': 'Collections'},
         ],
     })
 
