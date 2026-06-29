@@ -64,7 +64,7 @@
 <!-- Дропдаун маршруту (відкривається кнопкою "🚗 Маршрут" у навбарі) -->
 <div id="route-nav-panel">
     <div id="routing-waypoints" style="margin-bottom:12px; font-size:0.9rem; line-height:1.5;">
-        <em style="color:#666;">Натискайте "➕ До маршруту" біля цікавих місць.</em>
+        <em style="color:var(--ink-2);">Натискайте "➕ До маршруту" біля цікавих місць.</em>
     </div>
     <div id="routing-stats" style="display:none; margin-bottom:12px;"></div>
     <div style="display:flex; gap:10px; flex-direction:column;">
@@ -95,7 +95,8 @@
             <div class="sb-section__body" id="sb-countries">
                 <div style="padding-bottom:12px;">
                     <select id="country-select"
-                        style="width:100%; padding:7px 10px; border:1px solid #ccc; border-radius:6px;
+                        style="width:100%; padding:8px 10px; border:1px solid var(--stroke-2); border-radius:8px;
+                               background:rgba(0,0,0,0.3); color:var(--ink); font-family:inherit;
                                font-size:0.88rem; margin-bottom:10px; box-sizing:border-box;">
                         <option value="">— Оберіть область —</option>
                         {% for country in countries %}
@@ -118,7 +119,7 @@
                             🌡️ Теплова карта
                         </button>
                     </div>
-                    <div id="country-poly-status" style="margin-top:7px; font-size:0.78rem; color:#666; min-height:16px;"></div>
+                    <div id="country-poly-status" style="margin-top:7px; font-size:0.78rem; color:var(--ink-2); min-height:16px;"></div>
                 </div>
             </div>
         </div>
@@ -231,17 +232,17 @@
             <div class="sb-section__body hidden sidebar__routes" id="sb-routes">
                 <ul style="list-style:none; padding:0; padding-bottom:12px;">
                     {% for route in routes %}
-                    <li data-route-id="{{ route.id }}" style="margin-bottom:10px; padding:10px; background:#f0f9eb; border-radius:8px; border:1px solid #c2e0b4; transition:background 0.2s;">
+                    <li data-route-id="{{ route.id }}" style="margin-bottom:10px; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px; border:1px solid var(--stroke); border-left:4px solid var(--med); transition:background 0.2s;">
                         <div style="cursor:pointer;"
                             onclick="focusRoute('{{ route.id }}')">
-                            <strong class="route-sb-name" style="font-size:0.95rem; color:#27ae60;">{{ route.name }}</strong><br>
-                            <small style="color:#666;">🛣️ {{ route.distance_km|default:'?' }} км | ⏱️ ~{{ route.duration_min|default:'?' }} хв</small><br>
-                            <small style="color:#999;">Складність: {{ route.get_difficulty_display }}</small>
+                            <strong class="route-sb-name" style="font-size:0.95rem; color:var(--accent);">{{ route.name }}</strong><br>
+                            <small style="color:var(--ink-2);">🛣️ {{ route.distance_km|default:'?' }} км | ⏱️ ~{{ route.duration_min|default:'?' }} хв</small><br>
+                            <small style="color:var(--ink-3);">Складність: {{ route.get_difficulty_display }}</small>
                         </div>
                         {% if route.path %}
                         <button onclick="showElevationChart({{ route.id }}, '{{ route.name|escapejs }}')"
-                            style="margin-top:8px; width:100%; padding:5px 8px; background:#fff; color:#1a6fa8; border:1px solid #1a6fa8; border-radius:5px; cursor:pointer; font-size:0.8rem; transition:0.15s;"
-                            onmouseover="this.style.background='#e8f4ff'" onmouseout="this.style.background='#fff'">
+                            style="margin-top:8px; width:100%; padding:6px 8px; background:rgba(255,255,255,0.05); color:var(--ink); border:1px solid var(--stroke-2); border-radius:7px; cursor:pointer; font-size:0.8rem; transition:0.15s;"
+                            onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
                             📊 Графік висот
                         </button>
                         {% endif %}
@@ -267,18 +268,18 @@
                 <ul style="list-style:none; padding:0; padding-bottom:12px;">
                 {% for guide in guides %}
                 <li
-                    style="margin-bottom: 10px; padding: 10px; background: #f9f9f9; border-radius: 8px; border: 1px solid #eee; display: flex; align-items: center; gap: 10px;">
+                    style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid var(--stroke); display: flex; align-items: center; gap: 10px;">
                     {% if guide.image %}
                     <img src="{{ guide.image.url }}" alt="{{ guide.name }}"
-                        style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.15); box-shadow: 0 2px 6px rgba(0,0,0,0.4);">
                     {% else %}
                     <div
-                        style="width: 45px; height: 45px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        style="width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 2px solid rgba(255,255,255,0.15);">
                         👤</div>
                     {% endif %}
                     <div>
-                        <strong style="font-size: 0.95rem;">{{ guide.name }}</strong><br>
-                        <small style="color: #666;">📞 {{ guide.phone }}</small>
+                        <strong style="font-size: 0.95rem; color: var(--ink);">{{ guide.name }}</strong><br>
+                        <small style="color: var(--ink-2);">📞 {{ guide.phone }}</small>
                     </div>
                 </li>
                 {% empty %}
@@ -1564,7 +1565,7 @@
         _prevWpCount = waypoints.length;
 
         if (waypoints.length === 0) {
-            waypointsContainer.innerHTML = '<em style="color: #666;">Натискайте "➕ До маршруту" біля цікавих місць, щоб вибрати точки.</em>';
+            waypointsContainer.innerHTML = '<em style="color: var(--ink-2);">Натискайте "➕ До маршруту" біля цікавих місць, щоб вибрати точки.</em>';
             clearBtn.style.display = 'none';
             buildRouteBtn.style.display = 'none';
             googleMapsBtn.style.display = 'none';
@@ -1575,16 +1576,16 @@
                 const label = trunc(wp.name);
                 // Точка
                 html += `
-                    <div data-wp-index="${i}" style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 6px 8px; border-radius: 6px; border: 1px solid #e0e0e0; cursor: default; transition: background 0.15s;">
+                    <div data-wp-index="${i}" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); color: var(--ink); padding: 6px 8px; border-radius: 8px; border: 1px solid var(--stroke); cursor: default; transition: background 0.15s;">
                         <div style="display: flex; align-items: center; gap: 6px; min-width:0; flex:1;">
                             <strong style="font-size:0.85rem; flex-shrink:0;">${i + 1}.</strong>
                             <span onclick="map.panTo(waypoints[${i}].latLng, {animate:true})" title="${wp.name.replace(/"/g,'&quot;')}" style="font-size:0.85rem; cursor:pointer; text-decoration:underline dotted; text-underline-offset:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${label}</span>
                         </div>
                         <div style="display: flex; gap: 4px; flex-shrink:0; margin-left:4px;">
-                            <button onclick="moveWaypoint(${i}, -1)" ${i === 0 ? 'disabled' : ''} style="padding: 2px 6px; cursor: pointer; border: 1px solid #ccc; background: #eee; border-radius: 3px;" title="Вгору">⬆️</button>
-                            <button onclick="moveWaypoint(${i}, 1)" ${i === waypoints.length - 1 ? 'disabled' : ''} style="padding: 2px 6px; cursor: pointer; border: 1px solid #ccc; background: #eee; border-radius: 3px;" title="Вниз">⬇️</button>
-                            <button onclick="openCalendarModal(${i})" style="padding: 2px 6px; cursor: pointer; border: 1px solid #4285F4; background: #e8f0fe; color: #4285F4; border-radius: 3px;" title="Додати в Google Calendar">📅</button>
-                            <button onclick="removeWaypoint(${i})" style="padding: 2px 6px; cursor: pointer; border: 1px solid #e74c3c; background: #fdf2f0; color: #e74c3c; border-radius: 3px;" title="Видалити">❌</button>
+                            <button onclick="moveWaypoint(${i}, -1)" ${i === 0 ? 'disabled' : ''} style="padding: 2px 6px; cursor: pointer; border: 1px solid var(--stroke-2); background: rgba(255,255,255,0.06); border-radius: 5px;" title="Вгору">⬆️</button>
+                            <button onclick="moveWaypoint(${i}, 1)" ${i === waypoints.length - 1 ? 'disabled' : ''} style="padding: 2px 6px; cursor: pointer; border: 1px solid var(--stroke-2); background: rgba(255,255,255,0.06); border-radius: 5px;" title="Вниз">⬇️</button>
+                            <button onclick="openCalendarModal(${i})" style="padding: 2px 6px; cursor: pointer; border: 1px solid rgba(66,133,244,0.5); background: rgba(66,133,244,0.18); color: #8ab4ff; border-radius: 5px;" title="Додати в Google Calendar">📅</button>
+                            <button onclick="removeWaypoint(${i})" style="padding: 2px 6px; cursor: pointer; border: 1px solid rgba(231,76,60,0.5); background: rgba(231,76,60,0.16); color: #ff9b8f; border-radius: 5px;" title="Видалити">❌</button>
                         </div>
                     </div>
                 `;
@@ -1606,7 +1607,7 @@
             waypointsContainer.querySelectorAll('[data-wp-index]').forEach(el => {
                 const i = parseInt(el.dataset.wpIndex);
                 el.addEventListener('mouseenter', () => {
-                    el.style.background = '#eef4fb';
+                    el.style.background = 'rgba(255,255,255,0.1)';
                     if (highlightCircle) map.removeLayer(highlightCircle);
                     const color = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
                     highlightCircle = L.circleMarker(waypoints[i].latLng, {
@@ -1625,7 +1626,7 @@
                     .openTooltip();
                 });
                 el.addEventListener('mouseleave', () => {
-                    el.style.background = '#fff';
+                    el.style.background = 'rgba(255,255,255,0.04)';
                     if (highlightCircle) { map.removeLayer(highlightCircle); highlightCircle = null; }
                 });
             });
@@ -1714,9 +1715,9 @@
                 updateRoutingUI();
 
                 statsContainer.innerHTML = `
-                    <div style="padding: 10px; background: #fff; border-radius: 6px; text-align: center; border: 1px solid #c9e1f5;">
-                        <strong style="font-size: 1.1rem; color: #333;">🛣️ ${distanceKm} км</strong><br>
-                        <small style="color: #666;">⏱️ Час в дорозі: ~${timeMin} хв</small>
+                    <div style="padding: 10px; background: rgba(255,255,255,0.04); border-radius: 8px; text-align: center; border: 1px solid var(--stroke-2);">
+                        <strong style="font-size: 1.1rem; color: var(--ink);">🛣️ ${distanceKm} км</strong><br>
+                        <small style="color: var(--ink-2);">⏱️ Час в дорозі: ~${timeMin} хв</small>
                     </div>
                 `;
                 statsContainer.style.display = 'block';
