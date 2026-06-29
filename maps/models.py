@@ -44,7 +44,7 @@ class Location(models.Model):
     country = models.ForeignKey(
         'Country', on_delete=models.SET_NULL,
         null=True, blank=True,
-        verbose_name='Країна',
+        verbose_name='Територія',
         related_name='locations',
     )
     region = models.ForeignKey(
@@ -250,7 +250,7 @@ class HystoryOb(models.Model):
 
 
 class Country(models.Model):
-    """Країна — назва та екстент карти."""
+    """Територія (країна або область) — назва та екстент карти."""
     name = models.CharField(max_length=200, verbose_name='Назва')
     extent_code = models.CharField(
         max_length=200,
@@ -261,8 +261,8 @@ class Country(models.Model):
     is_published = models.BooleanField(default=False, verbose_name='Опубліковано')
 
     class Meta:
-        verbose_name = 'Країна'
-        verbose_name_plural = 'Країни'
+        verbose_name = 'Територія'
+        verbose_name_plural = 'Території'
         ordering = ['name']
 
     def __str__(self):
@@ -270,19 +270,19 @@ class Country(models.Model):
 
 
 class CountryPolygon(models.Model):
-    """Полігон, прив'язаний до країни."""
+    """Полігон, прив'язаний до території."""
     uid     = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID (OGC)')
     country = models.ForeignKey(
         Country, on_delete=models.CASCADE,
         related_name='polygons',
-        verbose_name='Країна',
+        verbose_name='Територія',
     )
     name = models.CharField(max_length=200, verbose_name='Назва полігону')
     geom = models.MultiPolygonField(srid=4326, verbose_name='Геометрія')
 
     class Meta:
-        verbose_name = 'Полігон країни'
-        verbose_name_plural = 'Полігони країн'
+        verbose_name = 'Полігон території'
+        verbose_name_plural = 'Полігони територій'
         ordering = ['country', 'name']
 
     def __str__(self):
