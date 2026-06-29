@@ -112,6 +112,7 @@ body {
     color: var(--ink);
     box-shadow: 0 16px 48px rgba(0,0,0,0.5);
 }
+#route-nav-panel.open { display: block; }
 
 /* =========================================================
    MAP LAYOUT
@@ -367,18 +368,20 @@ body {
    LEAFLET POPUP — темна рамка
    ========================================================= */
 .leaflet-popup-content-wrapper {
-    border: 1px solid var(--stroke-2);
+    border: 1px solid rgba(255,255,255,0.55);
     border-radius: 10px;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.35);
     padding: 0;
     overflow: hidden;
-    background: var(--panel-3);
-    color: var(--ink);
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    color: #000;
 }
 .leaflet-popup-content {
     margin: 0;
     width: 220px !important;
-    color: var(--ink);
+    color: #000;
 }
 .leaflet-popup-content .popup img {
     width: 100%;
@@ -419,9 +422,9 @@ body {
     backdrop-filter: blur(2px);
 }
 .leaflet-popup-content .popup-body { padding: 8px 10px 10px; }
-.leaflet-popup-tip { background: var(--panel-3); box-shadow: none; }
-.leaflet-popup-close-button { color: var(--ink-2) !important; }
-.leaflet-container a.leaflet-popup-close-button:hover { color: var(--ink) !important; }
+.leaflet-popup-tip { background: rgba(255,255,255,0.82); box-shadow: none; }
+.leaflet-popup-close-button { color: #555 !important; }
+.leaflet-container a.leaflet-popup-close-button:hover { color: #000 !important; }
 
 /* =========================================================
    API DROPDOWN
@@ -593,3 +596,191 @@ body {
 }
 .copy-btn:hover { color: #7dd3fc; background: rgba(125,211,252,0.08); }
 .copy-btn--done { color: #34d399; }
+
+/* =========================================================
+   МОБІЛЬНА АДАПТАЦІЯ
+   ========================================================= */
+@media (max-width: 768px) {
+  /* динамічна висота viewport — без стрибків від адресного рядка */
+  .map-layout { height: calc(100dvh - 54px); }
+
+  /* Сайдбар → висувна панель поверх карти */
+  .sidebar {
+    position: fixed; top: 54px; left: 0; bottom: 0;
+    width: min(86vw, 340px); min-width: 0;
+    z-index: 1200;
+    transform: translateX(0);
+    transition: transform .3s ease;
+  }
+  .sidebar--collapsed {
+    width: min(86vw, 340px) !important;
+    min-width: 0 !important;
+    padding: 10px !important;
+    transform: translateX(-100%);
+    overflow: auto;
+  }
+  /* затемнення тла, коли сайдбар відкрито (елемент додає JS) */
+  #sidebar-backdrop {
+    display: none; position: fixed; inset: 54px 0 0 0;
+    z-index: 1150; background: rgba(0,0,0,.5);
+  }
+  body.sidebar-open #sidebar-backdrop { display: block; }
+
+  #map, #map3d { width: 100%; }
+
+  /* Панель профілю висот і маршруту — на всю ширину (перебиваємо inline) */
+  #elevation-panel { left: 0 !important; }
+  /* Панель маршруту — правий слайдер, напівпрозорий */
+  #route-nav-panel {
+    display: block; top: 54px; right: 0; bottom: 0; left: auto;
+    width: min(86vw, 360px); min-width: 0; border-radius: 0;
+    transform: translateX(100%); transition: transform .3s ease;
+    overflow-y: auto; z-index: 1250;
+    background: rgba(17,22,27,0.42);
+    backdrop-filter: saturate(140%) blur(14px);
+    -webkit-backdrop-filter: saturate(140%) blur(14px);
+  }
+  #route-nav-panel.open { transform: translateX(0); }
+  /* кнопку «Маршрут» лишаємо в навбарі поряд із кнопкою 3D (без FAB) */
+
+  /* Navbar компактний, в один рядок (горизонт. скрол — запасний варіант) */
+  .navbar {
+    flex-wrap: nowrap; padding: 8px 10px; gap: 8px; overflow-x: auto;
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+  }
+  .navbar__brand { gap: 8px; font-size: 1rem; min-width: 0; flex-shrink: 0; }
+  .navbar__links { gap: 6px; flex-shrink: 0; }
+  .navbar__links a, .navbar button { padding: 6px 9px; font-size: .82rem; white-space: nowrap; }
+
+  /* Тап-зони ≥ 44px */
+  .leaflet-bar a, .leaflet-control button { min-width: 44px; min-height: 44px; }
+}
+
+@media (max-width: 520px) {
+  .brand-text { display: none; }            /* лишаємо лише 🗺️ */
+  .navbar__links span { display: none; }    /* «👤 username» */
+  #connect-data-toggle { display: none; }   /* «Підключити дані» — задовге */
+}
+
+/* =========================================================
+   СВІТЛА ТЕМА — хедер (зверху) і сайдбар (збоку)
+   Перевизначення змінних каскадом фарбує текст/межі/фони,
+   зокрема й inline-стилі, що звертаються до var(--…).
+   ========================================================= */
+.navbar, .sidebar {
+  --ink:      #1b2329;
+  --ink-2:    #55626c;
+  --ink-3:    #8b97a0;
+  --stroke:   rgba(0,0,0,0.10);
+  --stroke-2: rgba(0,0,0,0.20);
+  --surface:  #ffffff;
+  --panel-2:  #ffffff;
+  --panel-3:  #ffffff;
+}
+
+/* Хедер */
+.navbar { border-bottom: 1px solid rgba(0,0,0,0.10); box-shadow: 0 1px 10px rgba(0,0,0,0.06); }
+.navbar button { background: #fff; }
+.navbar button:hover,
+.navbar__links a:hover { background: rgba(0,0,0,0.05); color: var(--ink); }
+#sidebar-toggle { background: rgba(0,0,0,0.05); color: var(--ink); }
+#sidebar-toggle:hover { background: rgba(0,0,0,0.10); }
+/* CTA «Маршрут» лишаємо акцентним помаранчевим */
+
+/* Сайдбар */
+.sidebar { box-shadow: 2px 0 18px rgba(0,0,0,0.10); }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); }
+.sidebar__list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); }
+.sb-section__hdr { background: #fff; }
+.sb-section__hdr:hover { background: #eef1f4; }
+.location-card { background: #fff; }
+.location-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.14); }
+/* темний inline-select вибору території → світлий */
+.sidebar #country-select {
+  background: #fff !important;
+  color: var(--ink) !important;
+  border-color: rgba(0,0,0,0.15) !important;
+}
+
+/* Легенда категорій: розкладка flex (показ/приховування керує JS) */
+#cat-legend {
+  flex-direction: column;
+  background: rgba(255,255,255,0.82) !important;   /* білий напівпрозорий, як попапи */
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+}
+#cat-legend-header { border-bottom-color: rgba(0,0,0,0.08) !important; }
+#cat-legend, #cat-legend span, #cat-legend label { color: #000 !important; }
+
+/* Шрифт полігонів — чорний: легенда полігонів + підписи (тултіпи) */
+#poly-legend, #poly-legend-list, #poly-legend-list span { color: #000 !important; }
+.leaflet-tooltip:not(.elev-tooltip) { color: #000; }
+
+/* Легенда полігонів — той самий стиль, що й категорії, і поруч на карті */
+#poly-legend {
+  background: rgba(255,255,255,0.82) !important;
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+  top: auto !important;
+  bottom: 14px !important;
+  right: 10px !important;
+  left: auto !important;
+  width: 260px !important;
+}
+#poly-legend > div:first-child { border-bottom-color: rgba(0,0,0,0.08) !important; }
+
+/* =========================================================
+   МОБІЛЬНЕ: легенди категорій і полігонів — напівпрозорий стиль
+   (сайдбар — білий, як на десктопі)
+   ========================================================= */
+@media (max-width: 768px) {
+  /* Легенда категорій — як слайдер маршруту */
+  #cat-legend { background: rgba(17,22,27,0.42) !important; }
+  #cat-legend, #cat-legend span, #cat-legend label { color: #eef3f5 !important; }
+  #cat-legend-header {
+    border-bottom-color: rgba(255,255,255,0.12) !important;
+    border-top-color: rgba(255,255,255,0.12);
+  }
+
+  /* Легенда полігонів — темне скло, поруч із категоріями, відкривається знизу вгору */
+  #poly-legend {
+    background: rgba(17,22,27,0.42) !important;
+    top: auto !important;
+    bottom: 14px !important;
+    right: 10px !important;
+    left: auto !important;
+    width: 220px !important;
+    max-width: 44vw !important;                   /* проміжок до легенди категорій зліва */
+    flex-direction: column-reverse !important;   /* список над заголовком → ріст угору */
+  }
+  #poly-legend, #poly-legend * { color: #eef3f5 !important; }
+  #poly-legend > div:first-child {
+    border-bottom: none !important;
+    border-top: 1px solid rgba(255,255,255,0.12) !important;
+  }
+}
+
+/* Мобільне: легенда внизу зліва, відкривається знизу вгору */
+@media (max-width: 768px) {
+  #cat-legend {
+    top: auto !important;
+    bottom: 14px !important;
+    left: 10px !important;
+    min-width: 0 !important;
+    max-width: 44vw !important;        /* лишаємо проміжок до легенди полігонів */
+    flex-direction: column-reverse;   /* тіло над заголовком → ріст угору */
+  }
+  #cat-legend-header {
+    border-bottom: none !important;
+    border-top: 1px solid #eee;
+  }
+}
+
+/* Кнопки масштабу +/- — того ж розміру, що й кнопка геолокації (34px) */
+.leaflet-control-zoom a {
+  width: 34px !important;
+  height: 34px !important;
+  line-height: 34px !important;
+  font-size: 18px !important;
+}

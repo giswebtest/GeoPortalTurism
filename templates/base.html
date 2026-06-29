@@ -23,7 +23,7 @@
 
 <nav class="navbar">
     <div class="navbar__brand" style="display:flex; align-items:center; gap:12px;">
-        🗺️ GeoPortal Turism
+        🗺️ <span class="brand-text">GeoPortal Turism</span>
         <button id="sidebar-toggle" title="Згорнути/розгорнути панель">☰</button>
         <button id="route-toggle-btn" title="Маршрут">🚗 Маршрут</button>
     </div>
@@ -133,7 +133,7 @@
 <script>
 document.getElementById('route-toggle-btn')?.addEventListener('click', function () {
     var panel = document.getElementById('route-nav-panel');
-    if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    if (panel) panel.classList.toggle('open');
 });
 
 (function () {
