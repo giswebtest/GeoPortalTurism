@@ -1,0 +1,101 @@
+{% extends "admin/change_form.html" %}
+
+{% block extrahead %}{{ block.super }}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/osmtogeojson@3.0.0-beta.5/osmtogeojson.min.js"></script>
+{% endblock %}
+
+{% block submit_buttons_bottom %}{{ block.super }}
+<div class="module" style="margin-top:20px;padding:12px;">
+    <h2 style="margin:0 0 8px;">🗺️ POI на карті — опубліковані категорії (Overpass)</h2>
+    <div id="poi-admin-status" style="padding:4px 0 8px;color:#555;font-size:13px;">Завантаження POI…</div>
+    <div id="poi-admin-map" style="height:520px;border:1px solid #ddd;border-radius:6px;overflow:hidden;"></div>
+</div>
+
+<script>
+(function () {
+    var CATS = {{ poi_categories_json|default:'[]'|safe }};
+    var mapEl = document.getElementById('poi-admin-map');
+    if (!mapEl || typeof L === 'undefined') return;
+
+    var map = L.map('poi-admin-map');
+    map.fitBounds([[48.85, 24.58], [48.98, 24.84]]);  // район Івано-Франківська
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors', maxZoom: 19
+    }).addTo(map);
+
+    var OVERPASS = [
+        'https://overpass-api.de/api/interpreter',
+        'https://overpass.kumi.systems/api/interpreter'
+    ];
+    function fetchOverpass(q) {
+        var tryS = function (i) {
+            if (i >= OVERPASS.length) return Promise.reject(new Error('Overpass недоступний'));
+            return fetch(OVERPASS[i] + '?data=' + encodeURIComponent(q))
+                .then(function (r) { return r.ok ? r.json() : tryS(i + 1); })
+                .catch(function () { return tryS(i + 1); });
+        };
+        return tryS(0);
+    }
+
+    var layers = {};
+    var statusEl = document.getElementById('poi-admin-status');
+    var done = 0;
+    function updateStatus() {
+        statusEl.textContent = CATS.length
+            ? ('Категорій: ' + CATS.length + ' · завантажено ' + done + '/' + CATS.length)
+            : 'Немає опублікованих POI-категорій.';
+    }
+    updateStatus();
+
+    // Легенда з перемикачами опублікованих POI-категорій
+    var legend = L.control({ position: 'topright' });
+    legend.onAdd = function () {
+        var div = L.DomUtil.create('div', '');
+        div.style.cssText = 'background:#fff;padding:8px 10px;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,.2);font-size:13px;max-height:320px;overflow:auto;';
+        div.innerHTML = '<strong>POI категорії</strong>';
+        CATS.forEach(function (cat) {
+            var label = document.createElement('label');
+            label.style.cssText = 'display:flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer;';
+            var cb = document.createElement('input');
+            cb.type = 'checkbox'; cb.checked = true;
+            cb.addEventListener('change', function () {
+                if (!layers[cat.name]) return;
+                this.checked ? layers[cat.name].addTo(map) : map.removeLayer(layers[cat.name]);
+            });
+            label.appendChild(cb);
+            label.appendChild(document.createTextNode(' ' + cat.emoji + ' ' + cat.name));
+            div.appendChild(label);
+        });
+        L.DomEvent.disableClickPropagation(div);
+        return div;
+    };
+    if (CATS.length) legend.addTo(map);
+
+    CATS.forEach(function (cat) {
+        var full = '[out:json][timeout:25];' + cat.query + 'out body;>;out skel qt;';
+        fetchOverpass(full).then(function (data) {
+            var gj = osmtogeojson(data);
+            layers[cat.name] = L.geoJSON(gj, {
+                pointToLayer: function (f, ll) {
+                    return L.marker(ll, { icon: L.divIcon({
+                        html: '<span style="font-size:20px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));">' + cat.emoji + '</span>',
+                        className: '', iconSize: [24, 24], iconAnchor: [12, 12]
+                    })});
+                },
+                style: function (f) {
+                    return (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon')
+                        ? { color: '#3388ff', weight: 2, fillOpacity: 0.25 } : {};
+                },
+                onEachFeature: function (f, layer) {
+                    var t = f.properties || {};
+                    layer.bindPopup('<strong>' + (t.name || cat.name) + '</strong>');
+                }
+            }).addTo(map);
+            done++; updateStatus();
+        }).catch(function () { done++; updateStatus(); });
+    });
+})();
+</script>
+{% endblock %}

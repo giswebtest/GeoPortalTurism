@@ -35,7 +35,7 @@ class LocationAdmin(GISModelAdmin):
             'fields': ('name', 'description', 'category', 'region', 'country', 'author'),
         }),
         ('Медіа', {
-            'fields': ('image', 'gx_media_links'),
+            'fields': ('image', 'gx_media_links', 'photourl2', 'photourl3'),
         }),
         ('Геодані', {
             'fields': ('geom',),
@@ -532,6 +532,16 @@ class POICategoryAdmin(admin.ModelAdmin):
     list_editable = ('is_published',)
     search_fields = ('name',)
     fields = ('name', 'emoji', 'query', 'is_published')
+    change_form_template = 'admin/maps/poicategory/change_form.html'
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        cats = POICategory.objects.filter(is_published=True)
+        extra_context['poi_categories_json'] = json.dumps(
+            [{'name': c.name, 'emoji': c.emoji, 'query': c.query} for c in cats],
+            ensure_ascii=False,
+        )
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
 
 class CountryPolygonInline(admin.TabularInline):

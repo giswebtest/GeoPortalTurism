@@ -1,28 +1,32 @@
 /* =========================================================
    GeoPortal — темна glass-тема (натхнення макетом «Карпати»)
    ========================================================= */
-:root{
-  --bg:#0b0f12;
-  --panel:rgba(15,20,25,0.66);
-  --panel-2:rgba(20,27,33,0.92);
-  --panel-3:rgba(26,34,41,0.96);
-  --surface:#11161b;
-  --surface-2:#161d23;
-  --stroke:rgba(255,255,255,0.08);
-  --stroke-2:rgba(255,255,255,0.14);
-  --ink:#eef3f5;
-  --ink-2:#9ba7ad;
-  --ink-3:#5f6b73;
-  --accent:#ff8b42;
-  --accent-2:#ff6a4d;
-  --easy:#4ec07a;
-  --med:#f5bb3d;
-  --hard:#ff6a5b;
-  --radius:14px;
-  --blur:saturate(150%) blur(18px);
+:root {
+    --bg: #0b0f12;
+    --panel: rgba(15, 20, 25, 0.66);
+    --panel-2: rgba(20, 27, 33, 0.92);
+    --panel-3: rgba(26, 34, 41, 0.96);
+    --surface: #11161b;
+    --surface-2: #161d23;
+    --stroke: rgba(255, 255, 255, 0.08);
+    --stroke-2: rgba(255, 255, 255, 0.14);
+    --ink: #eef3f5;
+    --ink-2: #9ba7ad;
+    --ink-3: #5f6b73;
+    --accent: #ff8b42;
+    --accent-2: #ff6a4d;
+    --easy: #4ec07a;
+    --med: #f5bb3d;
+    --hard: #ff6a5b;
+    --radius: 14px;
+    --blur: saturate(150%) blur(18px);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 body {
     font-family: 'Inter', system-ui, sans-serif;
@@ -30,9 +34,24 @@ body {
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
 }
-.display, h1, h2, h3 { font-family: 'Space Grotesk', 'Inter', sans-serif; }
-.mono { font-family: 'JetBrains Mono', monospace; font-feature-settings:"tnum"; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+.display,
+h1,
+h2,
+h3 {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+}
+
+.mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-feature-settings: "tnum";
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
 
 /* =========================================================
    NAVBAR (topbar)
@@ -49,13 +68,20 @@ body {
     border-bottom: 1px solid var(--stroke);
     color: var(--ink);
 }
+
 .navbar__brand {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 1.15rem;
     font-weight: 600;
     letter-spacing: .2px;
 }
-.navbar__links { display: flex; gap: 12px; align-items: center; }
+
+.navbar__links {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
 .navbar__links a {
     color: var(--ink-2);
     text-decoration: none;
@@ -65,8 +91,16 @@ body {
     border-radius: 8px;
     transition: color .18s, background .18s;
 }
-.navbar__links a:hover { color: var(--ink); background: rgba(255,255,255,0.06); }
-.navbar__links span { color: var(--ink-2); font-size: 0.85rem; }
+
+.navbar__links a:hover {
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.navbar__links span {
+    color: var(--ink-2);
+    font-size: 0.85rem;
+}
 
 /* загальний вигляд кнопок у навбарі */
 .navbar button {
@@ -77,19 +111,44 @@ body {
     cursor: pointer;
     font-weight: 500;
     font-size: 0.86rem;
-    background: rgba(255,255,255,0.04);
+    background: rgba(255, 255, 255, 0.04);
     color: var(--ink-2);
     transition: .18s;
 }
-.navbar button:hover { color: var(--ink); border-color: var(--stroke-2); background: rgba(255,255,255,0.08); }
+
+.navbar button:hover {
+    color: var(--ink);
+    border-color: var(--stroke-2);
+    background: rgba(255, 255, 255, 0.08);
+}
 
 #route-toggle-btn {
     background: linear-gradient(150deg, var(--accent), var(--accent-2));
-    border-color: rgba(255,140,90,0.5);
+    border-color: rgba(255, 140, 90, 0.5);
     color: #fff;
     font-weight: 600;
 }
-#route-toggle-btn:hover { filter: brightness(1.06); color: #fff; }
+
+/* Лічильник точок маршруту (бейдж на кнопці) */
+.route-count {
+    display: none;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    margin-left: 3px;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--accent-2);
+    font: 600 11px/18px 'JetBrains Mono', monospace;
+    text-align: center;
+    vertical-align: middle;
+}
+
+#route-toggle-btn:hover {
+    filter: brightness(1.06);
+    color: #fff;
+}
+
 #sidebar-toggle {
     font-size: 1.05rem;
     line-height: 1;
@@ -102,17 +161,39 @@ body {
     top: 64px;
     right: 14px;
     z-index: 2000;
-    background: var(--panel-3);
-    backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur);
-    border: 1px solid var(--stroke-2);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: saturate(140%) blur(12px);
+    -webkit-backdrop-filter: saturate(140%) blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.55);
     border-radius: var(--radius);
     padding: 16px;
     min-width: 320px;
-    color: var(--ink);
-    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    color: #111;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+
+    --ink: #111;
+    --ink-2: #333;
+    --ink-3: #555;
+    --stroke: rgba(0,0,0,0.15);
+    --stroke-2: rgba(0,0,0,0.1);
 }
-#route-nav-panel.open { display: block; }
+
+#route-nav-panel label,
+#route-nav-panel span,
+#route-nav-panel p,
+#route-nav-panel li,
+#route-nav-panel h3,
+#route-nav-panel h4,
+#route-nav-panel strong,
+#route-nav-panel small,
+#route-nav-panel input,
+#route-nav-panel select {
+    color: #111;
+}
+
+#route-nav-panel.open {
+    display: block;
+}
 
 /* =========================================================
    MAP LAYOUT
@@ -132,15 +213,26 @@ body {
     min-width: 354px;
     background: var(--surface);
     overflow-y: auto;
-    padding: 10px;
+    padding: 2px;
     border-right: 1px solid var(--stroke);
-    box-shadow: 2px 0 24px rgba(0,0,0,0.4);
+    box-shadow: 2px 0 24px rgba(0, 0, 0, 0.4);
     transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
     flex-shrink: 0;
 }
-.sidebar::-webkit-scrollbar { width: 8px; }
-.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-.sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+
+.sidebar::-webkit-scrollbar {
+    width: 0;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
 .sidebar--collapsed {
     width: 0 !important;
     min-width: 0 !important;
@@ -148,11 +240,16 @@ body {
     padding-right: 0 !important;
     overflow: hidden;
 }
+
 #sidebar-toggle {
-    background: rgba(255,255,255,0.06);
+    background: rgba(255, 255, 255, 0.06);
     color: var(--ink);
 }
-#sidebar-toggle:hover { background: rgba(255,255,255,0.14); }
+
+#sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
 .sidebar h2 {
     margin-bottom: 14px;
     padding: 4px 6px;
@@ -167,25 +264,47 @@ body {
 .location-card {
     border-radius: 12px;
     border: 1px solid var(--stroke);
-    background: rgba(255,255,255,0.02);
-    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    margin-bottom: 3px;
     cursor: pointer;
     transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
     overflow: hidden;
 }
+
 .location-card:hover {
     border-color: var(--stroke-2);
-    box-shadow: 0 8px 26px rgba(0,0,0,0.45);
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
     transform: translateY(-1px);
 }
 
-.location-card__img-wrap { position: relative; overflow: hidden; }
+.location-card__img-wrap {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-gallery {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+}
+
+.card-gallery::-webkit-scrollbar {
+    display: none;
+}
+
+.card-gallery-slide {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+}
+
 .location-card__img-wrap img {
     width: 100%;
     height: 160px;
     object-fit: cover;
     display: block;
 }
+
 .location-card__no-img {
     width: 100%;
     height: 160px;
@@ -194,34 +313,61 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 2.5rem;
-    color: rgba(255,255,255,0.35);
+    color: rgba(255, 255, 255, 0.35);
 }
+
+.card-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 10;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.card-arrow--left  { left: 4px; }
+.card-arrow--right { right: 4px; }
 
 .location-card__top {
     position: absolute;
-    top: 0; left: 0; right: 0;
+    top: 0;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     padding: 7px 7px 0;
     gap: 6px;
 }
-.location-card__tags { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.location-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
 .location-card__tags .badge {
-    background: rgba(0,0,0,0.45);
+    background: rgba(0, 0, 0, 0.45);
     color: #fff;
-    border: 1px solid rgba(255,255,255,0.22);
+    border: 1px solid rgba(255, 255, 255, 0.22);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     padding: 2px 7px;
     font-size: 0.72rem;
     border-radius: 20px;
 }
+
 .location-card__lupa {
     flex-shrink: 0;
     width: 26px;
     height: 26px;
-    background: rgba(0,0,0,0.42);
+    background: rgba(0, 0, 0, 0.42);
     color: #fff;
     border-radius: 50%;
     display: flex;
@@ -231,28 +377,42 @@ body {
     text-decoration: none;
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    border: 1px solid rgba(255,255,255,0.22);
+    border: 1px solid rgba(255, 255, 255, 0.22);
     transition: background 0.15s;
 }
-.location-card__lupa:hover { background: rgba(0,0,0,0.7); }
+
+.location-card__lupa:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
 
 .location-card__name-overlay {
     position: absolute;
-    bottom: 0; left: 0; right: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
     padding: 28px 10px 9px;
-    background: linear-gradient(transparent, rgba(0,0,0,0.78));
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.78));
     color: #fff;
 }
+
 .location-card__name-overlay h3 {
     margin: 0;
     font-size: 0.9rem;
     font-weight: 600;
     line-height: 1.3;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.location-card__body { padding: 10px; }
-.location-card__body p { font-size: 0.82rem; color: var(--ink-2); margin-top: 6px; }
+.location-card__body {
+    padding: 3px;
+}
+
+.location-card__body p {
+    font-size: 0.82rem;
+    color: var(--ink-2);
+    margin-top: 6px;
+}
+
 .add-to-route-btn {
     background: linear-gradient(150deg, var(--accent), var(--accent-2)) !important;
     color: #fff !important;
@@ -262,16 +422,23 @@ body {
 .badge {
     display: inline-block;
     padding: 2px 8px;
-    background: rgba(255,139,66,0.14);
+    background: rgba(255, 139, 66, 0.14);
     color: #ffd9bf;
     border-radius: 20px;
     font-size: 0.75rem;
     margin-right: 4px;
 }
-.badge--region { background: rgba(78,192,122,0.16); color: #a7e8c1; }
+
+.badge--region {
+    background: rgba(78, 192, 122, 0.16);
+    color: #a7e8c1;
+}
 
 /* Map */
-#map { flex: 1; background: var(--bg); }
+#map {
+    flex: 1;
+    background: var(--bg);
+}
 
 /* =========================================================
    AUTH FORM
@@ -283,21 +450,34 @@ body {
     border: 1px solid var(--stroke);
     padding: 32px;
     border-radius: var(--radius);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
-.auth-form h2 { margin-bottom: 20px; color: var(--ink); }
+
+.auth-form h2 {
+    margin-bottom: 20px;
+    color: var(--ink);
+}
+
 .auth-form input {
     width: 100%;
     padding: 11px;
     margin: 6px 0 14px;
     border: 1px solid var(--stroke-2);
     border-radius: 9px;
-    background: rgba(0,0,0,0.25);
+    background: rgba(0, 0, 0, 0.25);
     color: var(--ink);
     font-family: inherit;
 }
-.auth-form input::placeholder { color: var(--ink-3); }
-.auth-form input:focus { outline: none; border-color: var(--accent); }
+
+.auth-form input::placeholder {
+    color: var(--ink-3);
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
 .auth-form button {
     width: 100%;
     padding: 12px;
@@ -310,15 +490,80 @@ body {
     font-weight: 600;
     font-family: inherit;
 }
-.auth-form button:hover { filter: brightness(1.06); }
 
-.empty { color: var(--ink-3); text-align: center; margin-top: 20px; font-size: 0.85rem; }
+.auth-form button:hover {
+    filter: brightness(1.06);
+}
+
+.empty {
+    color: var(--ink-3);
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.85rem;
+}
+
+/* Іконки соцмереж гіда */
+.guide-socials {
+    display: flex;
+    gap: 6px;
+    margin-top: 7px;
+    flex-wrap: wrap;
+}
+
+.guide-socials .gs {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    text-decoration: none;
+    transition: transform .15s, filter .15s;
+}
+
+.guide-socials .gs svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+}
+
+.guide-socials .gs:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.12);
+}
+
+.gs--ig {
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+}
+
+.gs--fb {
+    background: #1877F2;
+}
+
+.gs--tt {
+    background: #010101;
+}
+
+.gs--tg {
+    background: #26A5E4;
+}
+
+.gs--wa {
+    background: #25D366;
+}
 
 /* =========================================================
    COLLAPSIBLE SIDEBAR SECTIONS
    ========================================================= */
-.sb-section { border-bottom: 1px solid var(--stroke); margin-bottom: 6px; }
-.sb-section:last-child { border-bottom: none; }
+.sb-section {
+    border-bottom: 1px solid var(--stroke);
+    margin-bottom: 6px;
+}
+
+.sb-section:last-child {
+    border-bottom: none;
+}
+
 .sb-section__hdr {
     display: flex;
     justify-content: space-between;
@@ -329,13 +574,21 @@ body {
     font-size: 0.92rem;
     font-weight: 600;
     color: var(--ink);
-    background: rgba(255,255,255,0.04);
+    background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--stroke);
     border-radius: 10px;
     transition: background 0.15s, border-color 0.15s;
 }
-.sb-section__hdr:hover { background: rgba(255,255,255,0.08); border-color: var(--stroke-2); }
-.sb-section__hdr:active { background: rgba(255,255,255,0.1); }
+
+.sb-section__hdr:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--stroke-2);
+}
+
+.sb-section__hdr:active {
+    background: rgba(255, 255, 255, 0.1);
+}
+
 .sb-chevron {
     font-size: 0.8rem;
     color: var(--ink-3);
@@ -344,45 +597,70 @@ body {
     margin-left: 6px;
     display: inline-block;
 }
-.sb-section__hdr.open .sb-chevron { transform: rotate(0deg); }
-.sb-section__hdr.closed .sb-chevron { transform: rotate(-90deg); }
+
+.sb-section__hdr.open .sb-chevron {
+    transform: rotate(0deg);
+}
+
+.sb-section__hdr.closed .sb-chevron {
+    transform: rotate(-90deg);
+}
+
 .sb-section__body {
     max-height: 2000px;
     overflow: hidden;
     transition: max-height 0.35s ease;
     padding: 0 4px;
 }
-.sb-section__body.hidden { max-height: 0; }
+
+.sb-section__body.hidden {
+    max-height: 0;
+}
 
 .sidebar__list {
     max-height: calc(100vh - 260px);
     overflow-y: auto;
     padding-right: 2px;
 }
-.sidebar__list::-webkit-scrollbar { width: 6px; }
-.sidebar__list::-webkit-scrollbar-track { background: transparent; }
-.sidebar__list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
-.sidebar__list::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+.sidebar__list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar__list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar__list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+}
+
+.sidebar__list::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
 
 /* =========================================================
    LEAFLET POPUP — темна рамка
    ========================================================= */
 .leaflet-popup-content-wrapper {
-    border: 1px solid rgba(255,255,255,0.55);
+    border: 1px solid rgba(255, 255, 255, 0.55);
     border-radius: 10px;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
     padding: 0;
     overflow: hidden;
-    background: rgba(255,255,255,0.82);
+    background: rgba(255, 255, 255, 0.82);
     backdrop-filter: saturate(140%) blur(10px);
     -webkit-backdrop-filter: saturate(140%) blur(10px);
     color: #000;
 }
+
 .leaflet-popup-content {
     margin: 0;
     width: 220px !important;
     color: #000;
 }
+
 .leaflet-popup-content .popup img {
     width: 100%;
     height: 160px;
@@ -391,14 +669,18 @@ body {
     border-radius: 0;
     margin: 0;
 }
-.leaflet-popup-content .popup-img-wrap { position: relative; }
+
+.leaflet-popup-content .popup-img-wrap {
+    position: relative;
+}
+
 .leaflet-popup-content .popup-img-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
     padding: 22px 9px 7px;
-    background: linear-gradient(transparent, rgba(0,0,0,0.78));
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.78));
     color: #fff;
     box-sizing: border-box;
     display: flex;
@@ -406,12 +688,17 @@ body {
     align-items: center;
     gap: 6px;
 }
-.leaflet-popup-content .popup-img-overlay strong { font-size: 13px; line-height: 1.3; }
+
+.leaflet-popup-content .popup-img-overlay strong {
+    font-size: 13px;
+    line-height: 1.3;
+}
+
 .leaflet-popup-content .popup-img-overlay .lupa {
     flex-shrink: 0;
     width: 22px;
     height: 22px;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     color: #fff;
     border-radius: 50%;
     display: flex;
@@ -421,65 +708,96 @@ body {
     text-decoration: none;
     backdrop-filter: blur(2px);
 }
-.leaflet-popup-content .popup-body { padding: 8px 10px 10px; }
-.leaflet-popup-tip { background: rgba(255,255,255,0.82); box-shadow: none; }
-.leaflet-popup-close-button { color: #555 !important; }
-.leaflet-container a.leaflet-popup-close-button:hover { color: #000 !important; }
+
+.leaflet-popup-content .popup-body { padding: 0; }
+
+.leaflet-popup-tip {
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: none;
+}
+
+.leaflet-popup-close-button {
+    color: #555 !important;
+}
+
+.leaflet-container a.leaflet-popup-close-button:hover {
+    color: #000 !important;
+}
 
 /* =========================================================
    API DROPDOWN
    ========================================================= */
-.api-dropdown { position: relative; }
+.api-dropdown {
+    position: relative;
+}
+
 .api-dropdown__btn {
-    background: rgba(255,255,255,0.04);
-    color: var(--ink-2);
-    border: 1px solid var(--stroke);
+    background: rgba(255, 255, 255, 0.9);
+    color: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 9px;
     padding: 6px 13px;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 0.86rem;
     transition: 0.18s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
-.api-dropdown__btn:hover { color: var(--ink); border-color: var(--stroke-2); }
+
+.api-dropdown__btn:hover {
+    background: #ffffff;
+    color: #000;
+    border-color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
 .api-dropdown__menu {
     display: none;
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
-    background: var(--panel-3);
-    backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur);
-    border: 1px solid var(--stroke-2);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: saturate(140%) blur(12px);
+    -webkit-backdrop-filter: saturate(140%) blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 12px;
     min-width: 220px;
     z-index: 9999;
-    box-shadow: 0 14px 40px rgba(0,0,0,0.5);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.15);
     padding: 6px 0;
 }
-.api-dropdown__menu--open { display: block; }
+
+.api-dropdown__menu--open {
+    display: block;
+}
+
 .api-dropdown__menu a {
     display: block;
     padding: 7px 16px;
-    color: var(--ink-2);
+    color: #333;
     text-decoration: none;
     font-size: 0.85rem;
     transition: background 0.15s, color 0.15s;
 }
-.api-dropdown__menu a:hover { background: rgba(255,139,66,0.16); color: #fff; }
+
+.api-dropdown__menu a:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #000;
+}
+
 .api-dropdown__section {
     padding: 6px 16px 3px;
     font-size: 0.72rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--ink-3);
+    color: #666;
     margin-top: 4px;
 }
 
 /* Кнопка Підключити дані */
 .connect-btn {
-    background: rgba(255,255,255,0.04);
+    background: rgba(255, 255, 255, 0.04);
     color: var(--ink-2);
     border: 1px solid var(--stroke);
     border-radius: 9px;
@@ -489,7 +807,12 @@ body {
     font-size: 0.86rem;
     transition: 0.18s;
 }
-.connect-btn:hover { color: var(--ink); border-color: var(--stroke-2); background: rgba(255,255,255,0.08); }
+
+.connect-btn:hover {
+    color: var(--ink);
+    border-color: var(--stroke-2);
+    background: rgba(255, 255, 255, 0.08);
+}
 
 /* =========================================================
    CONNECT MODAL
@@ -498,14 +821,17 @@ body {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
     z-index: 10000;
     align-items: center;
     justify-content: center;
 }
-.connect-modal-overlay--open { display: flex; }
+
+.connect-modal-overlay--open {
+    display: flex;
+}
 
 .connect-modal {
     background: var(--panel-3);
@@ -516,8 +842,9 @@ body {
     max-height: 88vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 24px 70px rgba(0,0,0,0.65);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65);
 }
+
 .connect-modal__header {
     display: flex;
     justify-content: space-between;
@@ -528,6 +855,7 @@ body {
     font-size: 0.95rem;
     color: var(--ink);
 }
+
 .connect-modal__close {
     background: none;
     border: none;
@@ -538,7 +866,10 @@ body {
     border-radius: 4px;
     transition: color 0.15s;
 }
-.connect-modal__close:hover { color: var(--ink); }
+
+.connect-modal__close:hover {
+    color: var(--ink);
+}
 
 .connect-modal__body {
     overflow-y: auto;
@@ -547,13 +878,15 @@ body {
     flex-direction: column;
     gap: 16px;
 }
+
 .connect-group {
     border: 1px solid var(--stroke);
     border-radius: 10px;
     overflow: hidden;
 }
+
 .connect-group__title {
-    background: rgba(255,255,255,0.04);
+    background: rgba(255, 255, 255, 0.04);
     padding: 8px 14px;
     font-size: 0.78rem;
     font-weight: 600;
@@ -561,14 +894,21 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
+
 .connect-row {
     padding: 6px 14px;
     border-top: 1px solid var(--stroke);
 }
-.connect-copy-row { position: relative; display: flex; align-items: center; }
+
+.connect-copy-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
 .connect-copy-row code {
     flex: 1;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0, 0, 0, 0.4);
     color: #7dd3fc;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
     font-size: 0.8rem;
@@ -581,6 +921,7 @@ body {
     display: block;
     width: 100%;
 }
+
 .copy-btn {
     position: absolute;
     right: 6px;
@@ -594,73 +935,153 @@ body {
     line-height: 1;
     transition: color 0.15s, background 0.15s;
 }
-.copy-btn:hover { color: #7dd3fc; background: rgba(125,211,252,0.08); }
-.copy-btn--done { color: #34d399; }
+
+.copy-btn:hover {
+    color: #7dd3fc;
+    background: rgba(125, 211, 252, 0.08);
+}
+
+.copy-btn--done {
+    color: #34d399;
+}
 
 /* =========================================================
    МОБІЛЬНА АДАПТАЦІЯ
    ========================================================= */
 @media (max-width: 768px) {
-  /* динамічна висота viewport — без стрибків від адресного рядка */
-  .map-layout { height: calc(100dvh - 54px); }
 
-  /* Сайдбар → висувна панель поверх карти */
-  .sidebar {
-    position: fixed; top: 54px; left: 0; bottom: 0;
-    width: min(86vw, 340px); min-width: 0;
-    z-index: 1200;
-    transform: translateX(0);
-    transition: transform .3s ease;
-  }
-  .sidebar--collapsed {
-    width: min(86vw, 340px) !important;
-    min-width: 0 !important;
-    padding: 10px !important;
-    transform: translateX(-100%);
-    overflow: auto;
-  }
-  /* затемнення тла, коли сайдбар відкрито (елемент додає JS) */
-  #sidebar-backdrop {
-    display: none; position: fixed; inset: 54px 0 0 0;
-    z-index: 1150; background: rgba(0,0,0,.5);
-  }
-  body.sidebar-open #sidebar-backdrop { display: block; }
+    /* динамічна висота viewport — без стрибків від адресного рядка */
+    .map-layout {
+        height: calc(100dvh - 54px);
+    }
 
-  #map, #map3d { width: 100%; }
+    /* Сайдбар → висувна панель поверх карти */
+    .sidebar {
+        position: fixed;
+        top: 54px;
+        left: 0;
+        bottom: 0;
+        width: min(86vw, 340px);
+        min-width: 0;
+        z-index: 1200;
+        transform: translateX(0);
+        transition: transform .3s ease;
+    }
 
-  /* Панель профілю висот і маршруту — на всю ширину (перебиваємо inline) */
-  #elevation-panel { left: 0 !important; }
-  /* Панель маршруту — правий слайдер, напівпрозорий */
-  #route-nav-panel {
-    display: block; top: 54px; right: 0; bottom: 0; left: auto;
-    width: min(86vw, 360px); min-width: 0; border-radius: 0;
-    transform: translateX(100%); transition: transform .3s ease;
-    overflow-y: auto; z-index: 1250;
-    background: rgba(17,22,27,0.42);
-    backdrop-filter: saturate(140%) blur(14px);
-    -webkit-backdrop-filter: saturate(140%) blur(14px);
-  }
-  #route-nav-panel.open { transform: translateX(0); }
-  /* кнопку «Маршрут» лишаємо в навбарі поряд із кнопкою 3D (без FAB) */
+    .sidebar--collapsed {
+        width: min(86vw, 340px) !important;
+        min-width: 0 !important;
+        padding: 10px !important;
+        transform: translateX(-100%);
+        overflow: auto;
+    }
 
-  /* Navbar компактний, в один рядок (горизонт. скрол — запасний варіант) */
-  .navbar {
-    flex-wrap: nowrap; padding: 8px 10px; gap: 8px; overflow-x: auto;
-    padding-left: max(10px, env(safe-area-inset-left));
-    padding-right: max(10px, env(safe-area-inset-right));
-  }
-  .navbar__brand { gap: 8px; font-size: 1rem; min-width: 0; flex-shrink: 0; }
-  .navbar__links { gap: 6px; flex-shrink: 0; }
-  .navbar__links a, .navbar button { padding: 6px 9px; font-size: .82rem; white-space: nowrap; }
+    /* затемнення тла, коли сайдбар відкрито (елемент додає JS) */
+    #sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 54px 0 0 0;
+        z-index: 1150;
+        background: rgba(0, 0, 0, .5);
+    }
 
-  /* Тап-зони ≥ 44px */
-  .leaflet-bar a, .leaflet-control button { min-width: 44px; min-height: 44px; }
+    body.sidebar-open #sidebar-backdrop {
+        display: block;
+    }
+
+    #map,
+    #map3d {
+        width: 100%;
+    }
+
+    /* Панель профілю висот і маршруту — на всю ширину (перебиваємо inline) */
+    #elevation-panel {
+        left: 0 !important;
+    }
+
+    /* Панель маршруту — правий слайдер, напівпрозорий */
+    #route-nav-panel {
+        display: block;
+        top: 54px;
+        right: 0;
+        bottom: 0;
+        left: auto;
+        width: min(86vw, 360px);
+        min-width: 0;
+        border-radius: 0;
+        transform: translateX(100%);
+        transition: transform .3s ease;
+        overflow-y: auto;
+        z-index: 1250;
+        background: rgba(17, 22, 27, 0.42);
+        backdrop-filter: saturate(140%) blur(14px);
+        -webkit-backdrop-filter: saturate(140%) blur(14px);
+    }
+
+    #route-nav-panel.open {
+        transform: translateX(0);
+    }
+
+    /* кнопку «Маршрут» лишаємо в навбарі поряд із кнопкою 3D (без FAB) */
+
+    /* Navbar компактний, в один рядок (горизонт. скрол — запасний варіант) */
+    .navbar {
+        flex-wrap: nowrap;
+        padding: 8px 10px;
+        gap: 8px;
+        overflow-x: auto;
+        padding-left: max(10px, env(safe-area-inset-left));
+        padding-right: max(10px, env(safe-area-inset-right));
+    }
+
+    .navbar__brand {
+        gap: 8px;
+        font-size: 1rem;
+        min-width: 0;
+        flex-shrink: 0;
+    }
+
+    .brand-logo {
+        display: none;
+    }
+
+    /* прибираємо 🗺️ у лівому верхньому куті на мобільному */
+    .navbar__links {
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .navbar__links a,
+    .navbar button {
+        padding: 6px 9px;
+        font-size: .82rem;
+        white-space: nowrap;
+    }
+
+    /* Тап-зони ≥ 44px */
+    .leaflet-bar a,
+    .leaflet-control button {
+        min-width: 44px;
+        min-height: 44px;
+    }
 }
 
 @media (max-width: 520px) {
-  .brand-text { display: none; }            /* лишаємо лише 🗺️ */
-  .navbar__links span { display: none; }    /* «👤 username» */
-  #connect-data-toggle { display: none; }   /* «Підключити дані» — задовге */
+    .brand-text {
+        display: none;
+    }
+
+    /* лишаємо лише 🗺️ */
+    .navbar__links span {
+        display: none;
+    }
+
+    /* «👤 username» */
+    #connect-data-toggle {
+        display: none;
+    }
+
+    /* «Підключити дані» — задовге */
 }
 
 /* =========================================================
@@ -668,119 +1089,344 @@ body {
    Перевизначення змінних каскадом фарбує текст/межі/фони,
    зокрема й inline-стилі, що звертаються до var(--…).
    ========================================================= */
-.navbar, .sidebar {
-  --ink:      #1b2329;
-  --ink-2:    #55626c;
-  --ink-3:    #8b97a0;
-  --stroke:   rgba(0,0,0,0.10);
-  --stroke-2: rgba(0,0,0,0.20);
-  --surface:  #ffffff;
-  --panel-2:  #ffffff;
-  --panel-3:  #ffffff;
+.navbar,
+.sidebar {
+    --ink: #1b2329;
+    --ink-2: #55626c;
+    --ink-3: #8b97a0;
+    --stroke: rgba(0, 0, 0, 0.10);
+    --stroke-2: rgba(0, 0, 0, 0.20);
+    --surface: #ffffff;
+    --panel-2: #ffffff;
+    --panel-3: #ffffff;
 }
 
 /* Хедер */
-.navbar { border-bottom: 1px solid rgba(0,0,0,0.10); box-shadow: 0 1px 10px rgba(0,0,0,0.06); }
-.navbar button { background: #fff; }
+.navbar {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.10);
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.06);
+}
+
+.navbar button {
+    background: #fff;
+}
+
 .navbar button:hover,
-.navbar__links a:hover { background: rgba(0,0,0,0.05); color: var(--ink); }
-#sidebar-toggle { background: rgba(0,0,0,0.05); color: var(--ink); }
-#sidebar-toggle:hover { background: rgba(0,0,0,0.10); }
+.navbar__links a:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--ink);
+}
+
+#sidebar-toggle {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--ink);
+}
+
+#sidebar-toggle:hover {
+    background: rgba(0, 0, 0, 0.10);
+}
+
 /* CTA «Маршрут» лишаємо акцентним помаранчевим */
 
 /* Сайдбар */
-.sidebar { box-shadow: 2px 0 18px rgba(0,0,0,0.10); }
-.sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); }
-.sidebar__list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); }
-.sb-section__hdr { background: #fff; }
-.sb-section__hdr:hover { background: #eef1f4; }
-.location-card { background: #fff; }
-.location-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.14); }
+.sidebar {
+    box-shadow: 2px 0 18px rgba(0, 0, 0, 0.10);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.sidebar__list::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.sb-section__hdr {
+    background: #fff;
+}
+
+.sb-section__hdr:hover {
+    background: #eef1f4;
+}
+
+.location-card {
+    background: #fff;
+}
+
+.location-card:hover {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+}
+
 /* темний inline-select вибору території → світлий */
 .sidebar #country-select {
-  background: #fff !important;
-  color: var(--ink) !important;
-  border-color: rgba(0,0,0,0.15) !important;
+    background: #fff !important;
+    color: var(--ink) !important;
+    border-color: rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Легенда категорій: розкладка flex (показ/приховування керує JS) */
 #cat-legend {
-  flex-direction: column;
-  background: rgba(255,255,255,0.82) !important;   /* білий напівпрозорий, як попапи */
-  backdrop-filter: saturate(140%) blur(10px);
-  -webkit-backdrop-filter: saturate(140%) blur(10px);
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.82) !important;
+    /* білий напівпрозорий, як попапи */
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
 }
-#cat-legend-header { border-bottom-color: rgba(0,0,0,0.08) !important; }
-#cat-legend, #cat-legend span, #cat-legend label { color: #000 !important; }
+
+#cat-legend-header {
+    border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+#cat-legend,
+#cat-legend span,
+#cat-legend label {
+    color: #000 !important;
+}
 
 /* Шрифт полігонів — чорний: легенда полігонів + підписи (тултіпи) */
-#poly-legend, #poly-legend-list, #poly-legend-list span { color: #000 !important; }
-.leaflet-tooltip:not(.elev-tooltip) { color: #000; }
+#poly-legend,
+#poly-legend-list,
+#poly-legend-list span {
+    color: #000 !important;
+}
+
+.leaflet-tooltip:not(.elev-tooltip) {
+    color: #000;
+}
 
 /* Легенда полігонів — той самий стиль, що й категорії, і поруч на карті */
 #poly-legend {
-  background: rgba(255,255,255,0.82) !important;
-  backdrop-filter: saturate(140%) blur(10px);
-  -webkit-backdrop-filter: saturate(140%) blur(10px);
-  top: auto !important;
-  bottom: 14px !important;
-  right: 10px !important;
-  left: auto !important;
-  width: 260px !important;
+    background: rgba(255, 255, 255, 0.82) !important;
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    top: auto !important;
+    bottom: 14px !important;
+    right: 10px !important;
+    left: auto !important;
+    width: 260px !important;
 }
-#poly-legend > div:first-child { border-bottom-color: rgba(0,0,0,0.08) !important; }
+
+#poly-legend>div:first-child {
+    border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+}
 
 /* =========================================================
    МОБІЛЬНЕ: легенди категорій і полігонів — напівпрозорий стиль
    (сайдбар — білий, як на десктопі)
    ========================================================= */
 @media (max-width: 768px) {
-  /* Легенда категорій — як слайдер маршруту */
-  #cat-legend { background: rgba(17,22,27,0.42) !important; }
-  #cat-legend, #cat-legend span, #cat-legend label { color: #eef3f5 !important; }
-  #cat-legend-header {
-    border-bottom-color: rgba(255,255,255,0.12) !important;
-    border-top-color: rgba(255,255,255,0.12);
-  }
 
-  /* Легенда полігонів — темне скло, поруч із категоріями, відкривається знизу вгору */
-  #poly-legend {
-    background: rgba(17,22,27,0.42) !important;
-    top: auto !important;
-    bottom: 14px !important;
-    right: 10px !important;
-    left: auto !important;
-    width: 220px !important;
-    max-width: 44vw !important;                   /* проміжок до легенди категорій зліва */
-    flex-direction: column-reverse !important;   /* список над заголовком → ріст угору */
-  }
-  #poly-legend, #poly-legend * { color: #eef3f5 !important; }
-  #poly-legend > div:first-child {
-    border-bottom: none !important;
-    border-top: 1px solid rgba(255,255,255,0.12) !important;
-  }
+    /* Легенда категорій — як слайдер маршруту */
+    #cat-legend {
+        background: rgba(17, 22, 27, 0.42) !important;
+    }
+
+    #cat-legend,
+    #cat-legend span,
+    #cat-legend label {
+        color: #eef3f5 !important;
+    }
+
+    #cat-legend-header {
+        border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+        border-top-color: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Легенда полігонів — темне скло, поруч із категоріями, відкривається знизу вгору */
+    #poly-legend {
+        background: rgba(17, 22, 27, 0.42) !important;
+        top: auto !important;
+        bottom: 14px !important;
+        right: 10px !important;
+        left: auto !important;
+        width: 220px !important;
+        max-width: 44vw !important;
+        /* проміжок до легенди категорій зліва */
+        flex-direction: column-reverse !important;
+        /* список над заголовком → ріст угору */
+    }
+
+    #poly-legend,
+    #poly-legend * {
+        color: #eef3f5 !important;
+    }
+
+    #poly-legend>div:first-child {
+        border-bottom: none !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+    }
 }
 
 /* Мобільне: легенда внизу зліва, відкривається знизу вгору */
 @media (max-width: 768px) {
-  #cat-legend {
-    top: auto !important;
-    bottom: 14px !important;
-    left: 10px !important;
-    min-width: 0 !important;
-    max-width: 44vw !important;        /* лишаємо проміжок до легенди полігонів */
-    flex-direction: column-reverse;   /* тіло над заголовком → ріст угору */
-  }
-  #cat-legend-header {
-    border-bottom: none !important;
-    border-top: 1px solid #eee;
-  }
+    #cat-legend {
+        top: auto !important;
+        bottom: 14px !important;
+        left: 10px !important;
+        min-width: 0 !important;
+        width: 220px !important;
+        /* однакова ширина, як у «Райони» */
+        max-width: 44vw !important;
+        font-size: 0.82rem !important;
+        /* той самий розмір шрифту, як у «Райони» */
+        flex-direction: column-reverse;
+        /* тіло над заголовком → ріст угору */
+    }
+
+    #cat-legend-header {
+        border-bottom: none !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+        /* світлий роздільник, як у «Райони» */
+        padding: 9px 12px 7px !important;
+    }
+
+    #cat-legend-header>span:first-child {
+        font-size: 0.86rem !important;
+    }
+
+    /* заголовок як у «Райони» */
 }
 
 /* Кнопки масштабу +/- — того ж розміру, що й кнопка геолокації (34px) */
 .leaflet-control-zoom a {
-  width: 34px !important;
-  height: 34px !important;
-  line-height: 34px !important;
-  font-size: 18px !important;
+    width: 34px !important;
+    height: 34px !important;
+    line-height: 34px !important;
+    font-size: 18px !important;
+}
+
+/* =========================================================
+   ОНБОРДИНГ ПЕРШОГО ЗАПУСКУ
+   ========================================================= */
+.onb-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 12000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.onb-card {
+    width: 420px;
+    max-width: 100%;
+    background: var(--panel-3);
+    border: 1px solid var(--stroke-2);
+    border-radius: var(--radius);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
+    padding: 22px 22px 20px;
+    color: var(--ink);
+    animation: onb-in .35s cubic-bezier(.2, .7, .2, 1);
+}
+
+@keyframes onb-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.onb-head {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.onb-glyph {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    font-size: 24px;
+    background: linear-gradient(150deg, var(--accent), var(--accent-2));
+    box-shadow: 0 4px 16px rgba(255, 120, 70, 0.4);
+}
+
+.onb-head h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 3px;
+    color: var(--ink);
+}
+
+.onb-head p {
+    font-size: 0.86rem;
+    color: var(--ink-2);
+    margin: 0;
+}
+
+.onb-list {
+    list-style: none;
+    margin: 0 0 18px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.onb-list li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.onb-list li>span {
+    font-size: 18px;
+    flex-shrink: 0;
+    width: 26px;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.onb-list b {
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.onb-list small {
+    font-size: 0.8rem;
+    color: var(--ink-2);
+    line-height: 1.4;
+}
+
+.onb-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: linear-gradient(150deg, var(--accent), var(--accent-2));
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: filter .15s;
+}
+
+.onb-btn:hover {
+    filter: brightness(1.06);
+}
+
+@media (max-width: 480px) {
+    .onb-card {
+        padding: 18px 16px 16px;
+    }
+
+    .onb-head h3 {
+        font-size: 1.05rem;
+    }
 }

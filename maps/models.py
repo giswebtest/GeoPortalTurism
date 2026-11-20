@@ -9,8 +9,8 @@ class Region(models.Model):
     slug = models.SlugField(unique=True)
 
     class Meta:
-        verbose_name = 'Регион'
-        verbose_name_plural = 'Регионы'
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
 
     def __str__(self):
         return self.name
@@ -23,8 +23,8 @@ class Category(models.Model):
     icon = models.CharField(max_length=50, default='📍', verbose_name='Иконка')
 
     class Meta:
-        verbose_name = 'Категория'
-        verbose_name_plural = 'Категории'
+        verbose_name = 'Категорія'
+        verbose_name_plural = 'Категорії'
         ordering = ['name']
 
     def __str__(self):
@@ -75,6 +75,16 @@ class Location(models.Model):
         verbose_name='Фото (URL)',
         help_text='Пряме посилання на фото (з Google My Maps / Wikipedia)',
     )
+    photourl2 = models.URLField(
+        max_length=500,
+        blank=True,
+        verbose_name='Фото 2 (URL)',
+    )
+    photourl3 = models.URLField(
+        max_length=500,
+        blank=True,
+        verbose_name='Фото 3 (URL)',
+    )
 
     # Статус
     is_published = models.BooleanField(default=False, verbose_name='Опубликовано')
@@ -84,8 +94,8 @@ class Location(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = 'Локация'
-        verbose_name_plural = 'Локации'
+        verbose_name = 'Локація'
+        verbose_name_plural = 'Локації'
 
     def __str__(self):
         return self.name
@@ -297,6 +307,14 @@ class Guide(models.Model):
         blank=True, null=True,
         verbose_name='Фото'
     )
+
+    # Соцмережі / месенджери (посилання)
+    instagram = models.URLField(max_length=300, blank=True, verbose_name='Instagram')
+    facebook  = models.URLField(max_length=300, blank=True, verbose_name='Facebook')
+    tiktok    = models.URLField(max_length=300, blank=True, verbose_name='TikTok')
+    telegram  = models.URLField(max_length=300, blank=True, verbose_name='Telegram')
+    whatsapp  = models.URLField(max_length=300, blank=True, verbose_name='WhatsApp')
+
     class Meta:
         verbose_name = 'Гід'
         verbose_name_plural = 'Гіди'

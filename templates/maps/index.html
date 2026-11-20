@@ -11,53 +11,74 @@
 <!-- MapLibre GL CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.css" />
 <style>
-.poi-legend {
-    background: white;
-    padding: 10px 14px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    font-size: 0.85rem;
-    min-width: 160px;
-}
-.poi-legend h4 { margin: 0 0 8px; font-size: 0.9rem; color: #333; }
-.poi-legend label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 6px;
-    cursor: pointer;
-}
-.poi-legend input[type="checkbox"] {
-    width: 14px; height: 14px; cursor: pointer;
-}
-.poi-legend span { line-height: 1; }
-.leaflet-interactive:focus { outline: none; }
-.elev-tooltip {
-    background: #27ae60;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 3px 8px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-.elev-tooltip::before { border-top-color: #27ae60; }
-.maplibregl-popup-content {
-    padding: 0 !important;
-    border-radius: 8px !important;
-    overflow: hidden;
-    color: #000;
-}
-.maplibregl-popup-close-button {
-    color: #fff;
-    font-size: 17px;
-    right: 3px;
-    top: 1px;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-    background: none;
-    z-index: 1;
-}
+    .poi-legend {
+        background: white;
+        padding: 10px 14px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        font-size: 0.85rem;
+        min-width: 160px;
+    }
+
+    .poi-legend h4 {
+        margin: 0 0 8px;
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    .poi-legend label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 6px;
+        cursor: pointer;
+    }
+
+    .poi-legend input[type="checkbox"] {
+        width: 14px;
+        height: 14px;
+        cursor: pointer;
+    }
+
+    .poi-legend span {
+        line-height: 1;
+    }
+
+    .leaflet-interactive:focus {
+        outline: none;
+    }
+
+    .elev-tooltip {
+        background: #27ae60;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 3px 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .elev-tooltip::before {
+        border-top-color: #27ae60;
+    }
+
+    .maplibregl-popup-content {
+        padding: 0 !important;
+        border-radius: 8px !important;
+        overflow: hidden;
+        color: #000;
+    }
+
+    .maplibregl-popup-close-button {
+        color: #fff;
+        font-size: 17px;
+        right: 3px;
+        top: 1px;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+        background: none;
+        z-index: 1;
+    }
 </style>
 {% endblock %}
 
@@ -70,13 +91,17 @@
     <div id="routing-stats" style="display:none; margin-bottom:12px;"></div>
     <div style="display:flex; gap:10px; flex-direction:column;">
         <button id="build-route-btn"
-            style="width:100%; padding:10px; background:#27ae60; color:white; border:none; border-radius:6px; cursor:pointer; display:none; font-weight:500; transition:0.2s;">🗺️ Побудувати маршрут</button>
+            style="width:100%; padding:10px; background:#27ae60; color:white; border:none; border-radius:6px; cursor:pointer; display:none; font-weight:500; transition:0.2s;">🗺️
+            Побудувати маршрут</button>
         <button id="google-maps-btn"
-            style="width:100%; padding:10px; background:#4285F4; color:white; border:none; border-radius:6px; cursor:pointer; display:none; font-weight:500; transition:0.2s;">📍 Google Maps</button>
+            style="width:100%; padding:10px; background:#4285F4; color:white; border:none; border-radius:6px; cursor:pointer; display:none; font-weight:500; transition:0.2s;">📍
+            Google Maps</button>
         <button id="waze-btn"
-            style="width:100%; padding:10px; background:#33ccff; color:white; border:none; border-radius:6px; cursor:pointer; display:none; font-weight:500; text-shadow:0 1px 1px rgba(0,0,0,0.2); transition:0.2s;">🚙 Waze</button>
+            style="width:100%; padding:10px; background:#33ccff; color:white; border:none; border-radius:6px; cursor:pointer; display:none; font-weight:500; text-shadow:0 1px 1px rgba(0,0,0,0.2); transition:0.2s;">🚙
+            Waze</button>
         <button id="clear-route-btn"
-            style="width:100%; padding:10px; background:#e74c3c; color:white; border:none; border-radius:6px; cursor:pointer; display:none; font-weight:500; transition:0.2s;">Очистити точки</button>
+            style="width:100%; padding:10px; background:#e74c3c; color:white; border:none; border-radius:6px; cursor:pointer; display:none; font-weight:500; transition:0.2s;">Очистити
+            точки</button>
     </div>
 </div>
 
@@ -90,13 +115,12 @@
         {% if countries %}
         <div class="sb-section">
             <div class="sb-section__hdr closed" data-target="sb-countries">
-                <span>🌍 Екстент</span>
+                <span>🌍 Області</span>
                 <span class="sb-chevron">▾</span>
             </div>
             <div class="sb-section__body hidden" id="sb-countries">
                 <div style="padding-bottom:12px;">
-                    <select id="country-select"
-                        style="width:100%; padding:8px 10px; border:1px solid var(--stroke-2); border-radius:8px;
+                    <select id="country-select" style="width:100%; padding:8px 10px; border:1px solid var(--stroke-2); border-radius:8px;
                                background:rgba(0,0,0,0.3); color:var(--ink); font-family:inherit;
                                font-size:0.88rem; margin-bottom:10px; box-sizing:border-box;">
                         <option value="">— Оберіть область —</option>
@@ -107,20 +131,19 @@
                         {% endfor %}
                     </select>
                     <div style="display:flex; gap:8px;">
-                        <button id="country-polygons-btn" disabled
-                            style="flex:1; padding:8px 6px; background:#27ae60; color:white; border:none;
+                        <button id="country-polygons-btn" disabled style="flex:1; padding:8px 6px; background:#27ae60; color:white; border:none;
                                    border-radius:6px; cursor:pointer; font-size:0.8rem; font-weight:500;
                                    opacity:0.45; transition:opacity 0.2s;">
                             🗺️ Показати полігони
                         </button>
-                        <button id="heatmap-btn"
-                            style="flex:1; padding:8px 6px; background:#e67e22; color:white; border:none;
+                        <button id="heatmap-btn" style="flex:1; padding:8px 6px; background:#e67e22; color:white; border:none;
                                    border-radius:6px; cursor:pointer; font-size:0.8rem; font-weight:500;
                                    transition:background 0.2s;">
                             🌡️ Теплова карта
                         </button>
                     </div>
-                    <div id="country-poly-status" style="margin-top:7px; font-size:0.78rem; color:var(--ink-2); min-height:16px;"></div>
+                    <div id="country-poly-status"
+                        style="margin-top:7px; font-size:0.78rem; color:var(--ink-2); min-height:16px;"></div>
                 </div>
             </div>
         </div>
@@ -187,12 +210,38 @@
                         data-category="{{ loc.category.slug|default:'' }}"
                         data-country="{{ loc.country.id|default:'' }}">
                         <div class="location-card__img-wrap">
-                            {% if loc.image %}
-                            <img src="{{ loc.image.url }}" alt="{{ loc.name }}">
-                            {% elif loc.gx_media_links %}
-                            <img src="{{ loc.gx_media_links }}" alt="{{ loc.name }}">
-                            {% else %}
-                            <div class="location-card__no-img">📍</div>
+                            <div class="card-gallery">
+                                {% if loc.image %}
+                                <div class="card-gallery-slide">
+                                    <img src="{{ loc.image.url }}" alt="{{ loc.name }}">
+                                </div>
+                                {% elif loc.gx_media_links %}
+                                <div class="card-gallery-slide">
+                                    <img src="{{ loc.gx_media_links }}" alt="{{ loc.name }}">
+                                </div>
+                                {% else %}
+                                <div class="card-gallery-slide">
+                                    <div class="location-card__no-img">📍</div>
+                                </div>
+                                {% endif %}
+                                {% if loc.photourl2 %}
+                                <div class="card-gallery-slide">
+                                    <img src="{{ loc.photourl2 }}" alt="{{ loc.name }}">
+                                </div>
+                                {% endif %}
+                                {% if loc.photourl3 %}
+                                <div class="card-gallery-slide">
+                                    <img src="{{ loc.photourl3 }}" alt="{{ loc.name }}">
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if loc.photourl2 or loc.photourl3 %}
+                            <button class="card-arrow card-arrow--left"
+                                onclick="event.stopPropagation(); this.closest('.location-card__img-wrap').querySelector('.card-gallery').scrollBy({left:-300, behavior:'smooth'})"
+                                title="Попереднє фото">&#10094;</button>
+                            <button class="card-arrow card-arrow--right"
+                                onclick="event.stopPropagation(); this.closest('.location-card__img-wrap').querySelector('.card-gallery').scrollBy({left:300, behavior:'smooth'})"
+                                title="Наступне фото">&#10095;</button>
                             {% endif %}
                             <div class="location-card__top">
                                 <div class="location-card__tags">
@@ -200,9 +249,8 @@
                                     {% if loc.region %}<span class="badge">📍 {{ loc.region.name }}</span>{% endif %}
                                 </div>
                                 {% with url=loc.description|extract_url %}{% if url %}
-                                <a href="{{ url }}" target="_blank" rel="noopener"
-                                    class="location-card__lupa" title="Відкрити джерело"
-                                    onclick="event.stopPropagation()">🔍</a>
+                                <a href="{{ url }}" target="_blank" rel="noopener" class="location-card__lupa"
+                                    title="Відкрити джерело" onclick="event.stopPropagation()">🔍</a>
                                 {% endif %}{% endwith %}
                             </div>
                             <div class="location-card__name-overlay">
@@ -234,8 +282,7 @@
                 <ul style="list-style:none; padding:0; padding-bottom:12px;">
                     {% for route in routes %}
                     <li data-route-id="{{ route.id }}" style="margin-bottom:10px; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px; border:1px solid var(--stroke); border-left:4px solid var(--med); transition:background 0.2s;">
-                        <div style="cursor:pointer;"
-                            onclick="focusRoute('{{ route.id }}')">
+                        <div style="cursor:pointer;" onclick="focusRoute('{{ route.id }}')">
                             <strong class="route-sb-name" style="font-size:0.95rem; color:var(--accent);">{{ route.name }}</strong><br>
                             <small style="color:var(--ink-2);">🛣️ {{ route.distance_km|default:'?' }} км | ⏱️ ~{{ route.duration_min|default:'?' }} хв</small><br>
                             <small style="color:var(--ink-3);">Складність: {{ route.get_difficulty_display }}</small>
@@ -243,7 +290,8 @@
                         {% if route.path %}
                         <button onclick="showElevationChart({{ route.id }}, '{{ route.name|escapejs }}')"
                             style="margin-top:8px; width:100%; padding:6px 8px; background:rgba(255,255,255,0.05); color:var(--ink); border:1px solid var(--stroke-2); border-radius:7px; cursor:pointer; font-size:0.8rem; transition:0.15s;"
-                            onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                            onmouseover="this.style.background='rgba(255,255,255,0.12)'"
+                            onmouseout="this.style.background='rgba(255,255,255,0.05)'">
                             📊 Графік висот
                         </button>
                         {% endif %}
@@ -267,25 +315,54 @@
             </div>
             <div class="sb-section__body hidden sidebar__guides" id="sb-guides">
                 <ul style="list-style:none; padding:0; padding-bottom:12px;">
-                {% for guide in guides %}
-                <li
-                    style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid var(--stroke); display: flex; align-items: center; gap: 10px;">
-                    {% if guide.image %}
-                    <img src="{{ guide.image.url }}" alt="{{ guide.name }}"
-                        style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.15); box-shadow: 0 2px 6px rgba(0,0,0,0.4);">
-                    {% else %}
-                    <div
-                        style="width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 2px solid rgba(255,255,255,0.15);">
-                        👤</div>
-                    {% endif %}
-                    <div>
-                        <strong style="font-size: 0.95rem; color: var(--ink);">{{ guide.name }}</strong><br>
-                        <small style="color: var(--ink-2);">📞 {{ guide.phone }}</small>
-                    </div>
-                </li>
-                {% empty %}
-                <p class="empty">Немає гідів</p>
-                {% endfor %}
+                    {% for guide in guides %}
+                    <li
+                        style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid var(--stroke); display: flex; align-items: flex-start; gap: 10px;">
+                        {% if guide.image %}
+                        <img src="{{ guide.image.url }}" alt="{{ guide.name }}"
+                            style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.15); box-shadow: 0 2px 6px rgba(0,0,0,0.4);">
+                        {% else %}
+                        <div
+                            style="width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 2px solid rgba(255,255,255,0.15);">
+                            👤</div>
+                        {% endif %}
+                        <div style="min-width:0;">
+                            <strong style="font-size: 0.95rem; color: var(--ink);">{{ guide.name }}</strong><br>
+                            <small style="color: var(--ink-2);">📞 {{ guide.phone }}</small>
+                            {% if guide.instagram or guide.facebook or guide.tiktok or guide.telegram or guide.whatsapp %}
+                            <div class="guide-socials">
+                                {% if guide.instagram %}<a href="{{ guide.instagram }}" target="_blank" rel="noopener"
+                                    class="gs gs--ig" title="Instagram" aria-label="Instagram"><svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z" />
+                                    </svg></a>{% endif %}
+                                {% if guide.facebook %}<a href="{{ guide.facebook }}" target="_blank" rel="noopener"
+                                    class="gs gs--fb" title="Facebook" aria-label="Facebook"><svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                                    </svg></a>{% endif %}
+                                {% if guide.tiktok %}<a href="{{ guide.tiktok }}" target="_blank" rel="noopener"
+                                    class="gs gs--tt" title="TikTok" aria-label="TikTok"><svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
+                                    </svg></a>{% endif %}
+                                {% if guide.telegram %}<a href="{{ guide.telegram }}" target="_blank" rel="noopener"
+                                    class="gs gs--tg" title="Telegram" aria-label="Telegram"><svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                                    </svg></a>{% endif %}
+                                {% if guide.whatsapp %}<a href="{{ guide.whatsapp }}" target="_blank" rel="noopener"
+                                    class="gs gs--wa" title="WhatsApp" aria-label="WhatsApp"><svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
+                                    </svg></a>{% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% empty %}
+                    <p class="empty">Немає гідів</p>
+                    {% endfor %}
                 </ul>
             </div>
         </div>
@@ -302,12 +379,11 @@
             display:none; flex-direction:column;
             font-size:0.82rem; overflow:hidden;">
             <div style="padding:9px 12px 7px; border-bottom:1px solid #eee; flex-shrink:0;">
-                <strong style="font-size:0.86rem; color:#333;">🗺️ Полігони</strong>
+                <strong style="font-size:0.86rem; color:#333;">Райони</strong>
                 <span id="poly-legend-chevron"
                     style="float:right; margin-left:10px; font-size:0.75rem; color:#999; transition:transform 0.2s;">▾</span>
             </div>
-            <div id="poly-legend-list"
-                style="overflow-y:auto; padding:4px 6px 6px; flex:1;"></div>
+            <div id="poly-legend-list" style="overflow-y:auto; padding:4px 6px 6px; flex:1;"></div>
         </div>
 
         <div id="cat-legend" style="
@@ -325,7 +401,8 @@
                 <span id="cat-legend-chevron" style="font-size:0.75rem; color:#999; transition:transform 0.2s;">▲</span>
             </div>
 
-            <div id="cat-legend-body" style="padding:8px 14px 10px; overflow:hidden; transition:max-height 0.25s ease; max-height:400px;">
+            <div id="cat-legend-body"
+                style="padding:8px 14px 10px; overflow:hidden; transition:max-height 0.25s ease; max-height:400px;">
                 <label style="display:flex; align-items:center; gap:7px; margin-bottom:7px; cursor:pointer;">
                     <input type="checkbox" id="cat-cb-all" checked
                         style="width:14px;height:14px;accent-color:#1a6fa8;cursor:pointer;">
@@ -355,8 +432,9 @@
             <button id="elev-panel-close"
                 style="background:none;border:none;cursor:pointer;font-size:20px;color:#aaa;line-height:1;padding:0 4px;flex-shrink:0;">✕</button>
         </div>
-        <div id="elevation-loading" style="text-align:center; padding:20px; color:#888; display:none;">⏳ Завантаження висот…</div>
-        <div id="elevation-error"  style="text-align:center; padding:16px; color:#e74c3c; display:none;"></div>
+        <div id="elevation-loading" style="text-align:center; padding:20px; color:#888; display:none;">⏳ Завантаження
+            висот…</div>
+        <div id="elevation-error" style="text-align:center; padding:16px; color:#e74c3c; display:none;"></div>
         <div style="position:relative; height:130px;">
             <canvas id="elevation-chart" style="display:none;"></canvas>
         </div>
@@ -366,7 +444,8 @@
 
 
 <!-- Модальне вікно: додати подію в Google Calendar -->
-<div id="gcal-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center;">
+<div id="gcal-modal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center;">
     <div style="background:#fff; border-radius:12px; padding:24px; width:320px; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
         <h3 style="margin:0 0 16px; font-size:1.05rem; color:#1a6fa8;">📅 Додати до Google Calendar</h3>
 
@@ -397,6 +476,26 @@
                 Скасувати
             </button>
         </div>
+    </div>
+</div>
+
+<!-- Онбординг першого запуску -->
+<div id="onboarding" class="onb-overlay" style="display:none;">
+    <div class="onb-card">
+        <div class="onb-head">
+            <div class="onb-glyph">🗺️</div>
+            <div>
+                <h3 class="display">Вітаємо в GeoPortal!</h3>
+                <p>Туристична карта Карпат — лише кілька кроків до маршруту.</p>
+            </div>
+        </div>
+        <ul class="onb-list">
+            <li><span>📍</span><div><b>Огляньте місця</b><small>Відкрийте панель ☰ зліва: категорії, локації та готові маршрути.</small></div></li>
+            <li><span>➕</span><div><b>Зберіть маршрут</b><small>Додавайте точки кнопкою «До маршруту» на картках і в попапах на карті.</small></div></li>
+            <li><span>🚗</span><div><b>Прокладіть шлях</b><small>Натисніть «Маршрут», побудуйте та відкрийте в Google Maps або Waze.</small></div></li>
+            <li><span>🔍</span><div><b>Шукайте й досліджуйте</b><small>Пошук угорі, режим 🏔️ 3D, теплокарта та профіль висот маршрутів.</small></div></li>
+        </ul>
+        <button id="onb-start" class="onb-btn">Почати</button>
     </div>
 </div>
 {% endblock %}
@@ -433,18 +532,31 @@
         attribution: '© Esri'
     });
 
+    const oporniyPlanRaster = L.tileLayer.wms('/geoserver/geoportal/wms', {
+        layers: 'geoportal:oporniy_plan',
+        format: 'image/png',
+        transparent: true,
+        attribution: 'GeoPortal Turism — Опорний план'
+    });
+
     // 2. Ініціалізуємо карту і додаємо стандартний шар
     const map = L.map('map', {
         layers: [osmTourist]
     });
     map.fitBounds([[44.3, 22.1], [52.4, 40.2]]);
 
+    // Окремий pane для маршрутів — вище полігонів (400), нижче маркерів (600)
+    map.createPane('routesPane');
+    map.getPane('routesPane').style.zIndex = 450;
+    map.getPane('routesPane').style.pointerEvents = 'auto';
+
     // 3. Створюємо об'єкт з нашими картами для меню
     const baseMaps = {
         "Туристична (OSM)": osmTourist,
         "Стандартна (OSM)": osmStandard,
         "Топографічна": osmTopo,
-        "Супутник (Esri)": satellite
+        "Супутник (Esri)": satellite,
+        "Опорний план": oporniyPlanRaster
     };
 
     // ==========================================
@@ -533,7 +645,7 @@
             map.locate({ setView: true, maxZoom: 16 });
         });
 
-        map.on('locationfound', function(e) {
+        map.on('locationfound', function (e) {
             btn.innerHTML = '📍';
             if (locationMarker) map.removeLayer(locationMarker);
             if (locationCircle) map.removeLayer(locationCircle);
@@ -567,7 +679,7 @@
 
         });
 
-        map.on('locationerror', function() {
+        map.on('locationerror', function () {
             btn.innerHTML = '📍';
             alert('Геолокація недоступна. Дозвольте доступ до місцезнаходження в браузері.');
         });
@@ -577,10 +689,10 @@
     locateControl.addTo(map);
 
     // Чекбокси сайдбару — перемикання накладних шарів
-    document.getElementById('toggle-hystory').addEventListener('change', function() {
+    document.getElementById('toggle-hystory').addEventListener('change', function () {
         this.checked ? hystoryLayer.addTo(map) : map.removeLayer(hystoryLayer);
     });
-    document.getElementById('toggle-ivfrankdist').addEventListener('change', function() {
+    document.getElementById('toggle-ivfrankdist').addEventListener('change', function () {
         this.checked ? ivFrankDistLayer.addTo(map) : map.removeLayer(ivFrankDistLayer);
     });
 
@@ -776,7 +888,7 @@
     // Заглушки щоб не падав інший код
     const poiCategories = [];
     const poiLayers = {};
-    function onPOILayerLoaded() {}
+    function onPOILayerLoaded() { }
     function updatePOIExtentList() {
         const poiListEl = document.getElementById('poi-extent-list');
         if (poiListEl) poiListEl.innerHTML = '<em style="color:#999;font-size:0.82rem;">POI вимкнено</em>';
@@ -785,18 +897,20 @@
     // Добавляем маркеры
     const locations = [
         {% for loc in locations %}
-    {
-        lat: parseFloat("{{ loc.geom.y }}".replace(',', '.')),
-        lng: parseFloat("{{ loc.geom.x }}".replace(',', '.')),
-        name: "{{ loc.name|escapejs }}",
-        category: "{% if loc.category %}{{ loc.category.icon }} {{ loc.category.name|escapejs }}{% endif %}",
-        categorySlug: "{{ loc.category.slug|default:'' }}",
-        categoryIcon: "{{ loc.category.icon|default:'📍' }}",
-        countryId: {% if loc.country %}{{ loc.country.id }}{% else %}null{% endif %},
-        description: "{{ loc.description|slice:':500'|escapejs }}",
-        photo: "{% if loc.image %}{{ loc.image.url }}{% elif loc.gx_media_links %}{{ loc.gx_media_links|escapejs }}{% endif %}",
+        {
+            lat: parseFloat("{{ loc.geom.y }}".replace(',', '.')),
+            lng: parseFloat("{{ loc.geom.x }}".replace(',', '.')),
+            name: "{{ loc.name|escapejs }}",
+            category: "{% if loc.category %}{{ loc.category.icon }} {{ loc.category.name|escapejs }}{% endif %}",
+            categorySlug: "{{ loc.category.slug|default:'' }}",
+            categoryIcon: "{{ loc.category.icon|default:'📍' }}",
+            countryId: {% if loc.country %}{{ loc.country.id }}{% else %}null{% endif %},
+            description: "{{ loc.description|slice:':500'|escapejs }}",
+            photo: "{% if loc.image %}{{ loc.image.url }}{% elif loc.gx_media_links %}{{ loc.gx_media_links|escapejs }}{% endif %}",
+            photourl2: "{{ loc.photourl2|escapejs }}",
+            photourl3: "{{ loc.photourl3|escapejs }}",
         },
-    {% endfor %}
+        {% endfor %}
     ];
     const markers = [];
     const markers3d = [];
@@ -816,6 +930,46 @@
         return `<span style="font-size:0.82rem;color:#555;">${words}${plain.split(/\s+/).length > 12 ? '…' : ''}</span>`;
     }
 
+    // Спільний HTML попапа локації. includeAddBtn=false → без кнопки «До маршруту».
+    function locationPopupHtml(loc, index, includeAddBtn) {
+        const descHtml = formatDescription(loc.description);
+        const descUrl = extractUrl(loc.description);
+        const photos = [loc.photo, loc.photourl2, loc.photourl3].filter(p => p && p.trim() !== '');
+        const img = photos.length > 0 ? `
+            <div style="position:relative;">
+                <style>.popup-gallery-scroll::-webkit-scrollbar { display: none; }</style>
+                <div class="popup-gallery-scroll" style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; gap:2px; scrollbar-width:none;">
+                    ${photos.map(p => `
+                        <div style="flex: 0 0 100%; scroll-snap-align: start; position:relative;">
+                            <img src="${p}" alt="${loc.name}" style="width:100%; display:block; object-fit:cover;">
+                            <div class="popup-img-overlay">
+                                <strong>${loc.categoryIcon} ${loc.name}</strong>
+                                ${descUrl ? `<a href="${descUrl}" target="_blank" rel="noopener" class="lupa" title="Відкрити джерело">🔍</a>` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                ${photos.length > 1 ? `
+                    <button onclick="this.parentElement.querySelector('.popup-gallery-scroll').scrollBy({left:-250, behavior:'smooth'})" style="position:absolute;left:4px;top:45%;transform:translateY(-50%);background:none;color:white;border:none;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;text-shadow:0 2px 4px rgba(0,0,0,0.8);padding:0;">&#10094;</button>
+                    <button onclick="this.parentElement.querySelector('.popup-gallery-scroll').scrollBy({left:250, behavior:'smooth'})" style="position:absolute;right:4px;top:45%;transform:translateY(-50%);background:none;color:white;border:none;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;text-shadow:0 2px 4px rgba(0,0,0,0.8);padding:0;">&#10095;</button>
+                ` : ''}
+            </div>
+        ` : '';
+        const nameLine = !loc.photo ? `<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:${descHtml ? '5px' : '0'}">
+                        <strong>${loc.categoryIcon} ${loc.name}</strong>
+                        ${descUrl ? `<a href="${descUrl}" target="_blank" rel="noopener"
+                            style="flex-shrink:0;width:24px;height:24px;background:#f0f4f8;
+                                   color:#1a6fa8;border-radius:50%;display:flex;align-items:center;
+                                   justify-content:center;font-size:13px;text-decoration:none;"
+                            title="Відкрити джерело">🔍</a>` : ''}
+                    </div>` : '';
+        const descLine = descHtml ? `<div>${descHtml}</div>` : '';
+        const btn = includeAddBtn ? `<button onclick="addWaypointFromPopup(${index})" style="margin-top:2px;padding:5px 12px;background:#1a6fa8;color:white;border:none;border-radius:4px;cursor:pointer;width:100%;font-size:0.82rem;">➕ До маршруту</button>` : '';
+        const bodyInner = nameLine + descLine + btn;
+        const body = bodyInner ? `<div class="popup-body">${bodyInner}</div>` : '';
+        return `<div class="popup">${img}${body}</div>`;
+    }
+
     locations.forEach((loc, index) => {
         const marker = L.marker([loc.lat, loc.lng], {
             icon: L.divIcon({
@@ -826,32 +980,7 @@
                 popupAnchor: [0, -16]
             })
         }).addTo(map);
-        const descHtml = formatDescription(loc.description);
-        const descUrl  = extractUrl(loc.description);
-        marker.bindPopup(`
-            <div class="popup">
-                ${loc.photo ? `
-                <div class="popup-img-wrap">
-                    <img src="${loc.photo}" alt="${loc.name}">
-                    <div class="popup-img-overlay">
-                        <strong>${loc.categoryIcon} ${loc.name}</strong>
-                        ${descUrl ? `<a href="${descUrl}" target="_blank" rel="noopener" class="lupa" title="Відкрити джерело">🔍</a>` : ''}
-                    </div>
-                </div>` : ''}
-                <div class="popup-body">
-                    ${!loc.photo ? `<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:${descHtml ? '5px' : '0'}">
-                        <strong>${loc.categoryIcon} ${loc.name}</strong>
-                        ${descUrl ? `<a href="${descUrl}" target="_blank" rel="noopener"
-                            style="flex-shrink:0;width:24px;height:24px;background:#f0f4f8;
-                                   color:#1a6fa8;border-radius:50%;display:flex;align-items:center;
-                                   justify-content:center;font-size:13px;text-decoration:none;"
-                            title="Відкрити джерело">🔍</a>` : ''}
-                    </div>` : ''}
-                    ${descHtml ? `<div style="margin-bottom:5px;">${descHtml}</div>` : ''}
-                    <button onclick="addWaypointFromPopup(${index})" style="margin-top:2px;padding:5px 12px;background:#1a6fa8;color:white;border:none;border-radius:4px;cursor:pointer;width:100%;font-size:0.82rem;">➕ До маршруту</button>
-                </div>
-            </div>
-        `);
+        marker.bindPopup(locationPopupHtml(loc, index, true));
         markers.push({ index, marker });
     });
 
@@ -891,20 +1020,20 @@
     // ==========================================
     // КРАЇНИ — екстент, полігони та легенда
     // ==========================================
-    const countrySelect      = document.getElementById('country-select');
+    const countrySelect = document.getElementById('country-select');
     const countryPolygonsBtn = document.getElementById('country-polygons-btn');
-    const countryPolyStatus  = document.getElementById('country-poly-status');
-    const polyLegend         = document.getElementById('poly-legend');
-    const polyLegendList     = document.getElementById('poly-legend-list');
-    const polyLegendClose    = document.getElementById('poly-legend-close');
+    const countryPolyStatus = document.getElementById('country-poly-status');
+    const polyLegend = document.getElementById('poly-legend');
+    const polyLegendList = document.getElementById('poly-legend-list');
+    const polyLegendClose = document.getElementById('poly-legend-close');
 
     let countryPolyLayer = null;
-    let activeCountryId  = null;   // id обраної країни (null = всі)
+    let activeCountryId = null;   // id обраної країни (null = всі)
     // Map: leaflet layer → legend row element (для двостороннього підсвічування)
     const layerToRow = new Map();
 
-    const POLY_STYLE_DEFAULT  = { color: '#e67e22', weight: 2, fillOpacity: 0 };
-    const POLY_STYLE_HOVER    = { color: '#d35400', weight: 3, fillOpacity: 0 };
+    const POLY_STYLE_DEFAULT = { color: '#e67e22', weight: 2, fillOpacity: 0 };
+    const POLY_STYLE_HOVER = { color: '#d35400', weight: 3, fillOpacity: 0 };
 
     function highlightPolyLayer(layer) {
         layer.setStyle(POLY_STYLE_HOVER);
@@ -922,7 +1051,7 @@
     function clearPolyLegend() {
         layerToRow.clear();
         if (polyLegendList) polyLegendList.innerHTML = '';
-        if (polyLegend)     polyLegend.style.display = 'none';
+        if (polyLegend) polyLegend.style.display = 'none';
     }
 
     function buildPolyLegend() {
@@ -943,14 +1072,14 @@
 
             // Наведення: підсвічуємо полігон і рядок
             row.addEventListener('mouseover', () => highlightPolyLayer(layer));
-            row.addEventListener('mouseout',  () => resetPolyLayer(layer));
+            row.addEventListener('mouseout', () => resetPolyLayer(layer));
 
             // Клік: карта центрується на полігон
             row.addEventListener('click', () => {
                 try {
                     const bounds = layer.getBounds();
                     map.fitBounds(bounds, { animate: true, padding: [30, 30], maxZoom: 14 });
-                } catch(e) { /* точковий шар */ }
+                } catch (e) { /* точковий шар */ }
             });
 
             layerToRow.set(layer, row);
@@ -967,24 +1096,24 @@
     }
 
     // Згортання легенди полігонів (як у категорій)
-    (function() {
+    (function () {
         if (!polyLegend || !polyLegendList) return;
         const header = polyLegend.querySelector('div');   // перший div = заголовок
-        const chev   = document.getElementById('poly-legend-chevron');
+        const chev = document.getElementById('poly-legend-chevron');
         if (!header) return;
         header.style.cursor = 'pointer';
         polyLegendList.style.transition = 'max-height .25s ease';
         let collapsed = true;                          // старт — згорнуто
         polyLegendList.style.maxHeight = '0';
-        polyLegendList.style.padding   = '0 6px';
-        polyLegendList.style.overflow  = 'hidden';
+        polyLegendList.style.padding = '0 6px';
+        polyLegendList.style.overflow = 'hidden';
         if (chev) chev.style.transform = 'rotate(180deg)';
         header.addEventListener('click', (e) => {
             if (e.target.closest('#poly-legend-close')) return; // ✕ — окрема дія
             collapsed = !collapsed;
             polyLegendList.style.maxHeight = collapsed ? '0' : '300px';
-            polyLegendList.style.padding   = collapsed ? '0 6px' : '4px 6px 6px';
-            polyLegendList.style.overflow  = collapsed ? 'hidden' : 'auto';
+            polyLegendList.style.padding = collapsed ? '0 6px' : '4px 6px 6px';
+            polyLegendList.style.overflow = collapsed ? 'hidden' : 'auto';
             if (chev) chev.style.transform = collapsed ? 'rotate(180deg)' : 'rotate(0deg)';
         });
     })();
@@ -993,7 +1122,7 @@
         if (!countryPolygonsBtn) return;
         countryPolygonsBtn.disabled = !enabled;
         countryPolygonsBtn.style.opacity = enabled ? '1' : '0.45';
-        countryPolygonsBtn.style.cursor  = enabled ? 'pointer' : 'default';
+        countryPolygonsBtn.style.cursor = enabled ? 'pointer' : 'default';
     }
 
     if (countrySelect) {
@@ -1007,9 +1136,9 @@
             activeCategorySlug = '';
             document.querySelectorAll('.cat-filter-btn').forEach(b => {
                 const isAll = b.dataset.slug === '';
-                b.style.background   = isAll ? '#1a6fa8' : '#fff';
-                b.style.color        = isAll ? 'white'   : '#333';
-                b.style.borderColor  = isAll ? '#1a6fa8' : '#ccc';
+                b.style.background = isAll ? '#1a6fa8' : '#fff';
+                b.style.color = isAll ? 'white' : '#333';
+                b.style.borderColor = isAll ? '#1a6fa8' : '#ccc';
             });
             if (sidebarList) sidebarList.style.display = activeCountryId ? '' : 'none';
             updateSidebarCatButtons();
@@ -1065,7 +1194,7 @@
 
                     countryPolyLayer = L.geoJSON(data, {
                         style: POLY_STYLE_DEFAULT,
-                        onEachFeature: function(feature, layer) {
+                        onEachFeature: function (feature, layer) {
                             const props = feature.properties || {};
                             const name = props.name || '';
                             const count = props.location_count != null ? props.location_count : '—';
@@ -1075,7 +1204,7 @@
                             );
                             layer.on({
                                 mouseover: () => highlightPolyLayer(layer),
-                                mouseout:  () => resetPolyLayer(layer),
+                                mouseout: () => resetPolyLayer(layer),
                             });
                         },
                     }).addTo(map);
@@ -1107,14 +1236,14 @@
         const checkedSlugs = new Set(
             [...document.querySelectorAll('.cat-cb:checked')].map(cb => cb.dataset.slug)
         );
-        const totalCbs   = document.querySelectorAll('.cat-cb').length;
+        const totalCbs = document.querySelectorAll('.cat-cb').length;
         const allChecked = checkedSlugs.size === totalCbs || totalCbs === 0;
 
         // Обчислюємо які slug-и категорій зараз видимі у сайдбарі (кнопки не приховані)
         const visibleCatSlugs = new Set(
             [...document.querySelectorAll('.cat-filter-btn:not([data-slug=""])')].
-            filter(b => b.style.display !== 'none').
-            map(b => b.dataset.slug)
+                filter(b => b.style.display !== 'none').
+                map(b => b.dataset.slug)
         );
 
         let visibleCards = 0;
@@ -1122,18 +1251,18 @@
         markers.forEach(({ index, marker }) => {
             const loc = locations[index];
             const passCountry = !!activeCountryId && loc.countryId === activeCountryId;
-            const passCb      = allChecked || checkedSlugs.has(loc.categorySlug) || !loc.categorySlug;
+            const passCb = allChecked || checkedSlugs.has(loc.categorySlug) || !loc.categorySlug;
             const show = passCountry && passCb;
             show ? marker.addTo(map) : map.removeLayer(marker);
         });
 
         document.querySelectorAll('.location-card').forEach(card => {
-            const countryOk  = !!activeCountryId && parseInt(card.dataset.country) === activeCountryId;
-            const catSlug    = card.dataset.category;
+            const countryOk = !!activeCountryId && parseInt(card.dataset.country) === activeCountryId;
+            const catSlug = card.dataset.category;
             const catVisible = !catSlug || visibleCatSlugs.has(catSlug);
-            const cbOk       = allChecked || checkedSlugs.has(catSlug) || !catSlug;
-            const catBtnOk   = !activeCategorySlug || catSlug === activeCategorySlug;
-            const show       = countryOk && catVisible && cbOk && catBtnOk;
+            const cbOk = allChecked || checkedSlugs.has(catSlug) || !catSlug;
+            const catBtnOk = !activeCategorySlug || catSlug === activeCategorySlug;
+            const show = countryOk && catVisible && cbOk && catBtnOk;
             card.style.display = show ? '' : 'none';
             if (show) visibleCards++;
         });
@@ -1149,12 +1278,12 @@
         const checkedSlugs = new Set(
             [...document.querySelectorAll('.cat-cb:checked')].map(cb => cb.dataset.slug)
         );
-        const totalCbs   = document.querySelectorAll('.cat-cb').length;
+        const totalCbs = document.querySelectorAll('.cat-cb').length;
         const allChecked = checkedSlugs.size === totalCbs || totalCbs === 0;
         markers3d.forEach(({ index, marker }) => {
             const loc = locations[index];
             const passCountry = !!activeCountryId && loc.countryId === activeCountryId;
-            const passCb      = allChecked || checkedSlugs.has(loc.categorySlug) || !loc.categorySlug;
+            const passCb = allChecked || checkedSlugs.has(loc.categorySlug) || !loc.categorySlug;
             passCountry && passCb ? marker.addTo(window._map3d) : marker.remove();
         });
     }
@@ -1214,9 +1343,9 @@
     // ==========================================
     // ЛЕГЕНДА КАТЕГОРІЙ (чекбокси, зліва від карти — динамічна)
     // ==========================================
-    const catLegend      = document.getElementById('cat-legend');
+    const catLegend = document.getElementById('cat-legend');
     const catLegendItems = document.getElementById('cat-legend-items');
-    const catCbAll       = document.getElementById('cat-cb-all');
+    const catCbAll = document.getElementById('cat-cb-all');
 
     // buildCatLegend — перебудовує легенду при зміні країни.
     // Чекбокси стартують всі увімкненими (нова вибірка = новий стан).
@@ -1251,10 +1380,10 @@
             label.style.cssText = 'display:flex; align-items:center; gap:7px; margin-bottom:6px; cursor:pointer;';
 
             const cb = document.createElement('input');
-            cb.type      = 'checkbox';
+            cb.type = 'checkbox';
             cb.className = 'cat-cb';
             cb.dataset.slug = slug;
-            cb.checked   = true;
+            cb.checked = true;
             cb.style.cssText = 'width:14px;height:14px;accent-color:#1a6fa8;cursor:pointer;';
 
             cb.addEventListener('change', () => {
@@ -1287,19 +1416,19 @@
     }
 
     // Згортання/розгортання легенди категорій
-    (function() {
-        const header  = document.getElementById('cat-legend-header');
-        const body    = document.getElementById('cat-legend-body');
+    (function () {
+        const header = document.getElementById('cat-legend-header');
+        const body = document.getElementById('cat-legend-body');
         const chevron = document.getElementById('cat-legend-chevron');
         if (!header) return;
         let collapsed = true;                          // старт — згорнуто
-        body.style.maxHeight    = '0';
-        body.style.padding      = '0 14px';
+        body.style.maxHeight = '0';
+        body.style.padding = '0 14px';
         if (chevron) chevron.style.transform = 'rotate(180deg)';
         header.addEventListener('click', () => {
             collapsed = !collapsed;
-            body.style.maxHeight    = collapsed ? '0' : '400px';
-            body.style.padding      = collapsed ? '0 14px' : '8px 14px 10px';
+            body.style.maxHeight = collapsed ? '0' : '400px';
+            body.style.padding = collapsed ? '0 14px' : '8px 14px 10px';
             chevron.style.transform = collapsed ? 'rotate(180deg)' : 'rotate(0deg)';
         });
     })();
@@ -1348,7 +1477,7 @@
         {% endfor %}
     ];
 
-    const routeColors = ['#f1c40f','#ff4444','#00aaff','#00ff88','#ff8800','#dd44ff'];
+    const routeColors = ['#f1c40f', '#ff4444', '#00aaff', '#00ff88', '#ff8800', '#dd44ff'];
     const routeLayers = {};
 
     savedRoutes.forEach((route, idx) => {
@@ -1358,37 +1487,44 @@
                 color: color,
                 weight: 5,
                 opacity: 0.9
-            }
+            },
+            pane: 'routesPane',
         }).bindPopup(`
-            <div style="text-align: center;">
+            <div style="text-align:center;min-width:190px;padding:4px 2px;">
                 <strong>${route.name}</strong><br>
-                <small>${route.difficulty}</small><br>
-                <span style="font-size: 0.85rem; color: #555;">🛣️ ${route.distance} км | ⏱️ ~${route.duration} хв</span>
+                <small style="color:#888;">${route.difficulty}</small><br>
+                <span style="font-size:0.85rem;color:#555;">🛣️ ${route.distance} км | ⏱️ ~${route.duration} хв</span>
+                <br>
+                <button onclick="showElevationChart(${route.id}, '${(route.name + '').replace(/'/g, "\\'")}')"
+                    style="margin-top:8px;width:100%;padding:6px 0;background:#8e44ad;color:#fff;border:none;
+                    border-radius:6px;font-size:0.82rem;cursor:pointer;font-weight:600;">
+                    📊 Графік висот
+                </button>
             </div>
         `).addTo(map);
         routeLayers[route.id] = routeLayer;
     });
 
     // Розфарбовуємо картки маршрутів у сайдбарі відповідно до кольорів на карті
-    savedRoutes.forEach(function(route, idx) {
+    savedRoutes.forEach(function (route, idx) {
         const color = routeColors[idx % routeColors.length];
         const li = document.querySelector('li[data-route-id="' + route.id + '"]');
         if (!li) return;
         const bgLight = color + '22';
         const bgHover = color + '44';
-        li.style.background   = bgLight;
-        li.style.border       = '1px solid ' + color + '66';
-        li.style.borderLeft   = '4px solid ' + color;
+        li.style.background = bgLight;
+        li.style.border = '1px solid ' + color + '66';
+        li.style.borderLeft = '4px solid ' + color;
         const nameEl = li.querySelector('.route-sb-name');
         if (nameEl) nameEl.style.color = color;
         const inner = li.querySelector('div[onclick]');
         if (inner) {
-            inner.addEventListener('mouseover', function() { li.style.background = bgHover; });
-            inner.addEventListener('mouseout',  function() { li.style.background = bgLight; });
+            inner.addEventListener('mouseover', function () { li.style.background = bgHover; });
+            inner.addEventListener('mouseout', function () { li.style.background = bgLight; });
         }
     });
 
-    window.focusRoute = function(id) {
+    window.focusRoute = function (id) {
         if (_is3DActive()) {
             const route = savedRoutes.find(r => String(r.id) === String(id));
             if (route && route.geojson && route.geojson.coordinates && route.geojson.coordinates.length) {
@@ -1443,7 +1579,7 @@
             });
 
             // Якщо попап закрили без додавання до маршруту - видалити маркер
-            searchMarker.on('popupclose', function() {
+            searchMarker.on('popupclose', function () {
                 // Перевіряємо чи маркер є в списку waypoints
                 const exists = waypoints.some(wp => wp.marker === searchMarker);
                 if (!exists) {
@@ -1467,14 +1603,14 @@
     const googleMapsBtn = document.getElementById('google-maps-btn');
     const wazeBtn = document.getElementById('waze-btn');
 
-    window.addWaypointFromPopup = function(index) {
+    window.addWaypointFromPopup = function (index) {
         const loc = locations[index];
-        waypoints.push({ latLng: L.latLng(loc.lat, loc.lng), name: loc.name });
+        waypoints.push({ latLng: L.latLng(loc.lat, loc.lng), name: loc.name, loc: loc, locIndex: index });
         updateRoutingUI();
         map.closePopup();
     };
 
-    window.addCustomWaypoint = function(lat, lng) {
+    window.addCustomWaypoint = function (lat, lng) {
         const name = `📍 Власна точка (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
         const marker = L.marker([lat, lng]).addTo(map);
         marker.bindPopup(`<strong>${name}</strong>`);
@@ -1483,10 +1619,10 @@
         map.closePopup();
     };
 
-    map.on('contextmenu', function(e) {
+    map.on('contextmenu', function (e) {
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
-        
+
         L.popup()
             .setLatLng(e.latlng)
             .setContent(`
@@ -1499,7 +1635,7 @@
             .openOn(map);
     });
 
-    window.removeWaypoint = function(index) {
+    window.removeWaypoint = function (index) {
         const wp = waypoints[index];
         if (wp.marker) map.removeLayer(wp.marker);
         if (highlightCircle) { map.removeLayer(highlightCircle); highlightCircle = null; }
@@ -1509,7 +1645,7 @@
         updateRoutingUI();
     };
 
-    window.moveWaypoint = function(index, direction) {
+    window.moveWaypoint = function (index, direction) {
         const newIndex = index + direction;
         if (newIndex >= 0 && newIndex < waypoints.length) {
             const temp = waypoints[index];
@@ -1521,19 +1657,54 @@
         }
     };
 
+    // Клік по точці у списку маршруту: центрувати + відкрити її попап.
+    // Leaflet тримає лише один попап відкритим, тож попередній закриється сам.
+    let _wpPopupIndex = null;
+    map.on('popupclose', function () { _wpPopupIndex = null; });
+
+    window.hoverWaypoint = function (index) {
+        const wp = waypoints[index];
+        if (!wp) return;
+        // якщо попап вже відкритий для цієї точки — нічого не робимо
+        if (_wpPopupIndex === index) return;
+
+        if (wp.loc) {
+            // Той самий багатий попап, що й у маркера, але БЕЗ кнопки «До маршруту»
+            L.popup({ autoClose: true, closeOnClick: true, maxWidth: 240, className: 'popup-wp' })
+                .setLatLng(wp.latLng)
+                .setContent(locationPopupHtml(wp.loc, wp.locIndex, false))
+                .openOn(map);
+        } else if (wp.marker && wp.marker.getPopup && wp.marker.getPopup()) {
+            wp.marker.openPopup();                       // власний попап (пошук/власна точка)
+        } else {
+            L.popup({ autoClose: true, closeOnClick: true })
+                .setLatLng(wp.latLng)
+                .setContent('<strong>' + (wp.name || '').replace(/</g, '&lt;') + '</strong>')
+                .openOn(map);
+        }
+        // виставляємо ПІСЛЯ відкриття (openPopup синхронно закриває попередній → popupclose обнуляє індекс)
+        _wpPopupIndex = index;
+    };
+
+    window.clickWaypoint = function (index) {
+        const wp = waypoints[index];
+        if (!wp) return;
+        map.panTo(wp.latLng, { animate: true });
+    };
+
     // ==========================================
     // GOOGLE CALENDAR
     // ==========================================
-    const gcalModal    = document.getElementById('gcal-modal');
-    const gcalTitle    = document.getElementById('gcal-title');
+    const gcalModal = document.getElementById('gcal-modal');
+    const gcalTitle = document.getElementById('gcal-title');
     const gcalDatetime = document.getElementById('gcal-datetime');
 
     const gcalDuration = document.getElementById('gcal-duration');
-    const gcalConfirm  = document.getElementById('gcal-confirm');
-    const gcalCancel   = document.getElementById('gcal-cancel');
+    const gcalConfirm = document.getElementById('gcal-confirm');
+    const gcalCancel = document.getElementById('gcal-cancel');
     let gcalLatLng = null;
 
-    window.openCalendarModal = function(index) {
+    window.openCalendarModal = function (index) {
         const wp = waypoints[index];
         gcalTitle.value = wp.name;
         gcalLatLng = wp.latLng;
@@ -1552,13 +1723,13 @@
 
     gcalConfirm.addEventListener('click', () => {
         const title = gcalTitle.value.trim() || 'Туристична точка';
-        const dt  = gcalDatetime.value;
+        const dt = gcalDatetime.value;
         const dur = parseInt(gcalDuration.value);
 
         if (!dt) { alert('Оберіть дату та час'); return; }
 
         const start = new Date(dt);
-        const end   = new Date(start.getTime() + dur * 60000);
+        const end = new Date(start.getTime() + dur * 60000);
 
         const fmt = d => d.toISOString().replace(/[-:]/g, '').slice(0, 15);
         const dates = `${fmt(start)}/${fmt(end)}`;
@@ -1590,6 +1761,13 @@
         }
         _prevWpCount = waypoints.length;
 
+        // Лічильник точок на кнопці «Маршрут»
+        const rc = document.getElementById('route-count');
+        if (rc) {
+            rc.textContent = waypoints.length || '';
+            rc.style.display = waypoints.length ? 'inline-block' : 'none';
+        }
+
         if (waypoints.length === 0) {
             waypointsContainer.innerHTML = '<em style="color: var(--ink-2);">Натискайте "➕ До маршруту" біля цікавих місць, щоб вибрати точки.</em>';
             clearBtn.style.display = 'none';
@@ -1602,14 +1780,13 @@
                 const label = trunc(wp.name);
                 // Точка
                 html += `
-                    <div data-wp-index="${i}" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); color: var(--ink); padding: 6px 8px; border-radius: 8px; border: 1px solid var(--stroke); cursor: default; transition: background 0.15s;">
-                        <div style="display: flex; align-items: center; gap: 6px; min-width:0; flex:1;">
+                    <div data-wp-index="${i}" draggable="true" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); color: var(--ink); padding: 6px 8px; border-radius: 8px; border: 1px solid var(--stroke); cursor: grab; transition: background 0.15s, border-color 0.15s;">
+                        <div style="display: flex; align-items: center; gap: 4px; min-width:0; flex:1;">
+                            <span class="drag-handle" style="opacity:0; transition:opacity 0.2s; font-size:1.3rem; line-height:1; user-select:none; color:var(--ink-3);">≡</span>
                             <strong style="font-size:0.85rem; flex-shrink:0;">${i + 1}.</strong>
-                            <span onclick="map.panTo(waypoints[${i}].latLng, {animate:true})" title="${wp.name.replace(/"/g,'&quot;')}" style="font-size:0.85rem; cursor:pointer; text-decoration:underline dotted; text-underline-offset:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${label}</span>
+                            <span onmouseover="hoverWaypoint(${i})" onclick="clickWaypoint(${i})" title="${wp.name.replace(/"/g, '&quot;')}" style="font-size:0.85rem; cursor:pointer; text-decoration:underline dotted; text-underline-offset:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${label}</span>
                         </div>
                         <div style="display: flex; gap: 4px; flex-shrink:0; margin-left:4px;">
-                            <button onclick="moveWaypoint(${i}, -1)" ${i === 0 ? 'disabled' : ''} style="padding: 2px 6px; cursor: pointer; border: 1px solid var(--stroke-2); background: rgba(255,255,255,0.06); border-radius: 5px;" title="Вгору">⬆️</button>
-                            <button onclick="moveWaypoint(${i}, 1)" ${i === waypoints.length - 1 ? 'disabled' : ''} style="padding: 2px 6px; cursor: pointer; border: 1px solid var(--stroke-2); background: rgba(255,255,255,0.06); border-radius: 5px;" title="Вниз">⬇️</button>
                             <button onclick="openCalendarModal(${i})" style="padding: 2px 6px; cursor: pointer; border: 1px solid rgba(66,133,244,0.5); background: rgba(66,133,244,0.18); color: #8ab4ff; border-radius: 5px;" title="Додати в Google Calendar">📅</button>
                             <button onclick="removeWaypoint(${i})" style="padding: 2px 6px; cursor: pointer; border: 1px solid rgba(231,76,60,0.5); background: rgba(231,76,60,0.16); color: #ff9b8f; border-radius: 5px;" title="Видалити">❌</button>
                         </div>
@@ -1621,7 +1798,7 @@
                     html += `
                         <div style="display: flex; align-items: center; gap: 6px; padding: 2px 12px;">
                             <div style="width: 3px; height: 22px; background: ${color}; border-radius: 2px; margin-left: 6px; flex-shrink: 0;"></div>
-                            <span style="font-size: 0.75rem; color: ${color}; font-weight: 600;">${trunc(wp.name)} → ${trunc(waypoints[i+1].name)}</span>
+                            <span style="font-size: 0.75rem; color: ${color}; font-weight: 600;">${trunc(wp.name)} → ${trunc(waypoints[i + 1].name)}</span>
                         </div>
                     `;
                 }
@@ -1629,11 +1806,16 @@
             html += '</div>';
             waypointsContainer.innerHTML = html;
 
-            // Підсвічування точки на карті при наведенні
+            // Підсвічування точки на карті при наведенні та логіка drag-and-drop
+            let draggedIndex = null;
             waypointsContainer.querySelectorAll('[data-wp-index]').forEach(el => {
                 const i = parseInt(el.dataset.wpIndex);
+
                 el.addEventListener('mouseenter', () => {
                     el.style.background = 'rgba(255,255,255,0.1)';
+                    const dragHandle = el.querySelector('.drag-handle');
+                    if (dragHandle) dragHandle.style.opacity = '1';
+
                     if (highlightCircle) map.removeLayer(highlightCircle);
                     const color = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
                     highlightCircle = L.circleMarker(waypoints[i].latLng, {
@@ -1643,17 +1825,64 @@
                         fillColor: color,
                         fillOpacity: 0.25
                     })
-                    .bindTooltip(`<strong>${i + 1}.</strong> ${waypoints[i].name}`, {
-                        permanent: true,
-                        direction: 'top',
-                        offset: [0, -18]
-                    })
-                    .addTo(map)
-                    .openTooltip();
+                        .bindTooltip(`<strong>${i + 1}.</strong> ${waypoints[i].name}`, {
+                            permanent: true,
+                            direction: 'top',
+                            offset: [0, -18]
+                        })
+                        .addTo(map)
+                        .openTooltip();
                 });
+
                 el.addEventListener('mouseleave', () => {
                     el.style.background = 'rgba(255,255,255,0.04)';
+                    const dragHandle = el.querySelector('.drag-handle');
+                    if (dragHandle) dragHandle.style.opacity = '0';
+
                     if (highlightCircle) { map.removeLayer(highlightCircle); highlightCircle = null; }
+                });
+
+                // Drag-and-drop events
+                el.addEventListener('dragstart', (e) => {
+                    draggedIndex = i;
+                    e.dataTransfer.effectAllowed = 'move';
+                    setTimeout(() => el.style.opacity = '0.4', 0);
+                });
+
+                el.addEventListener('dragend', () => {
+                    el.style.opacity = '1';
+                    waypointsContainer.querySelectorAll('[data-wp-index]').forEach(r => r.style.borderColor = 'var(--stroke)');
+                });
+
+                el.addEventListener('dragover', (e) => {
+                    e.preventDefault(); // Дозволяє drop
+                    return false;
+                });
+
+                el.addEventListener('dragenter', (e) => {
+                    e.preventDefault();
+                    if (i !== draggedIndex) {
+                        el.style.borderColor = 'var(--accent)';
+                    }
+                });
+
+                el.addEventListener('dragleave', (e) => {
+                    if (i !== draggedIndex) {
+                        el.style.borderColor = 'var(--stroke)';
+                    }
+                });
+
+                el.addEventListener('drop', (e) => {
+                    e.stopPropagation();
+                    const targetIndex = i;
+                    if (draggedIndex !== null && draggedIndex !== targetIndex) {
+                        const item = waypoints.splice(draggedIndex, 1)[0];
+                        waypoints.splice(targetIndex, 0, item);
+                        if (routingControl) { map.removeControl(routingControl); routingControl = null; }
+                        clearSegments();
+                        updateRoutingUI();
+                    }
+                    return false;
                 });
             });
 
@@ -1668,7 +1897,7 @@
             if (waypoints.length >= 1) {
                 googleMapsBtn.style.display = 'block';
                 wazeBtn.style.display = 'block';
-                
+
                 // Змінюємо текст кнопки Waze, щоб було зрозуміло куди вона веде
                 const lastPointName = waypoints[waypoints.length - 1].name;
                 const shortName = lastPointName.length > 22 ? lastPointName.substring(0, 22) + '...' : lastPointName;
@@ -1801,35 +2030,35 @@
     // Обробка кліку "Відкрити в Google Maps"
     googleMapsBtn.addEventListener('click', () => {
         if (waypoints.length < 1) return;
-        
+
         const destWp = waypoints[waypoints.length - 1];
         const destination = `${destWp.latLng.lat},${destWp.latLng.lng}`;
-        
+
         let url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
-        
+
         if (waypoints.length >= 2) {
             const originWp = waypoints[0];
             const origin = `${originWp.latLng.lat},${originWp.latLng.lng}`;
             url += `&origin=${origin}`;
-            
+
             if (waypoints.length > 2) {
                 const intermediate = waypoints.slice(1, -1).map(wp => `${wp.latLng.lat},${wp.latLng.lng}`).join('|');
                 url += `&waypoints=${intermediate}`;
             }
         }
-        
+
         window.open(url, '_blank');
     });
 
     // Обробка кліку "Відкрити в Waze"
     wazeBtn.addEventListener('click', () => {
         if (waypoints.length < 1) return;
-        
+
         // Waze URL scheme officially supports routing only to a final destination (no complex waypoints).
         // So we route to the final point in the list.
         const dest = waypoints[waypoints.length - 1].latLng;
         const url = `https://www.waze.com/ul?ll=${dest.lat},${dest.lng}&navigate=yes`;
-        
+
         window.open(url, '_blank');
     });
 
@@ -1842,7 +2071,11 @@
             const lng = parseFloat(btn.dataset.lng.replace(',', '.'));
             const name = btn.dataset.name;
 
-            waypoints.push({ latLng: L.latLng(lat, lng), name: name });
+            const li = locations.findIndex(l => l.name === name);
+            waypoints.push({
+                latLng: L.latLng(lat, lng), name: name,
+                loc: li >= 0 ? locations[li] : undefined, locIndex: li
+            });
             updateRoutingUI();
         });
     });
@@ -1871,8 +2104,8 @@
         }
     }
 
-    document.querySelectorAll('.sb-section__hdr').forEach(function(hdr) {
-        hdr.addEventListener('click', function() { toggleAccordion(this); });
+    document.querySelectorAll('.sb-section__hdr').forEach(function (hdr) {
+        hdr.addEventListener('click', function () { toggleAccordion(this); });
     });
 
     // ==========================================
@@ -1885,24 +2118,24 @@
         if (ep) ep.style.left = (sb ? sb.offsetWidth : 0) + 'px';
     }
 
-    (function() {
+    (function () {
         var sidebar = document.getElementById('main-sidebar');
         var btn = document.getElementById('sidebar-toggle');
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             var collapsed = sidebar.classList.toggle('sidebar--collapsed');
             btn.textContent = collapsed ? '›' : '‹';
-            setTimeout(function() { map.invalidateSize(); syncElevPanelLeft(); }, 310);
+            setTimeout(function () { map.invalidateSize(); syncElevPanelLeft(); }, 310);
         });
     })();
 
     // ==========================================
     // МОБІЛЬНИЙ DRAWER — сайдбар поверх карти
     // ==========================================
-    (function() {
+    (function () {
         var sb = document.getElementById('main-sidebar');
         var tg = document.getElementById('sidebar-toggle');
         if (!sb || !tg) return;
-        var isMobile = function() { return window.matchMedia('(max-width: 768px)').matches; };
+        var isMobile = function () { return window.matchMedia('(max-width: 768px)').matches; };
 
         var bd = document.createElement('div');
         bd.id = 'sidebar-backdrop';
@@ -1916,12 +2149,13 @@
         if (isMobile()) { sb.classList.add('sidebar--collapsed'); tg.textContent = '›'; }
 
         tg.addEventListener('click', sync);
-        bd.addEventListener('click', function() {
+        bd.addEventListener('click', function () {
             if (!sb.classList.contains('sidebar--collapsed')) tg.click();
         });
-        // тап по карті закриває drawer і панель маршруту
-        map.on('click', function() {
-            if (isMobile() && !sb.classList.contains('sidebar--collapsed')) tg.click();
+        // тап по карті закриває drawer і слайдер маршруту — ЛИШЕ на мобільному
+        map.on('click', function () {
+            if (!isMobile()) return;
+            if (!sb.classList.contains('sidebar--collapsed')) tg.click();
             const rp = document.getElementById('route-nav-panel');
             if (rp) rp.classList.remove('open');
         });
@@ -1932,15 +2166,15 @@
     // ==========================================
     // 3D КАРТА — MapLibre GL
     // ==========================================
-    (function() {
-        const mapEl   = document.getElementById('map');
+    (function () {
+        const mapEl = document.getElementById('map');
         const map3dEl = document.getElementById('map3d');
-        let map3d     = null;
-        let is3D      = false;
+        let map3d = null;
+        let is3D = false;
 
         // Кнопка — вставляємо в навбар після "🚗 Маршрут"
         const btn = document.createElement('button');
-        btn.id    = 'toggle-3d-btn';
+        btn.id = 'toggle-3d-btn';
         btn.title = '3D карта із супутника';
         btn.textContent = '🏔️ 3D';
         btn.style.cssText = [
@@ -1948,20 +2182,20 @@
             'border-radius:6px', 'padding:5px 12px', 'cursor:pointer',
             'font-weight:500', 'font-size:0.88rem', 'transition:background 0.2s'
         ].join(';');
-        btn.onmouseover = function() { if (!is3D) this.style.background = '#7d3c98'; };
-        btn.onmouseout  = function() { if (!is3D) this.style.background = '#8e44ad'; };
+        btn.onmouseover = function () { if (!is3D) this.style.background = '#7d3c98'; };
+        btn.onmouseout = function () { if (!is3D) this.style.background = '#8e44ad'; };
 
         const routeToggleBtn = document.getElementById('route-toggle-btn');
-        routeToggleBtn.insertAdjacentElement('afterend', btn);
+        routeToggleBtn.insertAdjacentElement('beforebegin', btn);   // 3D перед «Маршрут»
 
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             is3D = !is3D;
             if (is3D) {
-                mapEl.style.display   = 'none';
+                mapEl.style.display = 'none';
                 map3dEl.style.display = 'flex';
-                map3dEl.style.flex    = '1';
-                btn.style.background  = '#5b2c6f';
-                btn.textContent       = '🗺️ 2D';
+                map3dEl.style.flex = '1';
+                btn.style.background = '#5b2c6f';
+                btn.textContent = '🗺️ 2D';
                 if (!map3d) {
                     initMap3D();
                 } else {
@@ -1972,9 +2206,9 @@
                 }
             } else {
                 map3dEl.style.display = 'none';
-                mapEl.style.display   = 'block';
-                btn.style.background  = '#8e44ad';
-                btn.textContent       = '🏔️ 3D';
+                mapEl.style.display = 'block';
+                btn.style.background = '#8e44ad';
+                btn.textContent = '🏔️ 3D';
                 // Синхронізуємо 2D → поточний екстент 3D карти
                 if (map3d) {
                     const c = map3d.getCenter();
@@ -2019,12 +2253,12 @@
             // Перемикач підложки: супутник ↔ звичайна карта
             const basemapTiles = {
                 satellite: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-                standard:  ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                standard: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
             };
             let activeBm = 'satellite';
 
             map3d.addControl({
-                onAdd: function() {
+                onAdd: function () {
                     const div = document.createElement('div');
                     div.className = 'maplibregl-ctrl maplibregl-ctrl-group';
                     const btn = document.createElement('button');
@@ -2032,7 +2266,7 @@
                     btn.title = 'Змінити підложку';
                     btn.textContent = '🗺️ Карта';
                     btn.style.cssText = 'font-size:0.8rem;padding:0 10px;white-space:nowrap;width:auto;min-width:96px;height:29px;cursor:pointer;';
-                    btn.addEventListener('click', function() {
+                    btn.addEventListener('click', function () {
                         activeBm = activeBm === 'satellite' ? 'standard' : 'satellite';
                         map3d.getSource('satellite').setTiles(basemapTiles[activeBm]);
                         btn.textContent = activeBm === 'satellite' ? '🗺️ Карта' : '🛰️ Супутник';
@@ -2040,16 +2274,52 @@
                     div.appendChild(btn);
                     return div;
                 },
-                onRemove: function() {},
+                onRemove: function () { },
             }, 'top-left');
 
-            map3d.on('error', function(e) {
+            // ── Контур районів на 3D карті (завантажується автоматично) ─────
+            function load3dDistricts() {
+                const countryId = (function () {
+                    const sel = document.getElementById('country-select');
+                    return sel && sel.value ? sel.value : null;
+                })();
+                const url = countryId
+                    ? `/api/countries/${countryId}/polygons/`
+                    : `/api/ivfrankdist/`;
+
+                fetch(url)
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (!data || !data.features || !data.features.length) return;
+
+                        if (map3d.getSource('districts-3d')) {
+                            map3d.getSource('districts-3d').setData(data);
+                        } else {
+                            map3d.addSource('districts-3d', { type: 'geojson', data: data });
+                            map3d.addLayer({
+                                id: 'districts-outline',
+                                type: 'line',
+                                source: 'districts-3d',
+                                paint: {
+                                    'line-color': '#e67e22',
+                                    'line-width': 1.8,
+                                    'line-opacity': 0.9,
+                                },
+                            });
+                        }
+                    })
+                    .catch(function (err) {
+                        console.error('[3D] Помилка завантаження контуру районів:', err);
+                    });
+            }
+
+            map3d.on('error', function (e) {
                 console.error('[MapLibre3D] error:', e.error || e);
             });
 
-            map3d.on('load', function() {
+            map3d.on('load', function () {
                 // Додаємо маршрути одразу після завантаження стилю
-                savedRoutes.forEach(function(route, idx) {
+                savedRoutes.forEach(function (route, idx) {
                     const color = routeColors[idx % routeColors.length];
                     const geojsonData = {
                         type: 'FeatureCollection',
@@ -2073,14 +2343,22 @@
                             layout: { 'line-join': 'round', 'line-cap': 'round' },
                             paint: { 'line-color': color, 'line-width': 5, 'line-opacity': 1 },
                         });
-                        map3d.on('click', 'r3d-line-' + route.id, function(e) {
+                        map3d.on('click', 'r3d-line-' + route.id, function (e) {
                             new maplibregl.Popup({ maxWidth: '240px' })
                                 .setLngLat(e.lngLat)
-                                .setHTML('<strong>' + route.name + '</strong><br><small>🛣️ ' + route.distance + ' км · ⏱️ ' + route.duration + ' хв</small>')
+                                .setHTML(
+                                    '<div style="padding:8px 10px;min-width:200px">'
+                                    + '<strong style="font-size:13px">' + route.name + '</strong>'
+                                    + '<br><small style="color:#999">\u{1F6E3}\uFE0F ' + route.distance + '\u00A0\u043A\u043C\u00A0\u00B7\u00A0\u23F1\uFE0F ' + route.duration + '\u00A0\u0445\u0432</small>'
+                                    + '<br><button onclick="showElevationChart(' + route.id + ',\'' + (route.name + '').replace(/'/g, "\\'") + '\')"'
+                                    + ' style="margin-top:7px;width:100%;padding:5px 0;background:#8e44ad;color:#fff;border:none;border-radius:6px;font-size:0.8rem;cursor:pointer;font-weight:600;">'
+                                    + '\u{1F4CA} \u0413\u0440\u0430\u0444\u0456\u043A \u0432\u0438\u0441\u043E\u0442</button>'
+                                    + '</div>'
+                                )
                                 .addTo(map3d);
                         });
-                        map3d.on('mouseenter', 'r3d-line-' + route.id, function() { map3d.getCanvas().style.cursor = 'pointer'; });
-                        map3d.on('mouseleave', 'r3d-line-' + route.id, function() { map3d.getCanvas().style.cursor = ''; });
+                        map3d.on('mouseenter', 'r3d-line-' + route.id, function () { map3d.getCanvas().style.cursor = 'pointer'; });
+                        map3d.on('mouseleave', 'r3d-line-' + route.id, function () { map3d.getCanvas().style.cursor = ''; });
 
                         // Підпис назви маршруту на середній точці лінії
                         const coords = route.geojson && route.geojson.coordinates;
@@ -2102,23 +2380,25 @@
                                 'text-shadow:0 1px 2px rgba(255,255,255,0.6)',
                             ].join(';');
                             lbl.textContent = route.name;
-                            lbl.addEventListener('click', (function(r) { return function() {
-                                new maplibregl.Popup({ maxWidth: '240px' })
-                                    .setLngLat([mid[0], mid[1]])
-                                    .setHTML('<strong>' + r.name + '</strong><br><small>🛣️ ' + r.distance + ' км · ⏱️ ' + r.duration + ' хв</small>')
-                                    .addTo(map3d);
-                            }; })(route));
+                            lbl.addEventListener('click', (function (r) {
+                                return function () {
+                                    new maplibregl.Popup({ maxWidth: '240px' })
+                                        .setLngLat([mid[0], mid[1]])
+                                        .setHTML('<strong>' + r.name + '</strong><br><small>🛣️ ' + r.distance + ' км · ⏱️ ' + r.duration + ' хв</small>')
+                                        .addTo(map3d);
+                                };
+                            })(route));
                             new maplibregl.Marker({ element: lbl, anchor: 'center' })
                                 .setLngLat([mid[0], mid[1]])
                                 .addTo(map3d);
                         }
-                    } catch(err) {
+                    } catch (err) {
                         console.error('[MapLibre3D] route error [' + route.id + ']:', err);
                     }
                 });
 
                 // Локації на 3D карті
-                locations.forEach(function(loc, idx) {
+                locations.forEach(function (loc, idx) {
                     const el = document.createElement('div');
                     el.style.cssText = 'font-size:22px;line-height:1;cursor:pointer;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.5));user-select:none;';
                     el.textContent = loc.categoryIcon;
@@ -2131,34 +2411,45 @@
                         : null;
                     const lupaBtn3d = descUrl3d
                         ? '<a href="' + descUrl3d + '" target="_blank" rel="noopener" ' +
-                          'style="flex-shrink:0;width:22px;height:22px;background:rgba(255,255,255,0.2);' +
-                          'color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;' +
-                          'font-size:12px;text-decoration:none;backdrop-filter:blur(2px);" title="Відкрити джерело">🔍</a>'
+                        'style="flex-shrink:0;width:22px;height:22px;background:rgba(255,255,255,0.2);' +
+                        'color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;' +
+                        'font-size:12px;text-decoration:none;backdrop-filter:blur(2px);" title="Відкрити джерело">🔍</a>'
                         : '';
 
-                    const popup = new maplibregl.Popup({ offset: [0, -14], maxWidth: '220px' })
-                        .setHTML(
-                            loc.photo
-                            ? '<div style="position:relative;width:220px">' +
-                              '<img src="' + loc.photo + '" alt="" style="width:100%;height:170px;object-fit:cover;display:block;">' +
-                              '<div style="position:absolute;bottom:0;left:0;right:0;padding:20px 9px 8px;background:linear-gradient(transparent,rgba(0,0,0,0.7));color:#fff;box-sizing:border-box">' +
-                              '<div style="display:flex;justify-content:space-between;align-items:center;gap:5px">' +
-                              '<strong style="font-size:13px;line-height:1.3">' + loc.name + '</strong>' +
-                              lupaBtn3d +
-                              '</div>' +
-                              (descText ? '<span style="font-size:0.72rem;opacity:0.9">' + descText + '</span>' : '') +
-                              '</div></div>'
-                            : '<div style="padding:9px 11px;min-width:160px">' +
-                              '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px">' +
-                              '<strong style="font-size:13px">' + loc.name + '</strong>' +
-                              (descUrl3d ? '<a href="' + descUrl3d + '" target="_blank" rel="noopener" ' +
-                              'style="flex-shrink:0;width:22px;height:22px;background:#f0f4f8;color:#1a6fa8;' +
-                              'border-radius:50%;display:flex;align-items:center;justify-content:center;' +
-                              'font-size:12px;text-decoration:none;" title="Відкрити джерело">🔍</a>' : '') +
-                              '</div>' +
-                              (descText ? '<div style="font-size:0.8rem;color:#555;margin-top:3px">' + descText + '</div>' : '') +
-                              '</div>'
-                        );
+                    const photos = [loc.photo, loc.photourl2, loc.photourl3].filter(p => p && p.trim() !== '');
+                    const popupHTML = photos.length > 0
+                        ? '<div style="width:220px; position:relative;">' +
+                        '<style>.popup-gallery-scroll::-webkit-scrollbar { display: none; }</style>' +
+                        '<div class="popup-gallery-scroll" style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; gap:2px; scrollbar-width:none;">' +
+                        photos.map(p =>
+                            '<div style="flex: 0 0 100%; scroll-snap-align: start; position:relative;">' +
+                            '<img src="' + p + '" alt="" style="width:100%;height:170px;object-fit:cover;display:block;">' +
+                            '<div style="position:absolute;bottom:0;left:0;right:0;padding:20px 9px 8px;background:linear-gradient(transparent,rgba(0,0,0,0.7));color:#fff;box-sizing:border-box">' +
+                            '<div style="display:flex;justify-content:space-between;align-items:center;gap:5px">' +
+                            '<strong style="font-size:13px;line-height:1.3">' + loc.name + '</strong>' +
+                            lupaBtn3d +
+                            '</div>' +
+                            (descText ? '<span style="font-size:0.72rem;opacity:0.9">' + descText + '</span>' : '') +
+                            '</div></div>'
+                        ).join('') +
+                        '</div>' +
+                        (photos.length > 1 ?
+                            '<button onclick="this.parentElement.querySelector(\'.popup-gallery-scroll\').scrollBy({left:-230, behavior:\'smooth\'})" style="position:absolute;left:4px;top:85px;transform:translateY(-50%);background:none;color:white;border:none;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;text-shadow:0 2px 4px rgba(0,0,0,0.8);padding:0;">&#10094;</button>' +
+                            '<button onclick="this.parentElement.querySelector(\'.popup-gallery-scroll\').scrollBy({left:230, behavior:\'smooth\'})" style="position:absolute;right:4px;top:85px;transform:translateY(-50%);background:none;color:white;border:none;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;text-shadow:0 2px 4px rgba(0,0,0,0.8);padding:0;">&#10095;</button>'
+                            : '') +
+                        '</div>'
+                        : '<div style="padding:9px 11px;min-width:160px">' +
+                        '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px">' +
+                        '<strong style="font-size:13px">' + loc.name + '</strong>' +
+                        (descUrl3d ? '<a href="' + descUrl3d + '" target="_blank" rel="noopener" ' +
+                            'style="flex-shrink:0;width:22px;height:22px;background:#f0f4f8;color:#1a6fa8;' +
+                            'border-radius:50%;display:flex;align-items:center;justify-content:center;' +
+                            'font-size:12px;text-decoration:none;" title="Відкрити джерело">🔍</a>' : '') +
+                        '</div>' +
+                        (descText ? '<div style="font-size:0.8rem;color:#555;margin-top:3px">' + descText + '</div>' : '') +
+                        '</div>';
+
+                    const popup = new maplibregl.Popup({ offset: [0, -14], maxWidth: '220px' }).setHTML(popupHTML);
 
                     const m3d = new maplibregl.Marker({ element: el, anchor: 'center' })
                         .setLngLat([loc.lng, loc.lat])
@@ -2166,6 +2457,9 @@
                     markers3d.push({ index: idx, marker: m3d });
                 });
                 applyMarkerFilters3D();
+
+                // Завантажуємо контур районів автоматично
+                load3dDistricts();
 
                 // Terrain — додаємо окремо після маршрутів; якщо не вдається — карта продовжує працювати
                 try {
@@ -2177,7 +2471,7 @@
                         maxzoom: 14,
                     });
                     map3d.setTerrain({ source: 'terrain-dem', exaggeration: 1.4 });
-                } catch(err) {
+                } catch (err) {
                     console.warn('[MapLibre3D] terrain not available:', err.message);
                 }
             });
@@ -2188,10 +2482,10 @@
     // ГРАФІК ВИСОТ — панель внизу карти
     // ==========================================
     let elevationChartInstance = null;
-    let elevationMarker  = null;   // Leaflet circleMarker (2D)
-    let elevMarker3d     = null;   // MapLibre Marker (3D)
-    let elevPopup3d      = null;   // MapLibre Popup (3D)
-    let currentProfile   = [];
+    let elevationMarker = null;   // Leaflet circleMarker (2D)
+    let elevMarker3d = null;   // MapLibre Marker (3D)
+    let elevPopup3d = null;   // MapLibre Popup (3D)
+    let currentProfile = [];
 
     function _is3DActive() {
         return document.getElementById('map3d').style.display !== 'none' && window._map3d;
@@ -2238,7 +2532,7 @@
                 elevationMarker = L.circleMarker([lat, lng], {
                     radius: 7, color: '#27ae60', weight: 3, fillColor: '#fff', fillOpacity: 1, zIndexOffset: 500,
                 }).addTo(map)
-                  .bindTooltip('', { permanent: true, direction: 'top', offset: [0, -10], className: 'elev-tooltip' });
+                    .bindTooltip('', { permanent: true, direction: 'top', offset: [0, -10], className: 'elev-tooltip' });
             }
             elevationMarker.setLatLng([lat, lng]);
             elevationMarker.setTooltipContent(`<strong>${elev} м</strong>`);
@@ -2247,13 +2541,13 @@
     }
 
     function removeElevMarker() {
-        if (elevMarker3d)    { elevMarker3d.remove(); elevMarker3d = null; }
+        if (elevMarker3d) { elevMarker3d.remove(); elevMarker3d = null; }
         if (elevationMarker) { map.removeLayer(elevationMarker); elevationMarker = null; }
     }
 
     function closeElevationPanel() {
         document.getElementById('elevation-panel').style.display = 'none';
-        document.getElementById('elevation-chart').style.display  = 'none';
+        document.getElementById('elevation-chart').style.display = 'none';
         if (elevationChartInstance) { elevationChartInstance.destroy(); elevationChartInstance = null; }
         removeElevMarker();
         currentProfile = [];
@@ -2266,21 +2560,21 @@
     L.DomEvent.disableScrollPropagation(document.getElementById('elevation-panel'));
     L.DomEvent.disableClickPropagation(document.getElementById('elevation-panel'));
 
-    window.showElevationChart = function(routeId, routeName) {
-        const panel    = document.getElementById('elevation-panel');
-        const title    = document.getElementById('elev-panel-title');
-        const statsEl  = document.getElementById('elev-panel-stats');
-        const loading  = document.getElementById('elevation-loading');
-        const errorEl  = document.getElementById('elevation-error');
-        const canvas   = document.getElementById('elevation-chart');
+    window.showElevationChart = function (routeId, routeName) {
+        const panel = document.getElementById('elevation-panel');
+        const title = document.getElementById('elev-panel-title');
+        const statsEl = document.getElementById('elev-panel-stats');
+        const loading = document.getElementById('elevation-loading');
+        const errorEl = document.getElementById('elevation-error');
+        const canvas = document.getElementById('elevation-chart');
 
-        title.textContent   = `📊 ${routeName}`;
-        statsEl.innerHTML   = '';
+        title.textContent = `📊 ${routeName}`;
+        statsEl.innerHTML = '';
         panel.style.display = 'block';
         syncElevPanelLeft();
         loading.style.display = 'block';
         errorEl.style.display = 'none';
-        canvas.style.display  = 'none';
+        canvas.style.display = 'none';
 
         if (elevationChartInstance) { elevationChartInstance.destroy(); elevationChartInstance = null; }
         removeElevMarker();
@@ -2299,10 +2593,10 @@
                     return;
                 }
 
-                const elevs     = currentProfile.map(p => p.elevation_m);
-                const minElev   = Math.min(...elevs);
-                const maxElev   = Math.max(...elevs);
-                const totalClimb = elevs.reduce((sum, e, i) => sum + (i > 0 && e > elevs[i-1] ? e - elevs[i-1] : 0), 0);
+                const elevs = currentProfile.map(p => p.elevation_m);
+                const minElev = Math.min(...elevs);
+                const maxElev = Math.max(...elevs);
+                const totalClimb = elevs.reduce((sum, e, i) => sum + (i > 0 && e > elevs[i - 1] ? e - elevs[i - 1] : 0), 0);
 
                 statsEl.innerHTML =
                     `<span>📉 ${Math.round(minElev)} м</span>` +
@@ -2337,7 +2631,7 @@
                             tooltip: {
                                 callbacks: {
                                     title: items => `${items[0].label} км`,
-                                    label: item  => `${item.raw} м`
+                                    label: item => `${item.raw} м`
                                 }
                             }
                         },
@@ -2405,6 +2699,30 @@
         sel.dispatchEvent(new Event('change'));
         const polyBtn = document.getElementById('country-polygons-btn');
         if (polyBtn && !polyBtn.disabled) polyBtn.click();
+    })();
+
+    // ==========================================
+    // ОНБОРДИНГ ПЕРШОГО ЗАПУСКУ (показ один раз)
+    // ==========================================
+    (function () {
+        const KEY = 'gp_onboarded_v1';
+        const onb = document.getElementById('onboarding');
+        const startBtn = document.getElementById('onb-start');
+        if (!onb) return;
+        let seen = false;
+        try { seen = localStorage.getItem(KEY) === '1'; } catch (e) { }
+        if (!seen) onb.style.display = 'flex';
+        function close() {
+            onb.style.display = 'none';
+            try { localStorage.setItem(KEY, '1'); } catch (e) { }
+        }
+        if (startBtn) startBtn.addEventListener('click', close);
+        onb.addEventListener('click', function (e) { if (e.target === onb) close(); }); // клік по тлу
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && onb.style.display !== 'none') close();
+        });
+        // дати змогу відкрити підказку знову: window.showOnboarding()
+        window.showOnboarding = function () { onb.style.display = 'flex'; };
     })();
 
 </script>

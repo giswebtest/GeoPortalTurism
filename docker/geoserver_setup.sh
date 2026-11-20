@@ -116,7 +116,51 @@ for layer in maps_location maps_route maps_countrypolygon hystory_ob ivfrankdist
 done
 
 echo ""
+echo "=== 5. Raster Layer (GeoTIFF) ==="
+CS_NAME="oporniy_plan"
+RASTER_FILE="/opt/geoserver_data/ОпорнийПлан.tif"
+
+# CoverageStore
+code=$(curl -s -o /dev/null -w "%{http_code}" \
+  -u $AUTH -X POST "$GS/rest/workspaces/$WS/coveragestores" \
+  -H "Content-Type: application/json" \
+  -d "{\"coverageStore\":{\"name\":\"${CS_NAME}\",\"type\":\"GeoTIFF\",\"enabled\":true,\"workspace\":{\"name\":\"${WS}\"},\"url\":\"file://${RASTER_FILE}\"}}")
+[ "$code" = "201" ] && echo "  ✓ CoverageStore ${CS_NAME}" || echo "  ✗ CoverageStore HTTP $code (may already exist)"
+
+# Coverage
+code=$(curl -s -o /dev/null -w "%{http_code}" \
+  -u $AUTH -X POST "$GS/rest/workspaces/$WS/coveragestores/${CS_NAME}/coverages" \
+  -H "Content-Type: application/json" \
+  -d "{\"coverage\":{\"name\":\"${CS_NAME}\",\"nativeCoverageName\":\"ОпорнийПлан\",\"nativeName\":\"ОпорнийПлан\",\"title\":\"Опорний план\",\"enabled\":true,\"projectionPolicy\":\"REPROJECT_TO_DECLARED\"}}")
+[ "$code" = "201" ] && echo "  ✓ Coverage ${CS_NAME}" || echo "  ✗ Coverage HTTP $code (may already exist)"
+
+# WMTS
+code=$(curl -s -o /dev/null -w "%{http_code}" \
+  -u $AUTH -X PUT "$GS/gwc/rest/layers/$WS:${CS_NAME}" \
+  -H "Content-Type: application/xml" \
+  -d "<GeoServerLayer>
+        <enabled>true</enabled>
+        <name>$WS:${CS_NAME}</name>
+        <mimeFormats>
+          <string>image/png</string>
+          <string>image/jpeg</string>
+        </mimeFormats>
+        <gridSubsets>
+          <gridSubset>
+            <gridSetName>EPSG:4326</gridSetName>
+            <zoomStart>0</zoomStart><zoomStop>18</zoomStop>
+          </gridSubset>
+          <gridSubset>
+            <gridSetName>EPSG:900913</gridSetName>
+            <zoomStart>0</zoomStart><zoomStop>18</zoomStop>
+          </gridSubset>
+        </gridSubsets>
+      </GeoServerLayer>")
+[ "$code" = "200" ] && echo "  ✓ ${CS_NAME} WMTS" || echo "  ✗ ${CS_NAME} WMTS HTTP $code"
+
+echo ""
 echo "=== Готово ==="
 echo "WMS:  $GS/$WS/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"
 echo "WFS:  $GS/$WS/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities"
 echo "WMTS: $GS/gwc/service/wmts?REQUEST=GetCapabilities"
+
