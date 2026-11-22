@@ -27,7 +27,7 @@
 ```mermaid
 flowchart TD
     subgraph Client ["Клієнтський рівень (Frontend)"]
-        UI["Web GUI (HTML5 / Glassmorphism CSS)"]
+        UI["Web GUI (HTML5 / CSS)"]
         L2D["2D Карта (Leaflet.js)"]
         M3D["3D Рельєф (MapLibre GL)"]
         Chart["Графік висот (Chart.js)"]
@@ -161,5 +161,5 @@ docker compose exec web python manage.py createsuperuser
 ---
 
 ##  Автор
-* **Максим Гаршин** ([@giswebtest](https://github.com/giswebtest)) — розробка геопорталу, проектування просторових баз даних, налаштування картографічних сервісів.
+* **Максим Гаршин Валерійович** ([@giswebtest](https://github.com/giswebtest)) — розробник геопорталу.
 * Проєкт розроблено в межах кваліфікаційної магістерської роботи.
