@@ -8,20 +8,17 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 
 
-Проєкт розроблено з дотриманням міжнародних стандартів **OGC (Open Geospatial Consortium)** та вимог **НІГД України** (Національної інфраструктури геопросторових даних).
+<img width="1179" height="984" alt="scrin" src="https://github.com/user-attachments/assets/92d66c33-1670-4d88-9f2b-1fd45bb58034" />
+
 
 ---
 
 ## Ключові функціональні можливості
 
 ### 1. Дворежимне картографічне відображення (2D / 3D)
-
 ### 2. Маршрутизація та просторовий аналіз рельєфу
-
 ### 3. Сервіс пошуку житла та об'єктів інфраструктури
-
-### 4. Інтероперабельність та стандарти відкритих геоданих (OGC / НІГД)
-
+### 4. Інтероперабельність та стандарти відкритих геопросторових даних 
 ### 5. Реєстр гідів та сервісна підтримка
 
 
@@ -156,7 +153,7 @@ docker compose exec web python manage.py createsuperuser
 
 ##  Підключення до настільних ГІС 
 
-Геопортал підтримує пряму трансляцію даних у десктопні ГІС-пакети. Скопіюйте посилання у меню **«🔗 Підключити дані»** на сайті або використайте прямі адреси:
+Геопортал підтримує пряму обмін даних у десктопні ГІС-пакети. Скопіюйте посилання у меню **«🔗 Підключити дані»** на сайті або використайте прямі адреси:
 * **WMS (Растрові шари):** `http://localhost/geoserver/geoportal/wms?SERVICE=WMS&REQUEST=GetCapabilities`
 * **WFS (Векторні об'єкти):** `http://localhost/geoserver/ows?service=WFS&request=GetCapabilities`
 * **OGC API Features:** `http://localhost/ogc/collections/locations/items/`
