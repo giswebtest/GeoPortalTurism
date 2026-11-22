@@ -132,7 +132,7 @@ flowchart TD
 
 ### Крок 1. Клонування репозиторію
 ```bash
-git clone https://github.com/ВАШ_ЛОГІН/GeoPortalTurism.git
+git clone https://github.com/giswebtest/GeoPortalTurism.git
 cd GeoPortalTurism
 ```
 
@@ -178,5 +178,5 @@ docker compose exec web python manage.py createsuperuser
 ---
 
 ## 👤 Автор
-* **Максим Гаршин** — розробка геопорталу, проектування просторових баз даних, налаштування картографічних сервісів.
+* **Максим Гаршин** ([@giswebtest](https://github.com/giswebtest)) — розробка геопорталу, проектування просторових баз даних, налаштування картографічних сервісів.
 * Проєкт розроблено в межах кваліфікаційної магістерської роботи.
